@@ -108,7 +108,7 @@ const PickCards = () => {
                   contentFit="cover"
                   transition={1000}
                 />
-                <Text style={styles.bookAuthorText}>By: {item.author}</Text>
+                <Text style={styles.bookAuthorText}> {item.author}</Text>
               </TouchableOpacity>
             </View>
           ))}

@@ -140,6 +140,8 @@ export default function Profile() {
         {renderOption(<Ionicons name="alert-circle-outline" size={24} color="black" style={styles.icon} />, "Age Restriction", null, true, ageRestrictionEnabled, toggleAgeRestriction)}
       </View>
       <View style={styles.section}>
+        {renderOption(<Ionicons name="earth-outline" size={24} color="black" style={styles.icon} />, "Language", () => router.push("/profile/languages"))}
+        <View style={styles.divider} />
         {renderOption(<Ionicons name="hand-left-outline" size={24} color="black" style={styles.icon} />, "Privacy Policy", () => router.push("/profile/privacyPolicy"))}
         <View style={styles.divider} />
         {renderOption(<AntDesign name="filetext1" size={24} color="black" style={styles.icon} />, "Terms and Conditions", () => router.push("/profile/terms"))}
