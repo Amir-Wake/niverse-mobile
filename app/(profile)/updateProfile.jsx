@@ -1,0 +1,309 @@
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  TextInput,
+  Alert,
+  Dimensions,
+  Modal,
+  TouchableWithoutFeedback,
+  Platform,
+} from "react-native";
+import { Image } from "expo-image";
+import { auth } from "../../firebase";
+import * as ImagePicker from "expo-image-picker";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import * as ImageManipulator from "expo-image-manipulator";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import DateTimePicker from "@react-native-community/datetimepicker";
+
+const { height } = Dimensions.get("window");
+export default function updateProfile() {
+  const [profileImage, setProfileImage] = useState(null);
+  const [username, setUsername] = useState("Unknown");
+  const [dob, setDob] = useState("");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const email = auth.currentUser?.email || "";
+  const storage = getStorage();
+  const firestore = getFirestore();
+  const [newName, setNewName] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      const userDoc = doc(firestore, "users", auth.currentUser.uid);
+      const docSnap = await getDoc(userDoc);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data.profileImageUrl) {
+          setProfileImage({ uri: data.profileImageUrl });
+        }
+        if (data.name) {
+          setUsername(data.name);
+          setNewName(data.name);
+        }
+        if (data.dob) {
+          setDob(data.dob);
+        }
+      }
+    };
+
+    fetchProfileData();
+  }, []);
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission Denied",
+        "We need access to your photo library to pick an image."
+      );
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const source = { uri: result.assets[0].uri };
+      try {
+        const resizedImage = await resizeImage(source.uri);
+        setProfileImage(resizedImage);
+      } catch (error) {
+        console.error("Error resizing image:", error);
+        Alert.alert("Error", "Failed to resize image");
+      }
+    }
+  };
+
+  const resizeImage = async (uri) => {
+    try {
+      const manipResult = await ImageManipulator.manipulateAsync(
+        uri,
+        [{ resize: { width: 300, height: 300 } }],
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+      );
+      return manipResult;
+    } catch (error) {
+      console.error("Error in resizeImage:", error);
+      throw error;
+    }
+  };
+
+  const uploadImage = async (uri) => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const storageRef = ref(storage, `profileImages/${auth.currentUser.uid}`);
+    await uploadBytes(storageRef, blob);
+    const downloadURL = await getDownloadURL(storageRef);
+    return downloadURL;
+  };
+
+  const handleSaveName = async () => {
+    let profileImageUrl = null;
+    if (profileImage) {
+      profileImageUrl = await uploadImage(profileImage.uri);
+    }
+
+    const userDoc = doc(firestore, "users", auth.currentUser.uid);
+    await setDoc(
+      userDoc,
+      { name: newName, profileImageUrl, dob },
+      { merge: true }
+    );
+    setUsername(newName);
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <TouchableOpacity
+        style={{ flexDirection: "row", alignItems: "center" }}
+        onPress={() => router.back()}
+      >
+        <Ionicons
+          name="chevron-back-outline"
+          size={35}
+          style={{ padding: 10 }}
+        />
+        <Text style={{ fontSize: 20 }}>Profile</Text>
+      </TouchableOpacity>
+      <View style={styles.container}>
+                <View style={styles.section}>
+          <View style={styles.profileContainer}>
+            <TouchableOpacity onPress={pickImage}>
+              <Image
+                source={
+                  profileImage
+                    ? { uri: profileImage.uri }
+                    : require("../../assets/images/blank-profile.png")
+                }
+                style={styles.profileImage}
+                cachePolicy={"memory-disk"}
+              />
+              <Text style={styles.choosePhotoText}>Choose a photo</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={[styles.input, styles.disabledInput]}
+              placeholder="Email"
+              value={email}
+              editable={false}
+              selectTextOnFocus={false}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Full Name"
+              value={newName}
+              onChangeText={(text) => setNewName(text)}
+            />
+          </View >
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Birthday</Text>
+            <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+              <View pointerEvents="none">
+                <TextInput
+                  style={styles.input}
+                  placeholder="Date of Birth"
+                  value={dob}
+                  editable={false}
+                />
+              </View>
+            </TouchableOpacity>
+            <Modal
+              visible={showDatePicker}
+              animationType= "fade"
+              transparent={true}
+            >
+              <TouchableWithoutFeedback
+                onPress={() => setShowDatePicker(false)}
+              >
+                <View style={styles.modalContainer}>
+                  <TouchableWithoutFeedback>
+                    <View style={styles.modalContent}>
+                      <DateTimePicker
+                        value={dob ? new Date(dob) : new Date()}
+                        mode="date"
+                        display= "spinner"
+                        style={{ backgroundColor: "gray", borderRadius: 15 }}
+                        onChange={(event, selectedDate) => {
+                          
+                          if (selectedDate ) {
+                            setDob(selectedDate.toISOString().split("T")[0]);
+                            (Platform.OS === "android") && setShowDatePicker(false);
+                          }
+                        }}
+                      />
+                    </View>
+                  </TouchableWithoutFeedback>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
+          </View>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSaveName}>
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#fff",
+  },
+  backButton: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    zIndex: 1,
+  },
+  profileContainer: {
+    alignItems: "center",
+    marginVertical: 30,
+  },
+  profileImage: {
+    alignSelf: "center",
+    width: 80,
+    height: 80,
+    borderRadius: 50,
+    marginBottom: 10,
+  },
+  choosePhotoText: {
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 12,
+    padding: 5,
+    color: "white",
+  },
+  username: {
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+  email: {
+    fontSize: 16,
+    color: "gray",
+  },
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  inputContainer: {
+    marginBottom: 10,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    borderRadius: 8,
+  },
+  disabledInput: {
+    backgroundColor: "#f0f0f0",
+    color: "#a0a0a0",
+  },
+  saveButton: {
+    backgroundColor: "#E5E8E8",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  saveButtonText: {
+    color: "#000",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "transparent",
+  },
+  modalContent: {
+    backgroundColor: "transparent",
+    borderRadius: 10,
+    alignItems: "center",
+  },
+});
