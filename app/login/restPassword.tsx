@@ -43,7 +43,7 @@ export default function ResetPassword() {
     };
 
     return (
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, backgroundColor: "#FAF9F6" }}>
             <View style={styles.container}>
                 <StatusBar
                     barStyle="dark-content"
@@ -82,10 +82,8 @@ export default function ResetPassword() {
                 </View>
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>
-                        By continuing, you agree to our Terms of Service and Privacy Policy.
-                        Please make sure to read and understand these documents before
-                        proceeding. Your use of our service is subject to these terms and
-                        policies.
+                        If you have forgotten your password, enter your email address above
+                        and we will send you instructions to reset your password.
                     </Text>
                 </View>
             </View>
@@ -130,9 +128,11 @@ const styles = StyleSheet.create({
         width: "100%",
     },
     authButton: {
-        backgroundColor: "#D3D3D3",
-        padding: 15,
-        borderRadius: 8,
+        backgroundColor: "#808080",
+        padding: 12,
+        borderRadius: 10,
+        width: 250,
+        alignSelf: "center",
         alignItems: "center",
         marginVertical: 10,
         marginHorizontal: 10,
@@ -141,8 +141,8 @@ const styles = StyleSheet.create({
         backgroundColor: "gray",
     },
     authButtonText: {
-        color: "black",
-        fontSize: 24,
+        color: "white",
+        fontSize: 20,
         fontWeight: "bold",
     },
     footer: {

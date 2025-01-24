@@ -7,19 +7,19 @@ import { useRouter } from "expo-router";
 const Terms = () => {
   const router = useRouter();
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <TouchableOpacity
-        style={{ flexDirection: "row", alignItems: "center" }}
-        onPress={() => router.back()}
-      >
-        <Ionicons
-          name="chevron-back-outline"
-          size={35}
-          style={{ padding: 10 }}
-        />
-        <Text style={{ fontSize: 20 }}>Profile</Text>
-      </TouchableOpacity>
-      <ScrollView style={{ padding: 20 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+          <TouchableOpacity
+            style={{ flexDirection: "row", alignItems: "center", padding: 5 }}
+            onPress={() => router.back()}
+          >
+            <Ionicons
+              name="chevron-back-outline"
+              size={30}
+              color={"#0066CC"}
+            />
+            <Text style={{ fontSize: 18, color:'#0066CC' }}>Back</Text>
+          </TouchableOpacity>
+          <ScrollView style={{ padding: 20, backgroundColor: "#FAF9F6", borderRadius: 20 }}>
         <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }}>
           Terms and Conditions
         </Text>

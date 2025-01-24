@@ -26,6 +26,7 @@ import {
 } from "firebase/firestore";
 import { auth } from "../../firebase";
 import Review from "./review/review";
+import i18n from "@/assets/languages/i18n";
 
 const { width } = Dimensions.get("window");
 
@@ -55,6 +56,7 @@ const BookScreen = ({ book }: { book: Book }) => {
   const [isAddedToCollection, setIsAddedToCollection] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [ageRestrictionEnabled, setAgeRestrictionEnabled] = useState(false);
+  const [isRTL, setIsRTL] = useState(false);
   const router = useRouter();
   const firestore = getFirestore();
 
@@ -86,14 +88,22 @@ const BookScreen = ({ book }: { book: Book }) => {
       if (userDoc.exists()) {
         const userData = userDoc.data();
         setAgeRestrictionEnabled(userData?.ageRestrictionEnabled);
+      }
+    };
 
+    const setTextDirection = () => {
+      if (book.language === "کوردی" || book.language === "Arabic") {
+        setIsRTL(true);
+      } else {
+        setIsRTL(false);
       }
     };
 
     checkFileExistence();
     checkIfAddedToCollection();
     fetchUserAgeRestriction();
-  }, [book.title, book.id]);
+    setTextDirection();
+  }, [book.title, book.id, book.language]);
 
   const handleDownload = async () => {
     if (ageRestrictionEnabled  && 13 < book.ageRate) {
@@ -204,7 +214,7 @@ const BookScreen = ({ book }: { book: Book }) => {
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       <View style={styles.imageContainer}>
         <Image
           source={{ uri: book.coverImageUrl }}
@@ -220,7 +230,7 @@ const BookScreen = ({ book }: { book: Book }) => {
         <Text style={styles.title}>
           {book.title.length > 48 ? `${book.title.slice(0, 48)}...` : book.title}
         </Text>
-        <Text style={styles.author}>By: {book.author}</Text>
+        <Text style={styles.author}>{i18n.t('By')}: {book.author}</Text>
         <View style={styles.rating}>
           {[...Array(5)].map((_, index) => (
             <FontAwesome
@@ -276,8 +286,8 @@ const BookScreen = ({ book }: { book: Book }) => {
       </View>
       <View style={styles.horizontalLine} />
       <View>
-        <Text style={styles.description}>{book.shortDescription}</Text>
-        <Text style={styles.longDescription}>
+        <Text style={[styles.description, isRTL && { textAlign: "right" }]}>{book.shortDescription}</Text>
+        <Text style={[styles.longDescription, isRTL && { textAlign: "right" }]}>
           {showMore ? book.longDescription : `${book.longDescription.slice(0, 200)}...`}
         </Text>
         <TouchableOpacity onPress={() => setShowMore(!showMore)}>
@@ -326,6 +336,10 @@ const BookScreen = ({ book }: { book: Book }) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: "column",
+  },
   bookImage: {
     width: 180,
     height: 270,

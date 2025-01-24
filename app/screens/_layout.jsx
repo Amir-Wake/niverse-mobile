@@ -6,7 +6,6 @@ export default function ScreensLayout() {
   const screenOptions = {
     presentation: "fullScreenmodal",
     headerShown: false,
-    gestureEnabled: false,
   };
 
   const navigation = useRouter();

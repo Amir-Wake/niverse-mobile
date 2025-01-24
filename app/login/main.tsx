@@ -99,8 +99,7 @@ export default function Login() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={styles.container}>
+    <View style={{ flex: 1, backgroundColor: "#FAF9F6" }}>
         <StatusBar
           barStyle="dark-content"
           backgroundColor="transparent"
@@ -194,7 +193,7 @@ export default function Login() {
             style={{ alignItems: "center", padding: 10 }}
             onPress={() => navigation.push("/login/restPassword")}
           >
-            <Text style={{ fontSize: 16, color: "#2F4F4F" }}>
+            <Text style={{ fontSize: 16, color: "#0066CC" }}>
               Forgot your password?
             </Text>
           </TouchableOpacity>
@@ -215,11 +214,11 @@ export default function Login() {
               marginTop: 10,
             }}
           >
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.push("/profile/terms")}>
               <Text
                 style={{
                   fontSize: 14,
-                  color: "#404040",
+                  color: "#0066CC",
                   textDecorationLine: "underline",
                 }}
               >
@@ -231,11 +230,11 @@ export default function Login() {
             >
               |
             </Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.push("/profile/privacyPolicy")}>
               <Text
                 style={{
                   fontSize: 14,
-                  color: "#404040",
+                  color: "#0066CC",
                   textDecorationLine: "underline",
                 }}
               >
@@ -247,11 +246,11 @@ export default function Login() {
             >
               |
             </Text>
-            <TouchableOpacity >
+            <TouchableOpacity onPress={() => navigation.push("/profile/contact")}>
               <Text
                 style={{
                   fontSize: 14,
-                  color: "#404040",
+                  color: "#0066CC",
                   textDecorationLine: "underline",
                 }}
               >
@@ -270,7 +269,6 @@ export default function Login() {
             © {new Date().getFullYear()} Ebookd, Inc.
           </Text>
         </View>
-      </ScrollView>
     </View>
   );
 }
@@ -349,26 +347,28 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: "gray",
+    backgroundColor: "green",
   },
   formContainer: {
     padding: 4,
     width: "100%",
   },
   authButton: {
-    backgroundColor: "#D3D3D3",
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: "#808080",
+    padding: 12,
+    width: 250,
+    alignSelf: "center",
+    borderRadius: 10,
     alignItems: "center",
     marginVertical: 10,
-    marginHorizontal: 10,
   },
   authButtonDisabled: {
     backgroundColor: "gray",
   },
   authButtonText: {
-    color: "black",
-    fontSize: 24,
+    color: "white",
+    fontFamily: "arial",
+    fontSize: 20,
     fontWeight: "bold",
   },
   loadingContainer: {

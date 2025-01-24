@@ -2,9 +2,15 @@ import { I18n } from 'i18n-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const i18n = new I18n({
-  en: { welcome: 'Hello', home: 'Home', library: 'Library', profile: 'Profile' },
-  ku: { welcome: 'بەخێربێیت', home: 'ماڵ', library: 'کتێبخانە', profile: 'پرۆفایل' },
-  ar: { welcome: 'مرحبا', home: 'الصفحة الرئيسية', library: 'مكتبة', profile: 'الملف الشخصي' },
+  en: { welcome: 'Hello', home: 'Home', library: 'Library', profile: 'Profile',
+    By: 'By',
+   },
+  ku: { welcome: 'بەخێربێیت', home: 'ماڵەوە', library: 'کتێبخانە', profile: 'پرۆفایل',
+    By: 'لەلایەن'
+   },
+  ar: { welcome: 'مرحبا', home: 'الصفحة الرئيسية', library: 'مكتبة', profile: 'الملف الشخصي',
+    By: 'بواسطة'
+   },
 });
 
 export const setLanguage = async (language) => {

@@ -39,19 +39,19 @@ const PrivacyPolicy = () => {
     };
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
-            <TouchableOpacity
-                style={{ flexDirection: "row", alignItems: "center" }}
+        <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+              <TouchableOpacity
+                style={{ flexDirection: "row", alignItems: "center", padding: 5 }}
                 onPress={() => router.back()}
-            >
+              >
                 <Ionicons
-                    name="chevron-back-outline"
-                    size={35}
-                    style={{ padding: 10 }}
+                  name="chevron-back-outline"
+                  size={30}
+                  color={"#0066CC"}
                 />
-                <Text style={{ fontSize: 20 }}>Profile</Text>
-            </TouchableOpacity>
-            <ScrollView style={{ padding: 20 }}>
+                <Text style={{ fontSize: 18, color:'#0066CC' }}>Back</Text>
+              </TouchableOpacity>
+              <ScrollView style={{ padding: 20, backgroundColor: "#FAF9F6", borderRadius: 20 }}>
                 <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }}>
                     Privacy Policy
                 </Text>
@@ -80,19 +80,19 @@ const PrivacyPolicy = () => {
                 <Text style={{ fontSize: 16, marginBottom: 10 }}>
                     <Text style={{ fontWeight: "bold" }}>Contact Us:</Text> If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us.
                 </Text>
-                <TouchableOpacity
+                {auth.currentUser && <TouchableOpacity
                     style={{
                         backgroundColor: "red",
-                        padding: 10,
+                        padding: 12,
                         margin: 20,
                         marginBottom: 40,
-                        borderRadius: 5,
+                        borderRadius: 10,
                         alignItems: "center"
                     }}
                     onPress={handleDeleteAccount}
                 >
-                    <Text style={{ color: "white", fontSize: 16 }}>Delete Account and All Information</Text>
-                </TouchableOpacity>
+                    <Text style={{ color: "white", fontSize: 16, fontFamily:'arial' }}>Delete Account and All Information</Text>
+                </TouchableOpacity>}
             </ScrollView>
             <Modal
                 animationType="fade"

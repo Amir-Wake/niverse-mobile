@@ -232,9 +232,12 @@ const styles = StyleSheet.create({
   },
   signOutButton: {
     backgroundColor: "#ff3b30",
-    padding: 15,
-    borderRadius: 8,
+    padding: 12,
+    width: 250,
+    alignSelf: "center",
+    borderRadius: 10,
     alignItems: "center",
+    fontFamily: "Arial",
     marginTop: 20,
   },
   signOutButtonText: {

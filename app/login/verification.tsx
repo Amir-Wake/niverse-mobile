@@ -26,11 +26,14 @@ import { auth } from "../../firebase";
             <View style={styles.content}>
                 <Text style={styles.title}>Verify Your Email</Text>
                 <Text style={styles.message}>
-                    A verification email has been sent to {auth.currentUser?.email}. Please check your inbox and follow the instructions to verify your email address. If you do not see the email, please check your spam or junk folder.
+                    <Text style={{ color: "#0066CC" }}>{auth.currentUser?.email}</Text>. Please check your inbox and follow the instructions to verify your email address. If you do not see the email, please check your spam or junk folder.
                 </Text>
                 <TouchableOpacity style={styles.button} onPress={handleResendEmail}>
-                    <Text style={styles.buttonText}>Send Verification Email Again</Text>
+                    <Text style={styles.buttonText}>Resend Verification</Text>
                 </TouchableOpacity>
+                <Text style={{ marginTop: 10, fontSize: 16, textAlign: "center" }}>
+                    If you did not receive the email, click the button above to resend it.
+                </Text>
             </View>
         </View>
     );
@@ -39,9 +42,10 @@ import { auth } from "../../firebase";
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: "center",
+        paddingTop: 50,
         alignItems: "center",
         padding: 20,
+        backgroundColor: "#FAF9F6"
     },
     content: {
         alignItems: "center",
@@ -56,14 +60,16 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     button: {
-        marginTop: 20,
+        marginTop: 50,
         paddingVertical: 10,
-        paddingHorizontal: 20,
-        backgroundColor: "#007BFF",
-        borderRadius: 5,
+        width: 250,
+        alignItems: "center",
+        alignSelf: "center",
+        backgroundColor: "#808080",
+        borderRadius: 10,
     },
     buttonText: {
-        color: "#FFFFFF",
-        fontSize: 16,
+        color: "#fff",
+        fontSize: 20,
     },
 });
