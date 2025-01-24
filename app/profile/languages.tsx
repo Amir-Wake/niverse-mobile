@@ -57,7 +57,7 @@ const Languages = () => {
                         }}
                         onPress={() => handleLanguageChange('en')}
                     >
-                        <Text style={{ fontSize: 24 }}>English</Text>
+                        <Text style={{ fontSize: 18 }}>English</Text>
                     </TouchableOpacity>
                     <View style={{ height: 1, backgroundColor: "#ccc" }} />
                     <TouchableOpacity
@@ -67,7 +67,7 @@ const Languages = () => {
                         }}
                         onPress={() => handleLanguageChange('ar')}
                     >
-                        <Text style={{ fontSize: 24 }}>العربیە</Text>
+                        <Text style={{ fontSize: 18 }}>العربیە</Text>
                     </TouchableOpacity>
                     <View style={{ height: 1, backgroundColor: "#ccc" }} />
                     <TouchableOpacity
@@ -79,7 +79,7 @@ const Languages = () => {
                         }}
                         onPress={() => handleLanguageChange('ku')}
                     >
-                        <Text style={{ fontSize: 24 }}>کوردی</Text>
+                        <Text style={{ fontSize: 18 }}>کوردی</Text>
                     </TouchableOpacity>
                 </View>
             </View>
