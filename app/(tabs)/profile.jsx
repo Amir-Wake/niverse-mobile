@@ -9,7 +9,6 @@ import {
   Switch,
   Modal,
   TextInput,
-  Button,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { auth } from "../../firebase";
@@ -18,6 +17,7 @@ import { getFirestore, doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { Image } from "expo-image";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
+import i18n from "@/assets/languages/i18n";
 
 export default function Profile() {
   const [profileImage, setProfileImage] = useState(null);
@@ -25,11 +25,19 @@ export default function Profile() {
   const [ageRestrictionEnabled, setAgeRestrictionEnabled] = useState(false);
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [password, setPassword] = useState("");
+  const [isRTL, setIsRTL] = useState(false);
   const router = useRouter();
   const firestore = getFirestore();
   let unsubscribeSnapshot = null;
 
   useEffect(() => {
+    const language = i18n.locale;
+    if (language === 'ar' || language === 'ku') {
+      setIsRTL(true);
+    } else {
+      setIsRTL(false);
+    }
+
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
         const userDoc = doc(firestore, "users", auth.currentUser.uid);
@@ -107,7 +115,7 @@ export default function Profile() {
   const renderOption = (icon, text, onPress, isSwitch = false, switchValue = false, onSwitchChange = null) => (
     <TouchableOpacity style={styles.option} onPress={onPress} disabled={isSwitch}>
       {icon}
-      <Text style={styles.optionText}>{text}</Text>
+      <Text style={[styles.optionText,{textAlign: isRTL?'left':''}]}>{text}</Text>
       {isSwitch && (
         <Switch
           style={styles.switch}
@@ -119,7 +127,7 @@ export default function Profile() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container,{direction: isRTL ? 'rtl' : 'ltr'}]}>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={{ marginTop: 80 }} />
       <View style={styles.profileContainer}>
@@ -130,28 +138,28 @@ export default function Profile() {
         />
       </View>
       <View style={styles.section}>
-        {renderOption(<AntDesign name="setting" size={24} color="black" style={styles.icon} />, "Account Details", () => router.push("/profile/updateProfile"))}
+        {renderOption(<AntDesign name="setting" size={24} color="black" style={styles.icon} />, i18n.t('accountDetails'), () => router.push("/profile/updateProfile"))}
         <View style={styles.divider} />
-        {renderOption(<AntDesign name="lock" size={24} color="black" style={styles.icon} />, "Update Password", () => router.push("/profile/updatePassword"))}
+        {renderOption(<AntDesign name="lock" size={24} color="black" style={styles.icon} />, i18n.t('updatePassword'), () => router.push("/profile/updatePassword"))}
       </View>
       <View style={styles.section}>
-        {renderOption(<Ionicons name="notifications-outline" size={24} color="black" style={styles.icon} />, "Email Notification", null, true, emailNotificationsEnabled, toggleEmailNotifications)}
+        {renderOption(<Ionicons name="notifications-outline" size={24} color="black" style={styles.icon} />, i18n.t('emailNotifications'), null, true, emailNotificationsEnabled, toggleEmailNotifications)}
         <View style={styles.divider} />
-        {renderOption(<Ionicons name="alert-circle-outline" size={24} color="black" style={styles.icon} />, "Age Restriction", null, true, ageRestrictionEnabled, toggleAgeRestriction)}
+        {renderOption(<Ionicons name="alert-circle-outline" size={24} color="black" style={styles.icon} />, i18n.t('ageRestriction'), null, true, ageRestrictionEnabled, toggleAgeRestriction)}
       </View>
       <View style={styles.section}>
-        {renderOption(<Ionicons name="earth-outline" size={24} color="black" style={styles.icon} />, "Language", () => router.push("/profile/languages"))}
+        {renderOption(<Ionicons name="earth-outline" size={24} color="black" style={styles.icon} />, i18n.t('language'), () => router.push("/profile/languages"))}
         <View style={styles.divider} />
-        {renderOption(<Ionicons name="hand-left-outline" size={24} color="black" style={styles.icon} />, "Privacy Policy", () => router.push("/profile/privacyPolicy"))}
+        {renderOption(<Ionicons name="hand-left-outline" size={24} color="black" style={styles.icon} />, i18n.t('privacyPolicy'), () => router.push("/profile/privacyPolicy"))}
         <View style={styles.divider} />
-        {renderOption(<AntDesign name="filetext1" size={24} color="black" style={styles.icon} />, "Terms and Conditions", () => router.push("/profile/terms"))}
+        {renderOption(<AntDesign name="filetext1" size={24} color="black" style={styles.icon} />, i18n.t('terms'), () => router.push("/profile/terms"))}
         <View style={styles.divider} />
-        {renderOption(<AntDesign name="customerservice" size={24} color="black" style={styles.icon} />, "Contact Support", () => router.push("/profile/contact"))}
+        {renderOption(<AntDesign name="customerservice" size={24} color="black" style={styles.icon} />, i18n.t('contact'), () => router.push("/profile/contact"))}
         <View style={styles.divider} />
-        {renderOption(<AntDesign name="questioncircleo" size={24} color="black" style={styles.icon} />, "FAQs", () => router.push("/profile/faqs"))}
+        {renderOption(<AntDesign name="questioncircleo" size={24} color="black" style={styles.icon} />, i18n.t('faqs'), () => router.push("/profile/faqs"))}
       </View>
       <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-        <Text style={styles.signOutButtonText}>Sign Out</Text>
+        <Text style={styles.signOutButtonText}>{i18n.t('signOut')}</Text>
       </TouchableOpacity>
 
       <Modal
@@ -217,7 +225,7 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 18,
-    marginLeft: 10,
+    marginHorizontal: 10,
     flex: 1,
   },
   icon: {
@@ -279,8 +287,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   button: {
-    backgroundColor: "#b0b0b0",
-    padding: 10,
+    backgroundColor: "#808080",
+    padding: 12,
+    width: 150,
     borderRadius: 8,
     alignItems: "center",
     borderWidth: 1,

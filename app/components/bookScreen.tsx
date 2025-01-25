@@ -116,9 +116,22 @@ const BookScreen = ({ book }: { book: Book }) => {
 
     try {
       await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+      const token = await auth.currentUser?.getIdToken();
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BOOKS_API}books/${book.id}/file`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch download file URL');
+      }
+
+      const data = await response.json();
 
       const downloadResumable = FileSystem.createDownloadResumable(
-        book.fileUrl,
+        data.fileUrl,
         `${directory}${book.title}.epub`,
         {},
         (downloadProgress) => {

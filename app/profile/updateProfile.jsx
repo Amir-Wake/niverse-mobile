@@ -22,7 +22,7 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
-const { height } = Dimensions.get("window");
+const { height,width } = Dimensions.get("window");
 export default function updateProfile() {
   const [profileImage, setProfileImage] = useState(null);
   const [username, setUsername] = useState("Unknown");
@@ -193,12 +193,13 @@ export default function updateProfile() {
               >
                 <View style={styles.modalContainer}>
                   <TouchableWithoutFeedback>
-                    <View style={styles.modalContent}>
+                    <View style={[styles.modalContent,{width: width}]}>
                       <DateTimePicker
                         value={dob ? new Date(dob) : new Date()}
                         mode="date"
                         display= "spinner"
-                        style={{ backgroundColor: "gray", borderRadius: 15 }}
+                        textColor="white"
+                        style={{ backgroundColor: "gray", borderRadius: 15, width: width*1.1, }}
                         onChange={(event, selectedDate) => {
                           
                           if (selectedDate ) {
@@ -300,7 +301,9 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   modalContent: {
-    backgroundColor: "transparent",
+    bottom: 0,
+    position: "absolute",
+    backgroundColor: "gray",
     borderRadius: 10,
     alignItems: "center",
   },
