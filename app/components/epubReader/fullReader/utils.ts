@@ -5,11 +5,11 @@ export const MIN_FONT_SIZE = 8;
 
 export const availableFonts: Array<string> = [
   'Helvetica',
-  'cursive',
-  'serif',
-  'monospace',
   'Georgia',
-  'Times',
+  'AmericanTypewriter-Bold',
+  'monospace',
+  'cursive',
+  'sans-serif'
 ];
 
 export const themes = Object.values(Themes);

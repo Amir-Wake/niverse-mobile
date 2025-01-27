@@ -6,7 +6,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Header from './Header';
-import { SearchList } from './SearchList';
+import  SearchList  from './SearchList';
 
 function Inner() {
   const { height } = useWindowDimensions();
@@ -26,7 +26,7 @@ function Inner() {
       <Header onPressSearch={() => searchListRef.current?.present()} />
 
       <Reader
-        src="https://s3.amazonaws.com/moby-dick/OPS/package.opf"
+        src="file:///var/mobile/Containers/Data/Application/E1238B9D-33A4-4A84-9160-E04EFD498602/Documents/ExponentExperienceData/@amir19225/ebookd/books/The Enchanted April/The Enchanted April.epub"
         height={height * 0.8}
         fileSystem={useFileSystem}
       />

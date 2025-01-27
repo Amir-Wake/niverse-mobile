@@ -20,7 +20,7 @@ const PickCards = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}newest`;
+  const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}books/?collection=topBooks`;
 
   useEffect(() => {
     fetch(apiLink)

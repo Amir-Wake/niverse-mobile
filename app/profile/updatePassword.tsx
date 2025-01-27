@@ -6,6 +6,7 @@ import {
   TextInput,
   Alert,
   TouchableOpacity,
+  I18nManager
 } from "react-native";
 import { auth } from "../../firebase";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,6 +17,7 @@ import {
 } from "firebase/auth";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import i18n from "@/assets/languages/i18n";
 
 export default function UpdatePassword() {
   const [newPassword, setNewPassword] = useState("");
@@ -82,7 +84,7 @@ export default function UpdatePassword() {
       <View style={styles.container}>
         <View style={styles.section}>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Current Password</Text>
+            <Text style={styles.label}>{i18n.t('currentPassword')}</Text>
             <TextInput
               style={styles.input}
               placeholder="Current Password"
@@ -92,7 +94,7 @@ export default function UpdatePassword() {
             />
           </View>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>New Password</Text>
+            <Text style={styles.label}>{i18n.t('newPass')}</Text>
             <TextInput
               style={styles.input}
               placeholder="New Password"
@@ -102,7 +104,7 @@ export default function UpdatePassword() {
             />
           </View>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Confirm Password</Text>
+            <Text style={styles.label}>{i18n.t('confirmPassword')}</Text>
             <TextInput
               style={styles.input}
               placeholder="Confirm Password"
@@ -115,7 +117,7 @@ export default function UpdatePassword() {
             style={styles.saveButton}
             onPress={handleSavePassword}
           >
-            <Text style={styles.saveButtonText}>Save Password</Text>
+            <Text style={styles.saveButtonText}>{i18n.t('saveChanges')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -153,6 +155,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   label: {
+    textAlign: I18nManager.isRTL ? "right" : "left",
     fontSize: 16,
     marginBottom: 5,
   },

@@ -279,10 +279,10 @@ const BookScreen = ({ book }: { book: Book }) => {
           disabled={ageRestrictionEnabled && 13 < book.ageRate}
         >
           {isDownloaded
-            ? " Read "
+            ? i18n.t('read')
             : isDownloading
             ? ` ${Math.round(downloadProgress * 100)}%`
-            : "Download"}
+            : i18n.t('download')}
         </Button>
         <Button
           icon={isAddedToCollection ? "check-bold" : "plus"}
@@ -294,7 +294,7 @@ const BookScreen = ({ book }: { book: Book }) => {
           labelStyle={styles.buttonText}
           loading={isLoading}
         >
-          {isAddedToCollection ? "Want to Read" : "Want to Read"}
+          {isAddedToCollection ? i18n.t('wantToRead') : i18n.t('wantToRead')}
         </Button>
       </View>
       <View style={styles.horizontalLine} />
@@ -312,32 +312,32 @@ const BookScreen = ({ book }: { book: Book }) => {
       <View>
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
           <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>Pages</Text>
+            <Text style={styles.infoText}>{i18n.t('pages')}</Text>
             <FontAwesome name="files-o" size={50} color="black" />
             <Text style={styles.infoText}>{book.printLength}</Text>
           </View>
           <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>Language</Text>
+            <Text style={styles.infoText}>{i18n.t('language')}</Text>
             <FontAwesome name="language" size={50} color="black" />
             <Text style={styles.infoText}>{book.language}</Text>
           </View>
           <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>Publication Date</Text>
+            <Text style={styles.infoText}>{i18n.t('publicationDate')}</Text>
             <MaterialIcons name="date-range" size={50} color="black" />
             <Text style={styles.infoText}>{book.publicationDate}</Text>
           </View>
           <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>Publisher</Text>
+            <Text style={styles.infoText}>{i18n.t('publisher')}</Text>
             <MaterialIcons name="business" size={50} color="black" />
             <Text style={styles.infoText}>{book.publisher}</Text>
           </View>
           <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>Translator</Text>
+            <Text style={styles.infoText}>{i18n.t('translator')}</Text>
             <MaterialIcons name="translate" size={50} color="black" />
             <Text style={styles.infoText}>{book.translator}</Text>
           </View>
           <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>Age Rating</Text>
+            <Text style={styles.infoText}>{i18n.t('ageRating')}</Text>
             <FontAwesome name="ban" size={50} color="black" />
             <Text style={styles.infoText}>{book.ageRate?"+"+book.ageRate:"none"}</Text>
           </View>
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
   },
   button: {
     textAlign: "center",

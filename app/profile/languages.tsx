@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { setLanguage, getLanguage } from "../../assets/languages/i18n";
+import i18n from '@/assets/languages/i18n'
 
 const Languages = () => {
   const router = useRouter();
@@ -49,7 +50,7 @@ const Languages = () => {
           </TouchableOpacity>
           <View style={{ padding: 20, backgroundColor: "#FAF9F6", borderRadius: 20, flex: 1 }}>
         <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }}>
-          Select Language
+          {i18n.t("selectLanguage")}
         </Text>
         <View
           style={{

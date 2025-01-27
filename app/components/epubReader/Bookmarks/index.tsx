@@ -40,7 +40,7 @@ export default function Bookmarks() {
         <Header onOpenBookmarksList={() => bottomSheetRef.current?.present()} />
 
         <Reader
-          src="https://keubo.s3.us-east-1.amazonaws.com/killer.epub"
+          src="https://s3.amazonaws.com/moby-dick/OPS/package.opf"
           width={width}
           height={height}
           fileSystem={useFileSystem}

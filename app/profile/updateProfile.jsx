@@ -10,6 +10,7 @@ import {
   Modal,
   TouchableWithoutFeedback,
   Platform,
+  I18nManager
 } from "react-native";
 import { Image } from "expo-image";
 import { auth } from "../../firebase";
@@ -21,6 +22,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import i18n from '@/assets/languages/i18n'
 
 const { height,width } = Dimensions.get("window");
 export default function updateProfile() {
@@ -153,7 +155,7 @@ export default function updateProfile() {
             </TouchableOpacity>
           </View>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>{i18n.t('email')}</Text>
             <TextInput
               style={[styles.input, styles.disabledInput]}
               placeholder="Email"
@@ -163,7 +165,7 @@ export default function updateProfile() {
             />
           </View>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Name</Text>
+            <Text style={styles.label}>{i18n.t('name')}</Text>
             <TextInput
               style={styles.input}
               placeholder="Full Name"
@@ -172,7 +174,7 @@ export default function updateProfile() {
             />
           </View >
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Birthday</Text>
+            <Text style={styles.label}>{i18n.t('birthday')}</Text>
             <TouchableOpacity onPress={() => setShowDatePicker(true)}>
               <View pointerEvents="none">
                 <TextInput
@@ -215,7 +217,7 @@ export default function updateProfile() {
             </Modal>
           </View>
           <TouchableOpacity style={styles.saveButton} onPress={handleSaveName}>
-            <Text style={styles.saveButtonText}>Save Changes</Text>
+            <Text style={styles.saveButtonText}>{i18n.t('saveChanges')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -267,6 +269,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   label: {
+    textAlign: I18nManager.isRTL ? "right" : "left",
     fontSize: 16,
     marginBottom: 5,
   },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useWindowDimensions, View, Platform, Button } from "react-native";
+import { useWindowDimensions, View, Platform, I18nManager } from "react-native";
 import {
   ReaderProvider,
   Reader,
@@ -11,7 +11,6 @@ import { useFileSystem } from "@epubjs-react-native/expo-file-system";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import Header from "./Header";
 import Footer from "./Footer";
 import { MAX_FONT_SIZE, MIN_FONT_SIZE, availableFonts, themes } from "./utils";
@@ -34,12 +33,7 @@ function Component({ src }: ComponentProps) {
     changeTheme,
     goToLocation,
     currentLocation,
-    totalLocations,
     bookmarks,
-    getCurrentLocation,
-    goNext,
-    addBookmark,
-    updateBookmark,
   } = useReader();
 
   const bookmarksListRef = React.useRef<BottomSheetModal>(null);

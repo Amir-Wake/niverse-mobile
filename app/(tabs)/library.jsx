@@ -9,12 +9,13 @@ import {
   FlatList,
   Platform,
   Keyboard,
-  Dimensions
+  Dimensions,
 } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { Link, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { IconButton, Searchbar } from "react-native-paper";
+import i18n from "@/assets/languages/i18n";
 
 const { height, width } = Dimensions.get("window");
 
@@ -144,7 +145,7 @@ export default function Library() {
       <View style={styles.collectionContainer}>
         <TouchableOpacity style={styles.collection} onPress={() => router.push("/collections/collectionLists")}>
           <IconButton icon={"reorder-horizontal"} size={26} />
-          <Text style={styles.collectionText}>Collections</Text>
+          <Text style={styles.collectionText}>{i18n.t('collections')}</Text>
         </TouchableOpacity>
       </View>
       

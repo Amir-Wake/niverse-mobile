@@ -4,13 +4,14 @@ import { useRouter } from 'expo-router';
 import { IconButton } from "react-native-paper";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import i18n from '@/assets/languages/i18n'
 
 export default function Collections() {
   const router = useRouter();
 
   const collections = [
-    { name: 'Want to Read', route: '/collections/wantToRead', icon: 'logout-variant' },
-    { name: 'Downloaded', route: '/collections/downloaded', icon: 'download' },
+    { name: i18n.t('wantToRead'), route: '/collections/wantToRead', icon: 'logout-variant' },
+    { name: i18n.t('downloaded'), route: '/collections/downloaded', icon: 'download' },
   ];
 
   return (
@@ -27,7 +28,7 @@ export default function Collections() {
             <Text style={{ fontSize: 18, color:'#0066CC' }}>Back</Text>
           </TouchableOpacity>
     <View style={styles.container}>
-      <Text style={styles.collectionsHeader}>Collections</Text>
+      <Text style={styles.collectionsHeader}>{i18n.t('collections')}</Text>
       {collections.map((collection, index) => (
         <TouchableOpacity
           key={index}

@@ -1,11 +1,12 @@
 import { useNavigation } from "@react-navigation/native";
 import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
+import { View, TouchableOpacity, TouchableWithoutFeedback, StyleSheet, Text, Dimensions } from "react-native";
 import { Themes, useReader } from "@epubjs-react-native/core";
 import { IconButton, MD3Colors } from "react-native-paper";
 import { MAX_FONT_SIZE, MIN_FONT_SIZE, themes } from "./utils";
 import { contrast } from "../fullReader/utils";
-
+import i18n from "@/assets/languages/i18n";
+const {width, height} = Dimensions.get('window');
 interface Props {
   currentFontSize: number;
   increaseFontSize: () => void;
@@ -110,9 +111,12 @@ export default function Header({
       </View>
 
       {showSettings && (
-        <View
-          style={styles.settingsContainer}
+        <TouchableOpacity
+        activeOpacity={0}
+          style={[styles.settingsContainerMain, { width: width, height: height}]}
+          onPress={() => setShowSettings(false)}
         >
+          <View style={styles.settingsContainer}>
             <TouchableOpacity
               style={[
                 styles.circle,
@@ -135,7 +139,7 @@ export default function Header({
                   { color: contrast[theme.body.background] },
                 ]}
               >
-                Search
+                {i18n.t("search")}
               </Text>
               <IconButton
                 icon="magnify"
@@ -167,7 +171,7 @@ export default function Header({
                   { color: contrast[theme.body.background] },
                 ]}
               >
-                Bookmarks
+                {i18n.t("bookmarks")}
               </Text>
               <IconButton
                 icon="bookmark-multiple-outline"
@@ -177,37 +181,37 @@ export default function Header({
                 size={22}
               />
             </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.circle,
-              {
-                backgroundColor: theme.body.background,
-                borderColor:
-                  theme.body.background === "#333"
-                    ? MD3Colors.neutral100
-                    : MD3Colors.neutral10,
-              },
-            ]}
-            onPress={() => {
-              onOpenTocList();
-              setShowSettings(false);
-            }}
-          >
-            <Text
+            <TouchableOpacity
               style={[
-                styles.optionsText,
-                { color: contrast[theme.body.background] },
+                styles.circle,
+                {
+                  backgroundColor: theme.body.background,
+                  borderColor:
+                    theme.body.background === "#333"
+                      ? MD3Colors.neutral100
+                      : MD3Colors.neutral10,
+                },
               ]}
+              onPress={() => {
+                onOpenTocList();
+                setShowSettings(false);
+              }}
             >
-              Contents
-            </Text>
-            <IconButton
-              icon="format-list-bulleted-square"
-              iconColor={theme === Themes.DARK ? "white" : iconCol}
-              size={22}
-              mode="outlined"
-            />
-          </TouchableOpacity>
+              <Text
+                style={[
+                  styles.optionsText,
+                  { color: contrast[theme.body.background] },
+                ]}
+              >
+                {i18n.t("content")}
+              </Text>
+              <IconButton
+                icon="format-list-bulleted-square"
+                iconColor={theme === Themes.DARK ? "white" : iconCol}
+                size={22}
+                mode="outlined"
+              />
+            </TouchableOpacity>
             <TouchableOpacity
               style={[
                 styles.circle,
@@ -229,7 +233,7 @@ export default function Header({
                   { color: contrast[theme.body.background] },
                 ]}
               >
-                Theme
+                {i18n.t("theme")}
               </Text>
               <IconButton
                 icon="theme-light-dark"
@@ -259,7 +263,7 @@ export default function Header({
                   { color: contrast[theme.body.background] },
                 ]}
               >
-                Font
+                {i18n.t("font")}
               </Text>
               <IconButton
                 icon="format-font"
@@ -290,7 +294,7 @@ export default function Header({
                   { color: contrast[theme.body.background] },
                 ]}
               >
-                Increase
+                {i18n.t("increase")}
               </Text>
               <IconButton
                 icon="format-font-size-increase"
@@ -323,7 +327,7 @@ export default function Header({
                   { color: contrast[theme.body.background] },
                 ]}
               >
-                Decrease
+                {i18n.t("decrease")}
               </Text>
               <IconButton
                 icon="format-font-size-decrease"
@@ -333,6 +337,7 @@ export default function Header({
               />
             </TouchableOpacity>
           </View>
+        </TouchableOpacity>
       )}
     </View>
   );
@@ -344,17 +349,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginHorizontal: 10,
-
   },
   actions: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
   },
+  settingsContainerMain: {
+    flex: 1,
+    position: "absolute",
+    backgroundColor: "transparent",
+    zIndex: 5,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
   settingsContainer: {
     position: "absolute",
     top: 60,
-    right: 0,
+    right: 15,
     zIndex: 10,
   },
   circle: {
