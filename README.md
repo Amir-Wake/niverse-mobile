@@ -10,6 +10,9 @@
 - npx create-expo --help
 
 # To-do
+## beta
+- icon
+- splash screen
 - Finish languages
 - RTL for languages
 - Smart search
@@ -24,6 +27,7 @@
 - faqs
 - RTL and LTR option for reader
 - text inputs on reader
+## v1
 - User manual and hints
 - Help button for each screen
 - RTL and LTR based on user input
