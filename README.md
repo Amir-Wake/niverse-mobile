@@ -15,7 +15,6 @@
 - splash screen
 - Finish languages
 - RTL for languages
-- Smart search
 - remove top books limit
 - book screen horizontal scroll android
 - collections book title
@@ -27,6 +26,9 @@
 - faqs
 - RTL and LTR option for reader
 - text inputs on reader
+- User isolated storage
+- Smart search
+
 ## v1
 - User manual and hints
 - Help button for each screen
@@ -36,6 +38,5 @@
 - Suggest similar books
 - Finished books collection
 - User progress
-- User isolated storage
 - Reader sections scroll
 - Report
