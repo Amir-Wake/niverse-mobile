@@ -8,3 +8,30 @@
 
 ## Output help information with all available options
 - npx create-expo --help
+
+# To-do
+- Finish languages
+- RTL for languages
+- Smart search
+- remove top books limit
+- book screen horizontal scroll android
+- collections book title
+- update profile alert on save
+- confirm language change
+- privacy policy
+- terms
+- contact
+- faqs
+- RTL and LTR option for reader
+- text inputs on reader
+- User manual and hints
+- Help button for each screen
+- RTL and LTR based on user input
+- Fonts for reader
+- Writer profile
+- Suggest similar books
+- Finished books collection
+- User progress
+- User isolated storage
+- Reader sections scroll
+- Report
