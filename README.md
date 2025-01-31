@@ -14,18 +14,11 @@
 - icon
 - splash screen
 - Finish languages
-- RTL for languages
-- remove top books limit
 - book screen horizontal scroll android
-- collections book title
-- update profile alert on save
-- confirm language change
 - privacy policy
 - terms
 - contact
 - faqs
-- RTL and LTR option for reader
-- text inputs on reader
 - User isolated storage
 - Smart search
 
