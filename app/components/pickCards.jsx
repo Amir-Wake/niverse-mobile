@@ -26,7 +26,7 @@ const PickCards = () => {
     fetch(apiLink)
       .then((response) => response.json())
       .then((data) => {
-        setData(data.slice(0, 4));
+        setData(data);
         setLoading(false);
       })
       .catch((error) => {

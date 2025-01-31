@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { setLanguage, getLanguage } from "../../assets/languages/i18n";
 import i18n from '@/assets/languages/i18n'
+import * as Updates from "expo-updates";
 
 const Languages = () => {
   const router = useRouter();
@@ -20,14 +21,19 @@ const Languages = () => {
   }, []);
 
   const handleLanguageChange = async (language: string) => {
-    await setLanguage(language);
     Alert.alert(
-      "Language Changed",
-      "The app will now refresh to apply the new language.",
+      "Confirm Language Change",
+      "Are you sure you want to change the language?",
       [
         {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
           text: "OK",
-          onPress: () => {
+          onPress: async () => {
+            await setLanguage(language);
+            Updates.reloadAsync();
             router.replace("/");
           },
         },

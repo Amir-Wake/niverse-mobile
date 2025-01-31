@@ -17,6 +17,7 @@ import { useRouter } from "expo-router";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import axios from "axios";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import i18n from "@/assets/languages/i18n";
 
 const { width, height } = Dimensions.get("window");
 const PickCards = lazy(() => import("../components/pickCards"));
@@ -117,7 +118,7 @@ const Index = () => {
             {!showSearch && <Text style={styles.title}>niVerse</Text>}
             {showSearch && (
               <TextInput
-                placeholder="Search book"
+                placeholder={i18n.t("searchForBooks")}
                 placeholderTextColor="black"
                 style={styles.searchInput}
                 value={searchQuery}

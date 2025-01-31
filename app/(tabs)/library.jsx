@@ -10,12 +10,15 @@ import {
   Platform,
   Keyboard,
   Dimensions,
+  TextInput,
 } from "react-native";
 import * as FileSystem from "expo-file-system";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Image } from "expo-image";
-import { IconButton, Searchbar } from "react-native-paper";
+import { IconButton } from "react-native-paper";
 import i18n from "@/assets/languages/i18n";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import {auth} from "@/firebase";
 
 const { height, width } = Dimensions.get("window");
 
@@ -29,7 +32,7 @@ export default function Library() {
     if (!isSearching) {
       fetchBooks();
       const interval = setInterval(async () => {
-        const directory = `${FileSystem.documentDirectory}books/`;
+        const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/`;
         const bookFolders = await FileSystem.readDirectoryAsync(directory);
         if (bookFolders.length !== books.length) {
           fetchBooks();
@@ -41,7 +44,7 @@ export default function Library() {
 
   const fetchBooks = async () => {
     try {
-      const directory = `${FileSystem.documentDirectory}books/`;
+      const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/`;
       const directoryInfo = await FileSystem.getInfoAsync(directory);
 
       if (!directoryInfo.exists) {
@@ -104,7 +107,7 @@ export default function Library() {
 
   const deleteBook = async (folder) => {
     try {
-      const directory = `${FileSystem.documentDirectory}books/${folder}`;
+      const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${folder}`;
       await FileSystem.deleteAsync(directory, { idempotent: true });
       fetchBooks();
     } catch (error) {
@@ -135,13 +138,22 @@ export default function Library() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Searchbar
-        placeholder="Search for a book..."
-        onChangeText={updateSearch}
-        iconColor="black"
-        value={search}
-        style={styles.searchContainer}
-      />
+      <View style={styles.searchContainer}>
+        <TextInput
+          placeholder={i18n.t("searchForBooks")}
+          placeholderTextColor="black"
+          style={styles.searchInput}
+          value={search}
+          onChangeText={updateSearch}
+          onFocus={() => setIsSearching(true)}
+        />
+        <TouchableOpacity
+          onPress={() => setIsSearching(!isSearching)}
+          style={styles.searchButton}
+        >
+          <Ionicons name="search" size={30} color="black" />
+        </TouchableOpacity>
+      </View>
       <View style={styles.collectionContainer}>
         <TouchableOpacity style={styles.collection} onPress={() => router.push("/collections/collectionLists")}>
           <IconButton icon={"reorder-horizontal"} size={26} />
@@ -169,9 +181,19 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   searchContainer: {
+    flexDirection: "row",
     margin: 10,
     backgroundColor: "#E5E4E2",
     borderRadius: 10,
+    alignItems: "center",
+  },
+  searchInput: {
+    flex: 1,
+    padding: 10,
+    color: "black",
+  },
+  searchButton: {
+    padding: 10,
   },
   container: {
     padding: 10,

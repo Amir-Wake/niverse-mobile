@@ -1,45 +1,60 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import React from 'react';
-import { useRouter } from 'expo-router';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  I18nManager,
+} from "react-native";
+import React from "react";
+import { useRouter } from "expo-router";
 import { IconButton } from "react-native-paper";
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import i18n from '@/assets/languages/i18n'
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import i18n from "@/assets/languages/i18n";
 
 export default function Collections() {
   const router = useRouter();
 
   const collections = [
-    { name: i18n.t('wantToRead'), route: '/collections/wantToRead', icon: 'logout-variant' },
-    { name: i18n.t('downloaded'), route: '/collections/downloaded', icon: 'download' },
+    {
+      name: i18n.t("wantToRead"),
+      route: "/collections/wantToRead",
+      icon: "logout-variant",
+    },
+    {
+      name: i18n.t("downloaded"),
+      route: "/collections/downloaded",
+      icon: "download",
+    },
   ];
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <TouchableOpacity
+        style={{ flexDirection: "row", alignItems: "center", padding: 5 }}
+        onPress={() => router.back()}
+      >
+        <Ionicons name="chevron-back-outline" size={30} color={"#0066CC"} />
+        <Text style={{ fontSize: 18, color: "#0066CC" }}>Back</Text>
+      </TouchableOpacity>
+      <View
+        style={[
+          styles.container,
+          { direction: I18nManager.isRTL ? "rtl" : "ltr" },
+        ]}
+      >
+        <Text style={styles.collectionsHeader}>{i18n.t("collections")}</Text>
+        {collections.map((collection, index) => (
           <TouchableOpacity
-            style={{ flexDirection: "row", alignItems: "center", padding: 5 }}
-            onPress={() => router.back()}
+            key={index}
+            style={styles.collectionItem}
+            onPress={() => router.push(collection.route as any)}
           >
-            <Ionicons
-              name="chevron-back-outline"
-              size={30}
-              color={"#0066CC"}
-            />
-            <Text style={{ fontSize: 18, color:'#0066CC' }}>Back</Text>
+            <IconButton icon={collection.icon} size={30} />
+            <Text style={styles.collectionText}>{collection.name}</Text>
           </TouchableOpacity>
-    <View style={styles.container}>
-      <Text style={styles.collectionsHeader}>{i18n.t('collections')}</Text>
-      {collections.map((collection, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.collectionItem}
-          onPress={() => router.push(collection.route as any)}
-        >
-          <IconButton icon={collection.icon} size={30}/> 
-          <Text style={styles.collectionText}>{collection.name}</Text>
-        </TouchableOpacity>
-      ))}
-    </View>
+        ))}
+      </View>
     </SafeAreaView>
   );
 }
@@ -53,6 +68,7 @@ const styles = StyleSheet.create({
   collectionsHeader: {
     fontSize: 36,
     padding: 10,
+    textAlign: "center",
   },
   collectionItem: {
     flexDirection: "row",

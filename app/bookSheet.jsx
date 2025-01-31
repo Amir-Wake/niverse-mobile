@@ -19,6 +19,7 @@ const BookSheet = () => {
   const router = useRouter();
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [collectionName, setCollectionName] = useState("");
   const { index, apiLink } = useLocalSearchParams();
 
   useEffect(() => {
@@ -27,6 +28,8 @@ const BookSheet = () => {
         const response = await fetch(apiLink);
         const data = await response.json();
         setBooks(Array.isArray(data) ? data : [data]);
+        const urlParams = new URLSearchParams(apiLink.split('?')[1]);
+        setCollectionName(urlParams.get('collection'));
       } catch (error) {
         console.error("Error fetching books:", error);
       } finally {
@@ -83,7 +86,7 @@ const BookSheet = () => {
                 entering={FadeInDown.duration(200).springify()}
               >
                 <Suspense fallback={<ActivityIndicator size="large" color="#0000ff" />}>
-                  <BookScreen book={books[index]} />
+                  <BookScreen book={books[index]} collectionName={collectionName} />
                 </Suspense>
               </Animated.View>
             </ScrollView>

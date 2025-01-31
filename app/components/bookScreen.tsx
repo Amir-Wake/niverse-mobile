@@ -24,7 +24,7 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
-import { auth } from "../../firebase";
+import { auth } from "@/firebase";
 import Review from "./review/review";
 import i18n from "@/assets/languages/i18n";
 
@@ -48,7 +48,7 @@ interface Book {
   ageRate: number;
 }
 
-const BookScreen = ({ book }: { book: Book }) => {
+const BookScreen = ({ book, collectionName }: { book: Book, collectionName: string }) => {
   const [showMore, setShowMore] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -62,7 +62,7 @@ const BookScreen = ({ book }: { book: Book }) => {
 
   useEffect(() => {
     const checkFileExistence = async () => {
-      const directory = `${FileSystem.documentDirectory}books/${book.title}/`;
+      const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.title}/`;
       const filePath = `${directory}${book.title}.epub`;
       const fileInfo = await FileSystem.getInfoAsync(filePath);
       setIsDownloaded(fileInfo.exists);
@@ -112,12 +112,12 @@ const BookScreen = ({ book }: { book: Book }) => {
     }
 
     setIsDownloading(true);
-    const directory = `${FileSystem.documentDirectory}books/${book.title}/`;
+    const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.title}/`;
 
     try {
       await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
       const token = await auth.currentUser?.getIdToken();
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BOOKS_API}books/${book.id}/file`, {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BOOKS_API}books/${book.id}/file?collection=${collectionName}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -266,7 +266,7 @@ const BookScreen = ({ book }: { book: Book }) => {
                   router.replace({
                     pathname: "/screens/bookModal",
                     params: {
-                      fileUrl: `${FileSystem.documentDirectory}books/${book.title}/${book.title}.epub`,
+                      fileUrl: `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.title}/${book.title}.epub`,
                     },
                   })
               : handleDownload

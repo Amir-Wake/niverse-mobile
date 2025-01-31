@@ -11,6 +11,7 @@ const i18n = new I18n({
     collections: 'Collections', downloaded: 'Downloaded',
     search: 'Search', bookmarks: 'Bookmarks', content: 'Content', theme: 'Theme', font: 'Font', increase: 'Increase', decrease: 'Decrease',
     signIn: 'Sign In', signUp: 'Sign Up', forgotPassword: 'Forgot your password?', signInText: 'Log in with your email and password', signUpText: 'Sign up with your email and password',
+    searchForBooks: 'Search for a book',
    },
   ku: { welcome: 'بەخێربێیت', home: 'ماڵەوە', library: 'کتێبخانە', profile: 'پرۆفایل',
     By: 'لەلایەن', read: 'خوێندنەوە', download: 'داگرتن', wantToRead: 'دەتەوێت بیخوێنیت', pages: 'پەڕەکان', publicationDate: 'بەرواری چاپکردن', publisher: 'چاپخانە', translator: 'وەرگێر', ageRating: 'پێویستی تەمەن',
@@ -20,6 +21,7 @@ const i18n = new I18n({
     collections: 'کۆکراوەکان', downloaded: 'داگرتوو',
     search: 'گەڕان', bookmarks: 'نیشانگە', content: 'ناوەڕۆک', theme: 'ڕووکار', font: 'فۆنت', increase: 'گەورەکردن', decrease: 'بچوککردن',
     signIn: 'چوونە ژوور', signUp: 'خۆ تۆمارکردن', forgotPassword: 'تێپەڕەکەت لەبیرکردووە؟', signInText: 'چوونە ژوور بە ئیمەیل و تێپەڕ', signUpText: 'خۆ تۆمارکردن بە ئیمەیل و تێپەڕ',
+    searchForBooks: 'گەڕان بۆ کتێب',
    },
   ar: { welcome: 'مرحبا', home: 'الصفحة الرئيسية', library: 'مكتبة', profile: 'الملف الشخصي',
     By: 'بواسطة', read: 'قراءة', download: 'تحميل', wantToRead: 'أريد قراءة', pages: 'صفحات', publicationDate: 'تاريخ النشر', publisher: 'الناشر', translator: 'المترجم', ageRating: 'تصنيف العمر',
@@ -29,11 +31,17 @@ const i18n = new I18n({
     collections: 'مجموعات', downloaded: 'تم التنزيل',
     search: 'بحث', bookmarks: 'المرجعية', content: 'محتوى', theme: 'موضوع', font: 'الخط', increase: 'زيادة', decrease: 'انخفاض',
     signIn: 'تسجيل الدخول', signUp: 'سجل', forgotPassword: 'نسيت كلمة المرور؟', signInText: 'تسجيل الدخول بالبريد الإلكتروني وكلمة المرور', signUpText: 'التسجيل بالبريد الإلكتروني وكلمة المرور',
+    searchForBooks: 'البحث عن كتاب',
    },
 });
 
 export const setLanguage = async (language) => {
   i18n.locale = language;
+  if (language === 'ku' || language === 'ar') {
+    I18nManager.isRTL = true;
+  } else {
+    I18nManager.isRTL = false;
+  }
   await AsyncStorage.setItem('selectedLanguage', language);
 };
 

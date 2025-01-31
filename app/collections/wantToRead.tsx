@@ -8,11 +8,12 @@ import {
   Alert,
 } from "react-native";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
-import { auth } from "../../firebase";
+import { auth } from "@/firebase";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import i18n from "@/assets/languages/i18n";
 
 const WantToRead = () => {
   interface Book {
@@ -69,7 +70,7 @@ const WantToRead = () => {
             style={styles.bookImage}
             cachePolicy={"memory-disk"}
           />
-          <Text style={styles.bookTitle}>{item.title.slice(0, 24)}</Text>
+          <Text style={styles.bookTitle}>{item.title}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -89,7 +90,7 @@ const WantToRead = () => {
             <Text style={{ fontSize: 18, color:'#0066CC' }}>Back</Text>
           </TouchableOpacity>
       <View style={styles.container}>
-        <Text style={styles.collectionsHeader}>Want to Read</Text>
+        <Text style={styles.collectionsHeader}>{i18n.t('wantToRead')}</Text>
         <FlatList
           showsVerticalScrollIndicator={false}
           data={books}
@@ -113,6 +114,7 @@ const styles = StyleSheet.create({
   collectionsHeader: {
     fontSize: 30,
     padding: 10,
+    textAlign: "center",
   },
   listContainer: {
     paddingVertical: 10,
@@ -131,6 +133,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
+    maxWidth: 170,
   },
 });
 

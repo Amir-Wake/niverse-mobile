@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import React, { forwardRef, useEffect, useState } from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity, I18nManager } from "react-native";
 import { Bookmark, useReader } from "@epubjs-react-native/core";
 import {
   BottomSheetModal,
@@ -125,7 +125,7 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
             <View style={{ width: "100%" }}>
               <BottomSheetTextInput
                 defaultValue={note}
-                style={styles.input}
+                style={[styles.input,{ textAlign: I18nManager.isRTL ? "right" : "left" }]}
                 multiline
                 placeholder="Type an annotation here..."
                 placeholderTextColor={contrast[theme.body.background]}
@@ -144,7 +144,7 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
           )}
 
           {bookmarks.map((bookmark) => (
-            <View key={bookmark.id} style={styles.bookmarkContainer}>
+            <View key={bookmark.id} style={[styles.bookmarkContainer,{direction: I18nManager.isRTL ? "rtl" : "ltr"}]}>
               <TouchableOpacity
                 style={styles.bookmarkInfo}
                 onPress={() => {

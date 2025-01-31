@@ -6,7 +6,7 @@ import {
   TextInput,
   Alert,
   TouchableOpacity,
-  I18nManager
+  I18nManager,
 } from "react-native";
 import { auth } from "../../firebase";
 import { Ionicons } from "@expo/vector-icons";
@@ -70,21 +70,17 @@ export default function UpdatePassword() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-          <TouchableOpacity
-            style={{ flexDirection: "row", alignItems: "center", padding: 5 }}
-            onPress={() => router.back()}
-          >
-            <Ionicons
-              name="chevron-back-outline"
-              size={30}
-              color={"#0066CC"}
-            />
-            <Text style={{ fontSize: 18, color:'#0066CC' }}>Back</Text>
-          </TouchableOpacity>
-      <View style={styles.container}>
+      <TouchableOpacity
+        style={{ flexDirection: "row", alignItems: "center", padding: 5 }}
+        onPress={() => router.back()}
+      >
+        <Ionicons name="chevron-back-outline" size={30} color={"#0066CC"} />
+        <Text style={{ fontSize: 18, color: "#0066CC" }}>Back</Text>
+      </TouchableOpacity>
+      <View style={I18nManager.isRTL?styles.containerRtl:styles.container}>
         <View style={styles.section}>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>{i18n.t('currentPassword')}</Text>
+            <Text style={styles.label}>{i18n.t("currentPassword")}</Text>
             <TextInput
               style={styles.input}
               placeholder="Current Password"
@@ -94,7 +90,7 @@ export default function UpdatePassword() {
             />
           </View>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>{i18n.t('newPass')}</Text>
+            <Text style={styles.label}>{i18n.t("newPass")}</Text>
             <TextInput
               style={styles.input}
               placeholder="New Password"
@@ -104,7 +100,7 @@ export default function UpdatePassword() {
             />
           </View>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>{i18n.t('confirmPassword')}</Text>
+            <Text style={styles.label}>{i18n.t("confirmPassword")}</Text>
             <TextInput
               style={styles.input}
               placeholder="Confirm Password"
@@ -117,7 +113,7 @@ export default function UpdatePassword() {
             style={styles.saveButton}
             onPress={handleSavePassword}
           >
-            <Text style={styles.saveButtonText}>{i18n.t('saveChanges')}</Text>
+            <Text style={styles.saveButtonText}>{i18n.t("saveChanges")}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -131,7 +127,16 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 50,
     backgroundColor: "#FAF9F6",
-    borderRadius: 20
+    borderRadius: 20,
+  },
+  containerRtl: {
+    flex: 1,
+    padding: 20,
+    paddingTop: 50,
+    backgroundColor: "#FAF9F6",
+    borderRadius: 20,
+    direction: "rtl",
+    textAlign: "right",
   },
   saveButton: {
     backgroundColor: "#808080",

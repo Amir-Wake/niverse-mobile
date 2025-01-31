@@ -36,7 +36,7 @@ export default function updateProfile() {
   const [newName, setNewName] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
+  useEffect(() => {    
     const fetchProfileData = async () => {
       const userDoc = doc(firestore, "users", auth.currentUser.uid);
       const docSnap = await getDoc(userDoc);
@@ -117,12 +117,13 @@ export default function updateProfile() {
     }
 
     const userDoc = doc(firestore, "users", auth.currentUser.uid);
-    await setDoc(
-      userDoc,
-      { name: newName, profileImageUrl, dob },
-      { merge: true }
-    );
+    const updateData = { name: newName, dob };
+    if (profileImageUrl) {
+      updateData.profileImageUrl = profileImageUrl;
+    }
+    await setDoc(userDoc, updateData, { merge: true });
     setUsername(newName);
+    Alert.alert("Success", "Profile updated successfully");
   };
 
   return (
@@ -138,8 +139,8 @@ export default function updateProfile() {
       />
       <Text style={{ fontSize: 18, color:'#0066CC' }}>Back</Text>
     </TouchableOpacity>
-      <View style={styles.container}>
-                <View style={styles.section}>
+      <View style={I18nManager.isRTL?styles.containerRtl:styles.container}>
+          <View style={styles.section}>
           <View style={styles.profileContainer}>
             <TouchableOpacity onPress={pickImage}>
               <Image
@@ -232,6 +233,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#FAF9F6",
     borderRadius: 20
   },
+  containerRtl: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#FAF9F6",
+    borderRadius: 20,
+    direction: "rtl",
+    textAlign: "right"
+  },
   profileContainer: {
     alignItems: "center",
     marginVertical: 30,
@@ -269,15 +278,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   label: {
-    textAlign: I18nManager.isRTL ? "right" : "left",
     fontSize: 16,
     marginBottom: 5,
+    textAlign: I18nManager.isRTL ? "right" : "left"
   },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
     padding: 10,
     borderRadius: 8,
+    textAlign: I18nManager.isRTL ? "right" : "left"
   },
   disabledInput: {
     backgroundColor: "#f0f0f0",

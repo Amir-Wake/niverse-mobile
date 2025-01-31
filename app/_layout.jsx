@@ -35,7 +35,10 @@ export default function AppLayout() {
 
   useEffect(() => {
     const currentRoute = navigationState.routes[navigationState.index]?.name;
-    if (currentRoute === "(tabs)"||currentRoute == "index"|currentRoute=="login") {
+    if (
+      currentRoute === "(tabs)" ||
+      (currentRoute == "index") | (currentRoute == "login")
+    ) {
       setGestureEnable(false);
     } else {
       setGestureEnable(true);
@@ -44,7 +47,9 @@ export default function AppLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Stack screenOptions={{ headerShown: false, gestureEnabled: gestureEnable }}>
+      <Stack
+        screenOptions={{ headerShown: false, gestureEnabled: gestureEnable }}
+      >
         <Stack.Screen name="index" />
         <Stack.Screen
           name="bookSheet"

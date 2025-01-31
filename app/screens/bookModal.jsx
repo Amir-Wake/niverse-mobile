@@ -5,7 +5,6 @@ import FullReader from "../components/epubReader/fullReader";
 
 export default function BookModal() {
   const { fileUrl } = useLocalSearchParams();
-
   return (
     <View style={{ flex: 1 }}>
       <FullReader src={fileUrl} />

@@ -9,7 +9,7 @@ const BookList = ({ title, description, genre }) => {
   const router = useRouter();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}${genre}`;
+  const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}${genre}?collection=books`;
 
   useEffect(() => {
     fetch(apiLink)
