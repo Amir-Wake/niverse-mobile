@@ -19,10 +19,10 @@
 - terms
 - contact
 - faqs
-- User isolated storage
-- Smart search
-
+- clean the code
+- 
 ## v1
+- Smart search
 - User manual and hints
 - Help button for each screen
 - RTL and LTR based on user input
