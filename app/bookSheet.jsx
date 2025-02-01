@@ -5,7 +5,7 @@ import {
   Dimensions,
   TouchableOpacity,
   Text,
-  ActivityIndicator
+  ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Carousel from "react-native-reanimated-carousel";
@@ -28,8 +28,8 @@ const BookSheet = () => {
         const response = await fetch(apiLink);
         const data = await response.json();
         setBooks(Array.isArray(data) ? data : [data]);
-        const urlParams = new URLSearchParams(apiLink.split('?')[1]);
-        setCollectionName(urlParams.get('collection'));
+        const urlParams = new URLSearchParams(apiLink.split("?")[1]);
+        setCollectionName(urlParams.get("collection"));
       } catch (error) {
         console.error("Error fetching books:", error);
       } finally {
@@ -64,7 +64,7 @@ const BookSheet = () => {
         loop={false}
         mode="parallax"
         modeConfig={{
-          parallaxScrollingScale: 0.90,
+          parallaxScrollingScale: 0.9,
           parallaxScrollingOffset: 50,
         }}
         panGestureHandlerProps={{
@@ -80,16 +80,19 @@ const BookSheet = () => {
             >
               <Text style={styles.closeButtonText}>X</Text>
             </TouchableOpacity>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <Animated.View
-                style={styles.container}
-                entering={FadeInDown.duration(200).springify()}
+            <Animated.View
+              style={styles.container}
+              entering={FadeInDown.duration(200).springify()}
+            >
+              <Suspense
+                fallback={<ActivityIndicator size="large" color="#0000ff" />}
               >
-                <Suspense fallback={<ActivityIndicator size="large" color="#0000ff" />}>
-                  <BookScreen book={books[index]} collectionName={collectionName} />
-                </Suspense>
-              </Animated.View>
-            </ScrollView>
+                <BookScreen
+                  book={books[index]}
+                  collectionName={collectionName}
+                />
+              </Suspense>
+            </Animated.View>
           </View>
         )}
       />

@@ -9,9 +9,10 @@ import {
   Switch,
   Modal,
   TextInput,
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { auth } from "../../firebase";
+import { auth } from "@/firebase";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { Image } from "expo-image";
@@ -21,7 +22,8 @@ import i18n from "@/assets/languages/i18n";
 
 export default function Profile() {
   const [profileImage, setProfileImage] = useState(null);
-  const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(false);
+  const [emailNotificationsEnabled, setEmailNotificationsEnabled] =
+    useState(false);
   const [ageRestrictionEnabled, setAgeRestrictionEnabled] = useState(false);
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [password, setPassword] = useState("");
@@ -32,7 +34,7 @@ export default function Profile() {
 
   useEffect(() => {
     const language = i18n.locale;
-    if (language === 'ar' || language === 'ku') {
+    if (language === "ar" || language === "ku") {
       setIsRTL(true);
     } else {
       setIsRTL(false);
@@ -44,8 +46,12 @@ export default function Profile() {
         unsubscribeSnapshot = onSnapshot(userDoc, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
-            setProfileImage(data.profileImageUrl ? { uri: data.profileImageUrl } : null);
-            setEmailNotificationsEnabled(data.emailNotificationsEnabled || false);
+            setProfileImage(
+              data.profileImageUrl ? { uri: data.profileImageUrl } : null
+            );
+            setEmailNotificationsEnabled(
+              data.emailNotificationsEnabled || false
+            );
             setAgeRestrictionEnabled(data.ageRestrictionEnabled || false);
           }
         });
@@ -80,7 +86,9 @@ export default function Profile() {
     setEmailNotificationsEnabled((previousState) => !previousState);
     const userDoc = doc(firestore, "users", auth.currentUser.uid);
     try {
-      await updateDoc(userDoc, { emailNotificationsEnabled: !emailNotificationsEnabled });
+      await updateDoc(userDoc, {
+        emailNotificationsEnabled: !emailNotificationsEnabled,
+      });
     } catch (error) {
       console.error("Error updating email notifications", error);
     }
@@ -88,7 +96,7 @@ export default function Profile() {
 
   const handlePasswordSubmit = async () => {
     if (!password) {
-      alert("Password is required to change age restriction settings.");
+      alert(i18n.t("passwordRequired"));
       return;
     }
 
@@ -104,7 +112,7 @@ export default function Profile() {
       await updateDoc(userDoc, { ageRestrictionEnabled: newValue });
       setPassword("");
     } catch (error) {
-      alert("Please check your password and try again.");
+      alert(i18n.t("passwordIncorrect"));
     }
   };
 
@@ -112,10 +120,23 @@ export default function Profile() {
     setPasswordModalVisible(true);
   };
 
-  const renderOption = (icon, text, onPress, isSwitch = false, switchValue = false, onSwitchChange = null) => (
-    <TouchableOpacity style={styles.option} onPress={onPress} disabled={isSwitch}>
+  const renderOption = (
+    icon,
+    text,
+    onPress,
+    isSwitch = false,
+    switchValue = false,
+    onSwitchChange = null
+  ) => (
+    <TouchableOpacity
+      style={styles.option}
+      onPress={onPress}
+      disabled={isSwitch}
+    >
       {icon}
-      <Text style={[styles.optionText,{textAlign: isRTL?'left':''}]}>{text}</Text>
+      <Text style={[styles.optionText, { textAlign: isRTL ? "left" : "" }]}>
+        {text}
+      </Text>
       {isSwitch && (
         <Switch
           style={styles.switch}
@@ -127,39 +148,117 @@ export default function Profile() {
   );
 
   return (
-    <View style={[styles.container,{direction: isRTL ? 'rtl' : 'ltr'}]}>
+    <View style={[styles.container, { direction: isRTL ? "rtl" : "ltr" }]}>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={{ marginTop: 80 }} />
       <View style={styles.profileContainer}>
         <Image
-          source={profileImage ? { uri: profileImage.uri } : require("../../assets/images/blank-profile.png")}
+          source={
+            profileImage
+              ? { uri: profileImage.uri }
+              : require("../../assets/images/blank-profile.png")
+          }
           style={styles.profileImage}
           cachePolicy={"memory-disk"}
         />
       </View>
       <View style={styles.section}>
-        {renderOption(<AntDesign name="setting" size={24} color="black" style={styles.icon} />, i18n.t('accountDetails'), () => router.push("/profile/updateProfile"))}
+        {renderOption(
+          <AntDesign
+            name="setting"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />,
+          i18n.t("accountDetails"),
+          () => router.push("/profile/updateProfile")
+        )}
         <View style={styles.divider} />
-        {renderOption(<AntDesign name="lock" size={24} color="black" style={styles.icon} />, i18n.t('updatePassword'), () => router.push("/profile/updatePassword"))}
+        {renderOption(
+          <AntDesign name="lock" size={24} color="black" style={styles.icon} />,
+          i18n.t("updatePassword"),
+          () => router.push("/profile/updatePassword")
+        )}
       </View>
       <View style={styles.section}>
-        {renderOption(<Ionicons name="notifications-outline" size={24} color="black" style={styles.icon} />, i18n.t('emailNotifications'), null, true, emailNotificationsEnabled, toggleEmailNotifications)}
+        {renderOption(
+          <Ionicons
+            name="notifications-outline"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />,
+          i18n.t("emailNotifications"),
+          null,
+          true,
+          emailNotificationsEnabled,
+          toggleEmailNotifications
+        )}
         <View style={styles.divider} />
-        {renderOption(<Ionicons name="alert-circle-outline" size={24} color="black" style={styles.icon} />, i18n.t('ageRestriction'), null, true, ageRestrictionEnabled, toggleAgeRestriction)}
+        {renderOption(
+          <Ionicons
+            name="alert-circle-outline"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />,
+          i18n.t("ageRestriction"),
+          null,
+          true,
+          ageRestrictionEnabled,
+          toggleAgeRestriction
+        )}
       </View>
       <View style={styles.section}>
-        {renderOption(<Ionicons name="earth-outline" size={24} color="black" style={styles.icon} />, i18n.t('language'), () => router.push("/profile/languages"))}
+        {renderOption(
+          <Ionicons
+            name="earth-outline"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />,
+          i18n.t("language"),
+          () => router.push("/profile/languages")
+        )}
         <View style={styles.divider} />
-        {renderOption(<Ionicons name="hand-left-outline" size={24} color="black" style={styles.icon} />, i18n.t('privacyPolicy'), () => router.push("/profile/privacyPolicy"))}
+        {renderOption(
+          <Ionicons
+            name="hand-left-outline"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />,
+          i18n.t("privacyPolicy"),
+          () => router.push("/profile/privacyPolicy")
+        )}
         <View style={styles.divider} />
-        {renderOption(<AntDesign name="filetext1" size={24} color="black" style={styles.icon} />, i18n.t('terms'), () => router.push("/profile/terms"))}
+        {renderOption(
+          <AntDesign
+            name="filetext1"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />,
+          i18n.t("terms"),
+          () => router.push("/profile/terms")
+        )}
         <View style={styles.divider} />
-        {renderOption(<AntDesign name="customerservice" size={24} color="black" style={styles.icon} />, i18n.t('contact'), () => router.push("/profile/contact"))}
-        <View style={styles.divider} />
-        {renderOption(<AntDesign name="questioncircleo" size={24} color="black" style={styles.icon} />, i18n.t('faqs'), () => router.push("/profile/faqs"))}
+        {renderOption(
+          <AntDesign
+            name="customerservice"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />,
+          i18n.t("contact"),
+          () =>
+            Linking.openURL(
+              "mailto:support@example.com?subject=Contact%20Support"
+            )
+        )}
       </View>
       <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-        <Text style={styles.signOutButtonText}>{i18n.t('signOut')}</Text>
+        <Text style={styles.signOutButtonText}>{i18n.t("signOut")}</Text>
       </TouchableOpacity>
 
       <Modal
@@ -175,17 +274,23 @@ export default function Profile() {
           activeOpacity={1}
           onPressOut={() => setPasswordModalVisible(false)}
         >
-          <TouchableOpacity style={[styles.modalView,{width:300}]} activeOpacity={1}>
+          <TouchableOpacity
+            style={[styles.modalView, { width: 300 }]}
+            activeOpacity={1}
+          >
             <TextInput
               style={styles.input}
-              placeholder="Enter your password"
+              placeholder={i18n.t("enterPassword")}
               placeholderTextColor="#999"
               secureTextEntry
               value={password}
               onChangeText={setPassword}
             />
-            <TouchableOpacity style={styles.button} onPress={handlePasswordSubmit}>
-              <Text style={styles.metallicButtonText}>Change</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handlePasswordSubmit}
+            >
+              <Text style={styles.metallicButtonText}>{i18n.t('change')}</Text>
             </TouchableOpacity>
           </TouchableOpacity>
         </TouchableOpacity>
@@ -236,7 +341,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ccc",
   },
   switch: {
-    marginLeft: 'auto',
+    marginLeft: "auto",
   },
   signOutButton: {
     backgroundColor: "#ff3b30",
@@ -287,9 +392,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   button: {
-    backgroundColor: "#808080",
+    backgroundColor: "#24a0ed",
     padding: 12,
-    width: 150,
+    width: '80%',
     borderRadius: 8,
     alignItems: "center",
     borderWidth: 1,

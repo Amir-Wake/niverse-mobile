@@ -95,11 +95,11 @@ export default function Library() {
 
   const confirmDeleteBook = (folder) => {
     Alert.alert(
-      "Delete Book",
-      "Are you sure you want to delete this book?",
+      i18n.t("deleteBook"), 
+      i18n.t('deleteBookText')+` ${folder}`,
       [
-        { text: "Cancel", style: "cancel" },
-        { text: "OK", onPress: () => deleteBook(folder) },
+        { text: i18n.t('cancel'), style: "cancel" },
+        { text: i18n.t('ok'), onPress: () => deleteBook(folder) },
       ],
       { cancelable: false }
     );

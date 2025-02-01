@@ -9,8 +9,9 @@ import {
     SafeAreaView,
     ActivityIndicator,
 } from "react-native";
-import { auth } from "../../firebase";
+import { auth } from "@/firebase";
 import { sendPasswordResetEmail } from "firebase/auth";
+import i18n from "@/assets/languages/i18n";
 
 export default function ResetPassword() {
     const [resetEmail, setResetEmail] = useState("");
@@ -28,7 +29,7 @@ export default function ResetPassword() {
         sendPasswordResetEmail(auth, resetEmail)
             .then(() => {
                 setResetEmail("");
-                alert("Password reset email sent successfully!");
+                alert(i18n.t("resetPasswordText"));
                 setLoading(false);
             })
             .catch((error) => {
@@ -52,12 +53,12 @@ export default function ResetPassword() {
                 />
                 <SafeAreaView/>
                 <View style={styles.appNameContainer}>
-                    <Text style={styles.appName}>Password assistance</Text>
+                    <Text style={styles.appName}>{i18n.t('passwordAssistance')}</Text>
                 </View>
                 <View style={styles.formContainer}>
                     {error && <Text style={styles.error}>{error}</Text>}
                     <Text style={styles.header}>
-                        Enter your email associated with your account.
+                       {i18n.t('enterEmail')}
                     </Text>
                     <TextInput
                         style={styles.input}
@@ -76,14 +77,13 @@ export default function ResetPassword() {
                         {loading ? (
                             <ActivityIndicator size="small" color="#0000ff" />
                         ) : (
-                            <Text style={styles.authButtonText}>Reset Password</Text>
+                            <Text style={styles.authButtonText}>{i18n.t('resetPassword')}</Text>
                         )}
                     </TouchableOpacity>
                 </View>
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>
-                        If you have forgotten your password, enter your email address above
-                        and we will send you instructions to reset your password.
+                       {i18n.t('passwordAssistanceText')}
                     </Text>
                 </View>
             </View>
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     },
     header: {
         fontSize: 16,
-        textAlign: "left",
+        textAlign: "center",
         marginBottom: 10,
     },
     input: {
@@ -128,10 +128,10 @@ const styles = StyleSheet.create({
         width: "100%",
     },
     authButton: {
-        backgroundColor: "#808080",
+        backgroundColor: "#24a0ed",
         padding: 12,
         borderRadius: 10,
-        width: 250,
+        width: '80%',
         alignSelf: "center",
         alignItems: "center",
         marginVertical: 10,

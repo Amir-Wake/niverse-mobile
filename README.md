@@ -11,19 +11,14 @@
 
 # To-do
 ## beta
-- icon
-- splash screen
-- Finish languages
-- book screen horizontal scroll android
-- privacy policy
-- terms
-- contact
-- faqs
+- loading screen
 - clean the code
-- 
+- add book
+- redesign home lists and genre
+- deploy
+
 ## v1
 - Smart search
-- User manual and hints
 - Help button for each screen
 - RTL and LTR based on user input
 - Fonts for reader
@@ -31,5 +26,7 @@
 - Suggest similar books
 - Finished books collection
 - User progress
+- User guide and toturial
 - Reader sections scroll
 - Report
+- log in with gmail

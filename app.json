@@ -10,9 +10,8 @@
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#ffffff",
-      "imageWidth": 200
+      "resizeMode": "native",
+      "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
@@ -24,9 +23,8 @@
         "backgroundColor": "#ffffff",
         "splash": {
           "image": "./assets/images/splash.png",
-          "resizeMode": "cover",
-          "backgroundColor": "#ffffff",
-          "imageWidth": 200
+          "resizeMode": "native",
+          "backgroundColor": "#ffffff"
         }
       },
       "package": "com.amir19225.ebookdv1"
@@ -43,8 +41,7 @@
         {
           "backgroundColor": "#ffffff",
           "image": "./assets/images/splash.png",
-          "resizeMode": "cover",
-          "imageWidth": 200
+          "resizeMode": "native"
         }
       ]
     ],

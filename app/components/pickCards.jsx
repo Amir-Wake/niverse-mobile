@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   },
   containerCustomStyle: {
     width: width,
-    height: height * 0.64,
+    height: height * 0.6,
   },
   loadingCustomStyle: {
     width: width,
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     shadowColor: "black",
     justifyContent: "center",
     position: "absolute",
-    bottom: 30,
+    bottom: 20,
   },
   touchableCircle: {
     padding: 5,

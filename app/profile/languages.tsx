@@ -1,11 +1,10 @@
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Alert, I18nManager } from "react-native";
 import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { setLanguage, getLanguage } from "../../assets/languages/i18n";
-import i18n from '@/assets/languages/i18n'
-import * as Updates from "expo-updates";
+import i18n from "@/assets/languages/i18n";
 
 const Languages = () => {
   const router = useRouter();
@@ -21,41 +20,51 @@ const Languages = () => {
   }, []);
 
   const handleLanguageChange = async (language: string) => {
-    Alert.alert(
-      "Confirm Language Change",
-      "Are you sure you want to change the language?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
+    Alert.alert(i18n.t("confirm"), i18n.t("languageChangeText"), [
+      {
+        text: i18n.t("cancel"),
+        style: "cancel",
+      },
+      {
+        text: i18n.t("ok"),
+        onPress: async () => {
+          await setLanguage(language);
+          router.replace("/");
         },
-        {
-          text: "OK",
-          onPress: async () => {
-            await setLanguage(language);
-            Updates.reloadAsync();
-            router.replace("/");
-          },
-        },
-      ]
-    );
+      },
+    ]);
+  };
+  const custumStyle = {
+    fontSize: 18,
+    margin: 5,
+    textAlign: I18nManager.isRTL ? ("right" as "right") : ("left" as "left"),
   };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-          <TouchableOpacity
-            style={{ flexDirection: "row", alignItems: "center", padding: 5 }}
-            onPress={() => router.back()}
-          >
-            <Ionicons
-              name="chevron-back-outline"
-              size={30}
-              color={"#0066CC"}
-            />
-            <Text style={{ fontSize: 18, color:'#0066CC' }}>Back</Text>
-          </TouchableOpacity>
-          <View style={{ padding: 20, backgroundColor: "#FAF9F6", borderRadius: 20, flex: 1 }}>
-        <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }}>
+      <TouchableOpacity
+        style={{ flexDirection: "row", alignItems: "center", padding: 5 }}
+        onPress={() => router.back()}
+      >
+        <Ionicons name="chevron-back-outline" size={30} color={"#0066CC"} />
+        <Text style={{ fontSize: 18, color: "#0066CC" }}>Back</Text>
+      </TouchableOpacity>
+      <View
+        style={{
+          padding: 20,
+          backgroundColor: "#FAF9F6",
+          borderRadius: 20,
+          flex: 1,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 24,
+            fontWeight: "bold",
+            marginBottom: 10,
+            textAlign: "center",
+          }}
+        >
           {i18n.t("selectLanguage")}
         </Text>
         <View
@@ -75,7 +84,7 @@ const Languages = () => {
             }}
             onPress={() => handleLanguageChange("en")}
           >
-            <Text style={{ fontSize: 18 }}>English</Text>
+            <Text style={custumStyle}>English</Text>
           </TouchableOpacity>
           <View style={{ height: 1, backgroundColor: "#ccc" }} />
           <TouchableOpacity
@@ -85,7 +94,7 @@ const Languages = () => {
             }}
             onPress={() => handleLanguageChange("ar")}
           >
-            <Text style={{ fontSize: 18 }}>العربیە</Text>
+            <Text style={custumStyle}>العربیە</Text>
           </TouchableOpacity>
           <View style={{ height: 1, backgroundColor: "#ccc" }} />
           <TouchableOpacity
@@ -97,7 +106,7 @@ const Languages = () => {
             }}
             onPress={() => handleLanguageChange("ku")}
           >
-            <Text style={{ fontSize: 18 }}>کوردی</Text>
+            <Text style={custumStyle}>کوردی</Text>
           </TouchableOpacity>
         </View>
       </View>

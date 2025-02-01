@@ -11,6 +11,7 @@ import {
   Alert,
   StyleSheet,
   Dimensions,
+  Image
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -115,7 +116,7 @@ const Index = () => {
               { backgroundColor: showSearch ? "white" : "transparent" },
             ]}
           >
-            {!showSearch && <Text style={styles.title}>niVerse</Text>}
+            {!showSearch &&  <Image source={require("@/assets/images/iconTr.png")} style={styles.appIcon} />          }
             {showSearch && (
               <TextInput
                 placeholder={i18n.t("searchForBooks")}
@@ -244,6 +245,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.55,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  appIcon: {
+    width: 70,
+    height: 70,
   },
   searchInput: {
     paddingLeft: 24,

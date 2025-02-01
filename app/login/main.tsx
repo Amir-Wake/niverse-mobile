@@ -9,6 +9,8 @@ import {
   SafeAreaView,
   Platform,
   ActivityIndicator,
+  Linking,
+  Image,
 } from "react-native";
 import { auth } from "../../firebase";
 import {
@@ -16,7 +18,7 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
 } from "firebase/auth";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import i18n from "@/assets/languages/i18n";
 
 export default function Login() {
@@ -113,9 +115,10 @@ export default function Login() {
         backgroundColor="transparent"
         translucent
       />
-      <SafeAreaView style={{ marginTop: Platform.OS == "android" ? 30 : 0 }} />
+      <SafeAreaView style={{ marginTop: Platform.OS == "android" ? 40 : 0 }} />
       <View style={styles.headerContainer}>
         <View style={styles.appNameContainer}>
+        <Image source={require("@/assets/images/iconTr.png")} style={styles.appIcon} />
           <Text style={styles.appName}>niVerse</Text>
         </View>
         <TouchableOpacity
@@ -124,7 +127,9 @@ export default function Login() {
         >
           <Text style={styles.languageButtonText}>🌐</Text>
 
-          <Text style={styles.languageButtonText}>{(i18n.locale).toUpperCase()}</Text>
+          <Text style={styles.languageButtonText}>
+            {i18n.locale.toUpperCase()}
+          </Text>
         </TouchableOpacity>
       </View>
       <View style={styles.radioContainer}>
@@ -154,9 +159,7 @@ export default function Login() {
       <View style={styles.formContainer}>
         {error && <Text style={styles.error}>{error}</Text>}
         <Text style={styles.header}>
-          {isSignUp
-            ? i18n.t("signUpText")
-            : i18n.t("signInText")}
+          {isSignUp ? i18n.t("signUpText") : i18n.t("signInText")}
         </Text>
         <TextInput
           style={styles.input}
@@ -208,12 +211,7 @@ export default function Login() {
         </TouchableOpacity>
       </View>
       <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          By continuing, you agree to our Terms of Service and Privacy Policy.
-          Please make sure to read and understand these documents before
-          proceeding. Your use of our service is subject to these terms and
-          policies.
-        </Text>
+        <Text style={styles.footerText}>{i18n.t("userAgreement")}</Text>
       </View>
       <View style={{ marginTop: 100 }}>
         <View
@@ -231,7 +229,7 @@ export default function Login() {
                 textDecorationLine: "underline",
               }}
             >
-              Terms of Service
+              {i18n.t("terms")}
             </Text>
           </TouchableOpacity>
           <Text style={{ fontSize: 14, color: "#404040", marginHorizontal: 5 }}>
@@ -247,13 +245,19 @@ export default function Login() {
                 textDecorationLine: "underline",
               }}
             >
-              Privacy
+              {i18n.t("privacyPolicy")}
             </Text>
           </TouchableOpacity>
           <Text style={{ fontSize: 14, color: "#404040", marginHorizontal: 5 }}>
             |
           </Text>
-          <TouchableOpacity onPress={() => navigation.push("/profile/contact")}>
+          <TouchableOpacity
+            onPress={() =>
+              Linking.openURL(
+                "mailto:test@test.com" + "?subject=Contact and support"
+              )
+            }
+          >
             <Text
               style={{
                 fontSize: 14,
@@ -261,7 +265,7 @@ export default function Login() {
                 textDecorationLine: "underline",
               }}
             >
-              Help
+              {i18n.t("contact")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -289,22 +293,19 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 10,
-    marginVertical: 20,
   },
   appNameContainer: {
     alignItems: "center",
+    flexDirection: "row"
   },
   appName: {
-    fontSize: 46,
-    color: "#000",
+    fontSize: 36,
+    color: "#ff9600",
     fontFamily: "times",
-    textShadowColor: "skyblue",
-    textShadowOffset: { width: -1, height: 1 },
-    textShadowRadius: 3,
-    shadowColor: "skyblue",
-    shadowOpacity: 0.55,
-    shadowRadius: 3.84,
-    elevation: 5,
+  },
+  appIcon: {
+    width: 70,
+    height: 70,
   },
   languageButton: {
     padding: 10,
@@ -374,9 +375,9 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   authButton: {
-    backgroundColor: "#808080",
+    backgroundColor: "#24a0ed",
     padding: 12,
-    width: 250,
+    width: "80%",
     alignSelf: "center",
     borderRadius: 10,
     alignItems: "center",

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import {sendEmailVerification} from "firebase/auth";
 import { auth } from "../../firebase";
+import i18n from "@/assets/languages/i18n";
 
   export default function Verification() {
     const navigation  = useRouter();
@@ -24,15 +25,15 @@ import { auth } from "../../firebase";
     return (
         <View style={styles.container}>
             <View style={styles.content}>
-                <Text style={styles.title}>Verify Your Email</Text>
+                <Text style={styles.title}>{i18n.t('verifyEmail')}</Text>
                 <Text style={styles.message}>
-                    <Text style={{ color: "#0066CC" }}>{auth.currentUser?.email}</Text>. Please check your inbox and follow the instructions to verify your email address. If you do not see the email, please check your spam or junk folder.
+                    <Text style={{ color: "#0066CC" }}>{auth.currentUser?.email}</Text>{i18n.t('verifyEmailText')}
                 </Text>
                 <TouchableOpacity style={styles.button} onPress={handleResendEmail}>
-                    <Text style={styles.buttonText}>Resend Verification</Text>
+                    <Text style={styles.buttonText}>{i18n.t('resendVerification')}</Text>
                 </TouchableOpacity>
                 <Text style={{ marginTop: 10, fontSize: 16, textAlign: "center" }}>
-                    If you did not receive the email, click the button above to resend it.
+                   {i18n.t('resendVerificationText')}
                 </Text>
             </View>
         </View>
@@ -61,11 +62,12 @@ const styles = StyleSheet.create({
     },
     button: {
         marginTop: 50,
+        padding: 20,
         paddingVertical: 10,
-        width: 250,
+        width: '80%',
         alignItems: "center",
         alignSelf: "center",
-        backgroundColor: "#808080",
+        backgroundColor: "#24a0ed",
         borderRadius: 10,
     },
     buttonText: {

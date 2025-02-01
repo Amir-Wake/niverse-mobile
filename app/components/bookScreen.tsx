@@ -6,7 +6,6 @@ import {
   Alert,
   Dimensions,
   TouchableOpacity,
-  ScrollView,
 } from "react-native";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -27,6 +26,7 @@ import {
 import { auth } from "@/firebase";
 import Review from "./review/review";
 import i18n from "@/assets/languages/i18n";
+import { ScrollView } from "react-native-gesture-handler";
 
 const { width } = Dimensions.get("window");
 
@@ -48,7 +48,13 @@ interface Book {
   ageRate: number;
 }
 
-const BookScreen = ({ book, collectionName }: { book: Book, collectionName: string }) => {
+const BookScreen = ({
+  book,
+  collectionName,
+}: {
+  book: Book;
+  collectionName: string;
+}) => {
   const [showMore, setShowMore] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -82,7 +88,7 @@ const BookScreen = ({ book, collectionName }: { book: Book, collectionName: stri
     const fetchUserAgeRestriction = async () => {
       const user = auth.currentUser;
       if (!user) return;
-      
+
       const userDocRef = doc(firestore, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
       if (userDoc.exists()) {
@@ -106,7 +112,7 @@ const BookScreen = ({ book, collectionName }: { book: Book, collectionName: stri
   }, [book.title, book.id, book.language]);
 
   const handleDownload = async () => {
-    if (ageRestrictionEnabled  && 13 < book.ageRate) {
+    if (ageRestrictionEnabled && 13 < book.ageRate) {
       Alert.alert("Error", "You are not old enough to download this book.");
       return;
     }
@@ -117,15 +123,18 @@ const BookScreen = ({ book, collectionName }: { book: Book, collectionName: stri
     try {
       await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
       const token = await auth.currentUser?.getIdToken();
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BOOKS_API}books/${book.id}/file?collection=${collectionName}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BOOKS_API}books/${book.id}/file?collection=${collectionName}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch download file URL');
+        throw new Error("Failed to fetch download file URL");
       }
 
       const data = await response.json();
@@ -164,7 +173,10 @@ const BookScreen = ({ book, collectionName }: { book: Book, collectionName: stri
   const addToCollectionIfNotExists = async (collectionName: string) => {
     const user = auth.currentUser;
     if (!user) {
-      Alert.alert("Error", "You need to be logged in to add books to your collection.");
+      Alert.alert(
+        "Error",
+        "You need to be logged in to add books to your collection."
+      );
       return;
     }
 
@@ -183,15 +195,24 @@ const BookScreen = ({ book, collectionName }: { book: Book, collectionName: stri
         });
       }
     } catch (error) {
-      console.error(`Error adding book to ${collectionName} collection:`, error);
-      Alert.alert("Error", `Failed to add book to ${collectionName} collection.`);
+      console.error(
+        `Error adding book to ${collectionName} collection:`,
+        error
+      );
+      Alert.alert(
+        "Error",
+        `Failed to add book to ${collectionName} collection.`
+      );
     }
   };
 
   const handleAddToCollection = async () => {
     const user = auth.currentUser;
     if (!user) {
-      Alert.alert("Error", "You need to be logged in to add books to your collection.");
+      Alert.alert(
+        "Error",
+        "You need to be logged in to add books to your collection."
+      );
       return;
     }
 
@@ -227,7 +248,7 @@ const BookScreen = ({ book, collectionName }: { book: Book, collectionName: stri
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.imageContainer}>
         <Image
           source={{ uri: book.coverImageUrl }}
@@ -241,9 +262,13 @@ const BookScreen = ({ book, collectionName }: { book: Book, collectionName: stri
       </View>
       <View style={styles.headerDetail}>
         <Text style={styles.title}>
-          {book.title.length > 48 ? `${book.title.slice(0, 48)}...` : book.title}
+          {book.title.length > 48
+            ? `${book.title.slice(0, 48)}...`
+            : book.title}
         </Text>
-        <Text style={styles.author}>{i18n.t('By')}: {book.author}</Text>
+        <Text style={styles.author}>
+          {i18n.t("By")}: {book.author}
+        </Text>
         <View style={styles.rating}>
           {[...Array(5)].map((_, index) => (
             <FontAwesome
@@ -279,10 +304,10 @@ const BookScreen = ({ book, collectionName }: { book: Book, collectionName: stri
           disabled={ageRestrictionEnabled && 13 < book.ageRate}
         >
           {isDownloaded
-            ? i18n.t('read')
+            ? i18n.t("read")
             : isDownloading
             ? ` ${Math.round(downloadProgress * 100)}%`
-            : i18n.t('download')}
+            : i18n.t("download")}
         </Button>
         <Button
           icon={isAddedToCollection ? "check-bold" : "plus"}
@@ -294,14 +319,18 @@ const BookScreen = ({ book, collectionName }: { book: Book, collectionName: stri
           labelStyle={styles.buttonText}
           loading={isLoading}
         >
-          {isAddedToCollection ? i18n.t('wantToRead') : i18n.t('wantToRead')}
+          {isAddedToCollection ? i18n.t("wantToRead") : i18n.t("wantToRead")}
         </Button>
       </View>
       <View style={styles.horizontalLine} />
       <View>
-        <Text style={[styles.description, isRTL && { textAlign: "right" }]}>{book.shortDescription}</Text>
+        <Text style={[styles.description, isRTL && { textAlign: "right" }]}>
+          {book.shortDescription}
+        </Text>
         <Text style={[styles.longDescription, isRTL && { textAlign: "right" }]}>
-          {showMore ? book.longDescription : `${book.longDescription.slice(0, 200)}...`}
+          {showMore
+            ? book.longDescription
+            : `${book.longDescription.slice(0, 200)}...`}
         </Text>
         <TouchableOpacity onPress={() => setShowMore(!showMore)}>
           <Text style={styles.showMoreText}>
@@ -309,42 +338,42 @@ const BookScreen = ({ book, collectionName }: { book: Book, collectionName: stri
           </Text>
         </TouchableOpacity>
       </View>
-      <View>
-        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-          <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>{i18n.t('pages')}</Text>
-            <FontAwesome name="files-o" size={50} color="black" />
-            <Text style={styles.infoText}>{book.printLength}</Text>
-          </View>
-          <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>{i18n.t('language')}</Text>
-            <FontAwesome name="language" size={50} color="black" />
-            <Text style={styles.infoText}>{book.language}</Text>
-          </View>
-          <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>{i18n.t('publicationDate')}</Text>
-            <MaterialIcons name="date-range" size={50} color="black" />
-            <Text style={styles.infoText}>{book.publicationDate}</Text>
-          </View>
-          <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>{i18n.t('publisher')}</Text>
-            <MaterialIcons name="business" size={50} color="black" />
-            <Text style={styles.infoText}>{book.publisher}</Text>
-          </View>
-          <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>{i18n.t('translator')}</Text>
-            <MaterialIcons name="translate" size={50} color="black" />
-            <Text style={styles.infoText}>{book.translator}</Text>
-          </View>
-          <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>{i18n.t('ageRating')}</Text>
-            <FontAwesome name="ban" size={50} color="black" />
-            <Text style={styles.infoText}>{book.ageRate?"+"+book.ageRate:"none"}</Text>
-          </View>
-        </ScrollView>
-      </View>
+      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+        <View style={styles.bookInfo}>
+          <Text style={styles.infoText}>{i18n.t("pages")}</Text>
+          <FontAwesome name="files-o" size={50} color="black" />
+          <Text style={styles.infoText}>{book.printLength}</Text>
+        </View>
+        <View style={styles.bookInfo}>
+          <Text style={styles.infoText}>{i18n.t("language")}</Text>
+          <FontAwesome name="language" size={50} color="black" />
+          <Text style={styles.infoText}>{book.language}</Text>
+        </View>
+        <View style={styles.bookInfo}>
+          <Text style={styles.infoText}>{i18n.t("publicationDate")}</Text>
+          <MaterialIcons name="date-range" size={50} color="black" />
+          <Text style={styles.infoText}>{book.publicationDate}</Text>
+        </View>
+        <View style={styles.bookInfo}>
+          <Text style={styles.infoText}>{i18n.t("publisher")}</Text>
+          <MaterialIcons name="business" size={50} color="black" />
+          <Text style={styles.infoText}>{book.publisher}</Text>
+        </View>
+        <View style={styles.bookInfo}>
+          <Text style={styles.infoText}>{i18n.t("translator")}</Text>
+          <MaterialIcons name="translate" size={50} color="black" />
+          <Text style={styles.infoText}>{book.translator}</Text>
+        </View>
+        <View style={styles.bookInfo}>
+          <Text style={styles.infoText}>{i18n.t("ageRating")}</Text>
+          <FontAwesome name="ban" size={50} color="black" />
+          <Text style={styles.infoText}>
+            {book.ageRate ? "+" + book.ageRate : "none"}
+          </Text>
+        </View>
+      </ScrollView>
       <Review bookId={book.id} />
-    </View>
+    </ScrollView>
   );
 };
 
@@ -352,6 +381,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "column",
+    marginBottom: 25,
   },
   bookImage: {
     width: 180,
@@ -427,7 +457,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   bookInfo: {
-    width: width/3,
+    width: width / 3,
     justifyContent: "center",
     alignItems: "center",
     borderBottomColor: "gray",

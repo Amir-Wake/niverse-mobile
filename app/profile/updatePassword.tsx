@@ -27,11 +27,11 @@ export default function UpdatePassword() {
 
   const handleSavePassword = async () => {
     if (newPassword !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
+      Alert.alert(i18n.t('error'), i18n.t('passwordMismatch'));
       return;
     }
     if (newPassword.trim().length < 6) {
-      Alert.alert("Error", "Password should be at least 6 characters");
+      Alert.alert( i18n.t('error'), i18n.t('passwordLength'));
       return;
     }
     try {
@@ -43,7 +43,7 @@ export default function UpdatePassword() {
         );
         await reauthenticateWithCredential(user, credential);
         await updatePassword(user, newPassword);
-        Alert.alert("Password updated successfully");
+        Alert.alert(i18n.t('success'), i18n.t('passwordChanged'));
         setNewPassword("");
         setConfirmPassword("");
         setCurrentPassword("");
@@ -55,12 +55,12 @@ export default function UpdatePassword() {
         error instanceof Error &&
         (error as any).code === "auth/wrong-password"
       ) {
-        Alert.alert("The password is incorrect");
+        Alert.alert(i18n.t('error'), i18n.t('passwordIncorrect'));
       } else if (
         error instanceof Error &&
         (error as any).code === "auth/invalid-credential"
       ) {
-        Alert.alert("The password is incorrect");
+        Alert.alert(i18n.t('error'), i18n.t('passwordIncorrect'));
       } else if (error instanceof Error) {
         console.error("Error updating password", error);
         Alert.alert("Error", error.message);
@@ -139,9 +139,9 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   saveButton: {
-    backgroundColor: "#808080",
+    backgroundColor: "#24a0ed",
     padding: 12,
-    width: 250,
+    width: '80%',
     alignSelf: "center",
     borderRadius: 10,
     alignItems: "center",

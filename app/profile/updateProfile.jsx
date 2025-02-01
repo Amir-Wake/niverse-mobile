@@ -123,7 +123,7 @@ export default function updateProfile() {
     }
     await setDoc(userDoc, updateData, { merge: true });
     setUsername(newName);
-    Alert.alert("Success", "Profile updated successfully");
+    Alert.alert(i18n.t('success'), i18n.t('profileUpdated'), [{ text: i18n.t('ok') }]);
   };
 
   return (
@@ -294,11 +294,11 @@ const styles = StyleSheet.create({
     color: "#a0a0a0",
   },
   saveButton: {
-    backgroundColor: "#808080",
+    backgroundColor: "#24a0ed",
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
-    width: 250,
+    width: '80%',
     alignSelf: "center",
     marginVertical: 10,
   },
