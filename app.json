@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash.png",
-      "resizeMode": "native",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "ios": {
@@ -23,11 +23,12 @@
         "backgroundColor": "#ffffff",
         "splash": {
           "image": "./assets/images/splash.png",
-          "resizeMode": "native",
+          "resizeMode": "cover",
           "backgroundColor": "#ffffff"
         }
       },
-      "package": "com.amir19225.ebookdv1"
+      "package": "com.amir19225.ebookdv1",
+      "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
       "bundler": "metro",
@@ -41,7 +42,7 @@
         {
           "backgroundColor": "#ffffff",
           "image": "./assets/images/splash.png",
-          "resizeMode": "native"
+          "resizeMode": "cover"
         }
       ]
     ],

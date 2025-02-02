@@ -1,0 +1,402 @@
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  StatusBar,
+  Switch,
+  Modal,
+  TextInput,
+  Linking,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { auth } from "@/firebase";
+import { signOut, onAuthStateChanged } from "firebase/auth";
+import { getFirestore, doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { Image } from "expo-image";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
+import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
+import i18n from "@/assets/languages/i18n";
+
+export default function Index() {
+  const [profileImage, setProfileImage] = useState<{ uri: string } | null>(null);
+  const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(false);
+  const [ageRestrictionEnabled, setAgeRestrictionEnabled] = useState(false);
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [password, setPassword] = useState("");
+  const [isRTL, setIsRTL] = useState(false);
+  const router = useRouter();
+  const firestore = getFirestore();
+  let unsubscribeSnapshot: (() => void) | null = null;
+
+  useEffect(() => {
+    const language = i18n.locale;
+    setIsRTL(language === "ar" || language === "ku");
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const userDoc = doc(firestore, "users", auth.currentUser!.uid);
+        unsubscribeSnapshot = onSnapshot(userDoc, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setProfileImage(data.profileImageUrl ? { uri: data.profileImageUrl } : null);
+            setEmailNotificationsEnabled(data.emailNotificationsEnabled || false);
+            setAgeRestrictionEnabled(data.ageRestrictionEnabled || false);
+          }
+        });
+      } else {
+        if (unsubscribeSnapshot) {
+          unsubscribeSnapshot();
+        }
+      }
+    });
+
+    return () => {
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+      }
+      unsubscribeAuth();
+    };
+  }, []);
+
+  const handleSignOut = async () => {
+    if (unsubscribeSnapshot) {
+      unsubscribeSnapshot();
+    }
+    try {
+      await signOut(auth);
+      router.replace("/(login)");
+    } catch (error) {
+      console.error("Sign out error", error);
+    }
+  };
+
+  const toggleEmailNotifications = async () => {
+    setEmailNotificationsEnabled((previousState) => !previousState);
+    try {
+      if (auth.currentUser?.uid) {
+        const userDoc = doc(firestore, "users", auth.currentUser.uid);
+        await updateDoc(userDoc, {
+          emailNotificationsEnabled: !emailNotificationsEnabled,
+        });
+      }
+    } catch (error) {
+      console.error("Error updating email notifications", error);
+    }
+  };
+
+  const handlePasswordSubmit = async () => {
+    if (!password) {
+      alert(i18n.t("passwordRequired"));
+      return;
+    }
+
+    const user = auth.currentUser;
+    const credential = EmailAuthProvider.credential(user!.email!, password);
+
+    try {
+      await reauthenticateWithCredential(user!, credential);
+      const newValue = !ageRestrictionEnabled;
+      setPasswordModalVisible(false);
+      setAgeRestrictionEnabled(newValue);
+      const userDoc = doc(firestore, "users", auth.currentUser!.uid);
+      await updateDoc(userDoc, { ageRestrictionEnabled: newValue });
+      setPassword("");
+    } catch (error) {
+      alert(i18n.t("passwordIncorrect"));
+    }
+  };
+
+  const toggleAgeRestriction = () => {
+    setPasswordModalVisible(true);
+  };
+
+  const renderOption = (
+    icon: React.ReactNode,
+    text: string,
+    onPress: () => void,
+    isSwitch = false,
+    switchValue = false,
+    onSwitchChange: ((value: boolean) => void) | null = null
+  ) => (
+    <TouchableOpacity
+      style={styles.option}
+      onPress={onPress}
+      disabled={isSwitch}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        {icon}
+        <Text style={styles.optionText}>
+          {text}
+        </Text>
+      </View>
+      <View>
+        {isSwitch && (
+          <Switch
+            style={styles.switch}
+            value={switchValue}
+            onValueChange={onSwitchChange}
+          />
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+
+  return (
+    <View style={[styles.container, { direction: isRTL ? "rtl" : "ltr" }]}>
+      <StatusBar barStyle="dark-content" />
+      <SafeAreaView style={{ marginTop: 80 }} />
+      <View style={styles.profileContainer}>
+        <Image
+          source={
+            profileImage
+              ? { uri: profileImage.uri }
+              : require("@/assets/images/blank-profile.png")
+          }
+          style={styles.profileImage}
+          cachePolicy={"memory-disk"}
+        />
+      </View>
+      <View style={styles.section}>
+        {renderOption(
+          <AntDesign
+            name="setting"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />,
+          i18n.t("accountDetails"),
+          () => router.push("../updateProfile")
+        )}
+        <View style={styles.divider} />
+        {renderOption(
+          <AntDesign name="lock" size={24} color="black" style={styles.icon} />,
+          i18n.t("updatePassword"),
+          () => router.push("../updatePassword")
+        )}
+      </View>
+      <View style={styles.section}>
+        {renderOption(
+          <Ionicons
+            name="notifications-outline"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />,
+          i18n.t("emailNotifications"),
+          () => {},
+          true,
+          emailNotificationsEnabled,
+          toggleEmailNotifications
+        )}
+        <View style={styles.divider} />
+        {renderOption(
+          <Ionicons
+            name="alert-circle-outline"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />,
+          i18n.t("ageRestriction"),
+          () => {},
+          true,
+          ageRestrictionEnabled,
+          toggleAgeRestriction
+        )}
+      </View>
+      <View style={styles.section}>
+        {renderOption(
+          <Ionicons
+            name="earth-outline"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />,
+          i18n.t("language"),
+          () => router.push("../languages")
+        )}
+        <View style={styles.divider} />
+        {renderOption(
+          <Ionicons
+            name="hand-left-outline"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />,
+          i18n.t("privacyPolicy"),
+          () => router.push("../privacyPolicy")
+        )}
+        <View style={styles.divider} />
+        {renderOption(
+          <AntDesign
+            name="filetext1"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />,
+          i18n.t("terms"),
+          () => router.push("../terms")
+        )}
+        <View style={styles.divider} />
+        {renderOption(
+          <AntDesign
+            name="customerservice"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />,
+          i18n.t("contact"),
+          () =>
+            Linking.openURL(
+              "mailto:support@example.com?subject=Contact%20Support"
+            )
+        )}
+      </View>
+      <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+        <Text style={styles.signOutButtonText}>{i18n.t("signOut")}</Text>
+      </TouchableOpacity>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={passwordModalVisible}
+        onRequestClose={() => {
+          setPasswordModalVisible(!passwordModalVisible);
+        }}
+      >
+        <TouchableOpacity
+          style={styles.modalContainer}
+          activeOpacity={1}
+          onPressOut={() => setPasswordModalVisible(false)}
+        >
+          <TouchableOpacity
+            style={[styles.modalView, { width: 300 }]}
+            activeOpacity={1}
+          >
+            <TextInput
+              style={styles.input}
+              placeholder={i18n.t("enterPassword")}
+              placeholderTextColor="#999"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handlePasswordSubmit}
+            >
+              <Text style={styles.metallicButtonText}>{i18n.t('change')}</Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#fff",
+  },
+  profileContainer: {
+    borderRadius: 10,
+    padding: 10,
+    alignItems: "center",
+  },
+  profileImage: {
+    width: 90,
+    height: 90,
+    borderRadius: 50,
+  },
+  section: {
+    marginVertical: 10,
+    backgroundColor: "#E5E8E8",
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  option: {
+    paddingHorizontal: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderColor: "#ccc",
+  },
+  optionText: {
+    fontSize: 18,
+    marginHorizontal: 10,
+  },
+  icon: {
+    marginRight: 10,
+  },
+  divider: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+  },
+  switch: {},
+  signOutButton: {
+    backgroundColor: "#ff3b30",
+    padding: 12,
+    width: 250,
+    alignSelf: "center",
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  signOutButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.2)",
+  },
+  modalView: {
+    backgroundColor: "#d3d3d3",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: "#aaa",
+  },
+  input: {
+    height: 50,
+    borderColor: "#aaa",
+    borderWidth: 1,
+    marginBottom: 20,
+    paddingHorizontal: 30,
+    width: "100%",
+    backgroundColor: "white",
+    color: "#333",
+    borderRadius: 5,
+  },
+  button: {
+    backgroundColor: "#24a0ed",
+    padding: 12,
+    width: '80%',
+    borderRadius: 8,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#888",
+  },
+  metallicButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+});

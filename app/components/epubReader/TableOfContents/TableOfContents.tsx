@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import React, { forwardRef, useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, I18nManager } from "react-native";
 import {
   Toc,
   Section as SectionType,
@@ -18,6 +18,7 @@ import { BottomSheetModalMethods } from "@gorhom/bottom-sheet/lib/typescript/typ
 import { Button, Text } from "react-native-paper";
 import Section from "./Section";
 import { contrast } from "../fullReader/utils";
+import i18n from "@/assets/languages/i18n";
 
 interface Props {
   onPressSection: (section: SectionType) => void;
@@ -50,13 +51,13 @@ const TableOfContents = forwardRef<Ref, Props>(
 
     const header = React.useCallback(
       () => (
-        <View style={{ backgroundColor: theme.body.background }}>
+        <View style={{ backgroundColor: theme.body.background, direction: I18nManager.isRTL ? "rtl" : "ltr" }}>
           <View style={styles.title}>
             <Text
               variant="titleMedium"
               style={{ color: contrast[theme.body.background] }}
             >
-              Table of Contents
+              {i18n.t("toc")}
             </Text>
 
             <Button
@@ -64,7 +65,7 @@ const TableOfContents = forwardRef<Ref, Props>(
               textColor={contrast[theme.body.background]}
               onPress={onClose}
             >
-              Close
+              X
             </Button>
           </View>
 

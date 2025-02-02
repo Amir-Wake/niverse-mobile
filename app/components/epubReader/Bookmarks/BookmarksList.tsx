@@ -11,6 +11,7 @@ import {
 import { BottomSheetModalMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { Button, IconButton, MD3Colors, Text } from "react-native-paper";
 import { contrast } from "../fullReader/utils";
+import i18n from "@/assets/languages/i18n";
 
 interface Props {
   onClose: () => void;
@@ -79,12 +80,12 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
             ...styles.contentContainer,
           }}
         >
-          <View style={styles.header}>
+          <View style={[styles.header, {direction: I18nManager.isRTL ? "rtl" : "ltr"}]}>
             <Text
               variant="titleMedium"
               style={{ color: contrast[theme.body.background] }}
             >
-              Bookmarks
+              {i18n.t("bookmarks")}
             </Text>
             <IconButton
               icon="close"
@@ -127,7 +128,7 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
                 defaultValue={note}
                 style={[styles.input,{ textAlign: I18nManager.isRTL ? "right" : "left" }]}
                 multiline
-                placeholder="Type an annotation here..."
+                placeholder={i18n.t("typeAnnotation")}
                 placeholderTextColor={contrast[theme.body.background]}
                 onChangeText={(text) => setNote(text)}
               />
@@ -138,7 +139,7 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
                 onPress={() => updateBookmark(currentBookmark!.id, { note })}
                 textColor={contrast[theme.body.background]}
               >
-                Update Annotation
+                {i18n.t("updateAnnotation")}
               </Button>
             </View>
           )}

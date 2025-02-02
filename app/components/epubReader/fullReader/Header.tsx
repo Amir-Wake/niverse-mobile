@@ -1,12 +1,14 @@
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity, TouchableWithoutFeedback, StyleSheet, Text, Dimensions } from "react-native";
+import { View, TouchableOpacity, StyleSheet, Text, Dimensions } from "react-native";
 import { Themes, useReader } from "@epubjs-react-native/core";
 import { IconButton, MD3Colors } from "react-native-paper";
-import { MAX_FONT_SIZE, MIN_FONT_SIZE, themes } from "./utils";
+import { MAX_FONT_SIZE, MIN_FONT_SIZE } from "./utils";
 import { contrast } from "../fullReader/utils";
 import i18n from "@/assets/languages/i18n";
-const {width, height} = Dimensions.get('window');
+
+const { width, height } = Dimensions.get('window');
+
 interface Props {
   currentFontSize: number;
   increaseFontSize: () => void;
@@ -28,7 +30,7 @@ export default function Header({
   onOpenBookmarksList,
   onOpenTocList,
 }: Props) {
-  const navigation = useNavigation();
+  const navigation = useRouter();
   const {
     theme,
     bookmarks,
@@ -42,32 +44,27 @@ export default function Header({
   const [iconCol, setIconCol] = useState(MD3Colors.neutral60);
 
   useEffect(() => {
-    if (theme.body.background === "#fff") {
+    if (theme.body.background === "#fff" || theme.body.background === "#e8dcb8") {
       setIconCol("black");
-    }
-    if (theme.body.background === "#e8dcb8") {
-      setIconCol("black");
-    }
-    if (theme.body.background === "#333") {
+    } else if (theme.body.background === "#333") {
       setIconCol("white");
     }
   }, [theme]);
 
   const handleChangeBookmark = () => {
     const location = getCurrentLocation();
-
     if (!location) return;
 
     if (isBookmarked) {
       const bookmark = bookmarks.find(
         (item) =>
-          item.location.start.cfi === location?.start.cfi &&
-          item.location.end.cfi === location?.end.cfi
+          item.location.start.cfi === location.start.cfi &&
+          item.location.end.cfi === location.end.cfi
       );
-
-      if (!bookmark) return;
-      removeBookmark(bookmark);
-    } else addBookmark(location);
+      if (bookmark) removeBookmark(bookmark);
+    } else {
+      addBookmark(location);
+    }
   };
 
   const toggleSettings = () => {
@@ -80,40 +77,29 @@ export default function Header({
         icon="arrow-left"
         iconColor={iconCol}
         size={28}
-        onPress={() => {
-          navigation.goBack();
-        }}
+        onPress={() => navigation.back()}
       />
-
       <View style={styles.actions}>
         <IconButton
           icon={isBookmarked ? "bookmark" : "bookmark-outline"}
           iconColor={iconCol}
           size={28}
           animated
-          onPress={() => {
-            handleChangeBookmark();
-          }}
-          onLongPress={() => {
-            onOpenBookmarksList();
-          }}
+          onPress={handleChangeBookmark}
+          onLongPress={onOpenBookmarksList}
         />
-
         <IconButton
           icon={showSettings ? "cog" : "cog-outline"}
           iconColor={iconCol}
           size={28}
           animated
-          onPress={() => {
-            toggleSettings();
-          }}
+          onPress={toggleSettings}
         />
       </View>
-
       {showSettings && (
         <TouchableOpacity
-        activeOpacity={0}
-          style={[styles.settingsContainerMain, { width: width, height: height}]}
+          activeOpacity={0}
+          style={[styles.settingsContainerMain, { width, height }]}
           onPress={() => setShowSettings(false)}
         >
           <View style={styles.settingsContainer}>
@@ -122,10 +108,7 @@ export default function Header({
                 styles.circle,
                 {
                   backgroundColor: theme.body.background,
-                  borderColor:
-                    theme.body.background === "#333"
-                      ? MD3Colors.neutral100
-                      : MD3Colors.neutral10,
+                  borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
                 },
               ]}
               onPress={() => {
@@ -133,12 +116,7 @@ export default function Header({
                 setShowSettings(false);
               }}
             >
-              <Text
-                style={[
-                  styles.optionsText,
-                  { color: contrast[theme.body.background] },
-                ]}
-              >
+              <Text style={[styles.optionsText, { color: contrast[theme.body.background] }]}>
                 {i18n.t("search")}
               </Text>
               <IconButton
@@ -154,10 +132,7 @@ export default function Header({
                 styles.circle,
                 {
                   backgroundColor: theme.body.background,
-                  borderColor:
-                    theme.body.background === "#333"
-                      ? MD3Colors.neutral100
-                      : MD3Colors.neutral10,
+                  borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
                 },
               ]}
               onPress={() => {
@@ -165,12 +140,7 @@ export default function Header({
                 setShowSettings(false);
               }}
             >
-              <Text
-                style={[
-                  styles.optionsText,
-                  { color: contrast[theme.body.background] },
-                ]}
-              >
+              <Text style={[styles.optionsText, { color: contrast[theme.body.background] }]}>
                 {i18n.t("bookmarks")}
               </Text>
               <IconButton
@@ -186,10 +156,7 @@ export default function Header({
                 styles.circle,
                 {
                   backgroundColor: theme.body.background,
-                  borderColor:
-                    theme.body.background === "#333"
-                      ? MD3Colors.neutral100
-                      : MD3Colors.neutral10,
+                  borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
                 },
               ]}
               onPress={() => {
@@ -197,12 +164,7 @@ export default function Header({
                 setShowSettings(false);
               }}
             >
-              <Text
-                style={[
-                  styles.optionsText,
-                  { color: contrast[theme.body.background] },
-                ]}
-              >
+              <Text style={[styles.optionsText, { color: contrast[theme.body.background] }]}>
                 {i18n.t("content")}
               </Text>
               <IconButton
@@ -217,22 +179,12 @@ export default function Header({
                 styles.circle,
                 {
                   backgroundColor: theme.body.background,
-                  borderColor:
-                    theme.body.background === "#333"
-                      ? MD3Colors.neutral100
-                      : MD3Colors.neutral10,
+                  borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
                 },
               ]}
-              onPress={() => {
-                switchTheme();
-              }}
+              onPress={switchTheme}
             >
-              <Text
-                style={[
-                  styles.optionsText,
-                  { color: contrast[theme.body.background] },
-                ]}
-              >
+              <Text style={[styles.optionsText, { color: contrast[theme.body.background] }]}>
                 {i18n.t("theme")}
               </Text>
               <IconButton
@@ -247,22 +199,12 @@ export default function Header({
                 styles.circle,
                 {
                   backgroundColor: theme.body.background,
-                  borderColor:
-                    theme.body.background === "#333"
-                      ? MD3Colors.neutral100
-                      : MD3Colors.neutral10,
+                  borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
                 },
               ]}
-              onPress={() => {
-                switchFontFamily();
-              }}
+              onPress={switchFontFamily}
             >
-              <Text
-                style={[
-                  styles.optionsText,
-                  { color: contrast[theme.body.background] },
-                ]}
-              >
+              <Text style={[styles.optionsText, { color: contrast[theme.body.background] }]}>
                 {i18n.t("font")}
               </Text>
               <IconButton
@@ -277,56 +219,35 @@ export default function Header({
                 styles.circle,
                 {
                   backgroundColor: theme.body.background,
-                  borderColor:
-                    theme.body.background === "#333"
-                      ? MD3Colors.neutral100
-                      : MD3Colors.neutral10,
+                  borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
                 },
               ]}
-              onPress={() => {
-                increaseFontSize();
-              }}
+              onPress={increaseFontSize}
               disabled={currentFontSize === MAX_FONT_SIZE}
             >
-              <Text
-                style={[
-                  styles.optionsText,
-                  { color: contrast[theme.body.background] },
-                ]}
-              >
+              <Text style={[styles.optionsText, { color: contrast[theme.body.background] }]}>
                 {i18n.t("increase")}
               </Text>
               <IconButton
                 icon="format-font-size-increase"
                 iconColor={theme === Themes.DARK ? "white" : iconCol}
                 size={22}
-                animated={true}
+                animated
                 mode="outlined"
               />
             </TouchableOpacity>
-
             <TouchableOpacity
               style={[
                 styles.circle,
                 {
                   backgroundColor: theme.body.background,
-                  borderColor:
-                    theme.body.background === "#333"
-                      ? MD3Colors.neutral100
-                      : MD3Colors.neutral10,
+                  borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
                 },
               ]}
-              onPress={() => {
-                decreaseFontSize();
-              }}
+              onPress={decreaseFontSize}
               disabled={currentFontSize === MIN_FONT_SIZE}
             >
-              <Text
-                style={[
-                  styles.optionsText,
-                  { color: contrast[theme.body.background] },
-                ]}
-              >
+              <Text style={[styles.optionsText, { color: contrast[theme.body.background] }]}>
                 {i18n.t("decrease")}
               </Text>
               <IconButton

@@ -11,14 +11,14 @@
 
 # To-do
 ## beta
-- loading screen
-- clean the code
+- collections books/topBooks
 - add book
 - redesign home lists and genre
 - deploy
 
 ## v1
 - Smart search
+- Reader scroll search
 - Help button for each screen
 - RTL and LTR based on user input
 - Fonts for reader

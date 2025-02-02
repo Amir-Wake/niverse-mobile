@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import React, { forwardRef, useState } from "react";
-import { ActivityIndicator, View, StyleSheet } from "react-native";
+import { ActivityIndicator, View, StyleSheet, I18nManager } from "react-native";
 import {
   SearchResult as SearchResultType,
   useReader,
@@ -13,11 +13,13 @@ import {
   BottomSheetFlatList,
   BottomSheetTextInput,
   BottomSheetView,
+  BottomSheetScrollView
 } from "@gorhom/bottom-sheet";
 import { BottomSheetModalMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
-import { Text } from "react-native-paper";
+import { Button, Text } from "react-native-paper";
 import SearchResult from "./SearchResult";
 import { contrast } from "../fullReader/utils";
+import i18n from "@/assets/languages/i18n";
 
 interface Props {
   onClose: () => void;
@@ -74,13 +76,20 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
   const header = React.useCallback(
     () => (
       <View>
-        <View style={styles.title}>
+        <View style={[styles.title,{direction: I18nManager.isRTL ? "rtl" : "ltr"}]}>
           <Text
             variant="titleMedium"
-            style={{ color: contrast[theme.body.background] }}
+            style={{ color: contrast[theme.body.background], textAlign: "center" }}
           >
-            Search Results
+            {i18n.t("search")}
           </Text>
+          <Button
+              mode="text"
+              textColor={contrast[theme.body.background]}
+              onPress={onClose}
+            >
+              X
+            </Button>
         </View>
 
         <View style={{ width: "100%" }}>

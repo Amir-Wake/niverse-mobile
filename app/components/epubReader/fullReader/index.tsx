@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useWindowDimensions, View, Platform, I18nManager } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { useWindowDimensions, View, Platform } from "react-native";
 import {
   ReaderProvider,
   Reader,
@@ -36,9 +36,9 @@ function Component({ src }: ComponentProps) {
     bookmarks,
   } = useReader();
 
-  const bookmarksListRef = React.useRef<BottomSheetModal>(null);
-  const bottomSheetRef = React.useRef<BottomSheetModal>(null);
-  const searchListRef = React.useRef<BottomSheetModal>(null);
+  const bookmarksListRef = useRef<BottomSheetModal>(null);
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const searchListRef = useRef<BottomSheetModal>(null);
   const [currentFontSize, setCurrentFontSize] = useState(16);
   const [currentFontFamily, setCurrentFontFamily] = useState(availableFonts[0]);
   const [defTheme, setDefTheme] = useState(Themes.LIGHT);
@@ -131,10 +131,10 @@ function Component({ src }: ComponentProps) {
   const handleUpdateBookmark = async () => {
     if (bookmarks) {
       try {
-        const bookmarkData = JSON.stringify({ src, bookmarks: bookmarks });
+        const bookmarkData = JSON.stringify({ src, bookmarks });
         await AsyncStorage.setItem(`bookmarks_${src}`, bookmarkData);
       } catch (error) {
-        console.error("Failed to save location", error);
+        console.error("Failed to save bookmarks", error);
       }
     }
   };
@@ -195,7 +195,6 @@ function Component({ src }: ComponentProps) {
           ref={bookmarksListRef}
           onClose={() => bookmarksListRef.current?.dismiss()}
         />
-
         <TableOfContents
           ref={bottomSheetRef}
           onPressSection={(section) => {
