@@ -10,6 +10,7 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Carousel from "react-native-reanimated-carousel";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { ScrollView } from "react-native-gesture-handler";
 
 const { width, height } = Dimensions.get("window");
 const BookDetails = lazy(() => import("@/app/components/bookView/bookDetails"));
@@ -18,7 +19,6 @@ const BookView = () => {
   const router = useRouter();
   const [books, setBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [collectionName, setCollectionName] = useState("");
   const { index, apiLink } = useLocalSearchParams<{ index: string; apiLink: string }>();
 
   useEffect(() => {
@@ -27,8 +27,6 @@ const BookView = () => {
         const response = await fetch(apiLink as string);
         const data = await response.json();
         setBooks(Array.isArray(data) ? data : [data]);
-        const urlParams = new URLSearchParams((apiLink as string).split("?")[1]);
-        setCollectionName(urlParams.get("collection") || "");
       } catch (error) {
         console.error("Error fetching books:", error);
       } finally {
@@ -72,7 +70,7 @@ const BookView = () => {
         }}
         width={width}
         renderItem={({ index }) => (
-          <View style={{ marginTop: 20 }}>
+          <ScrollView style={{ marginTop: 20 }}>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => router.dismiss()}
@@ -84,10 +82,10 @@ const BookView = () => {
               entering={FadeInDown.duration(200).springify()}
             >
               <Suspense fallback={<ActivityIndicator size="large" color="#0000ff" />}>
-                <BookDetails book={books[index]} collectionName={collectionName} />
+                <BookDetails book={books[index]} />
               </Suspense>
             </Animated.View>
-          </View>
+          </ScrollView>
         )}
       />
     </View>

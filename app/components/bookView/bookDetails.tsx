@@ -6,7 +6,6 @@ import {
   Alert,
   Dimensions,
   TouchableOpacity,
-  ScrollView,
 } from "react-native";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -27,6 +26,7 @@ import {
 import { auth } from "@/firebase";
 import Review from "./review/review";
 import i18n from "@/assets/languages/i18n";
+import { ScrollView } from "react-native-gesture-handler";
 
 const { width } = Dimensions.get("window");
 
@@ -48,13 +48,7 @@ interface Book {
   ageRate: number;
 }
 
-const BookDetails = ({
-  book,
-  collectionName,
-}: {
-  book: Book;
-  collectionName: string;
-}) => {
+const BookDetails = ({ book }: { book: Book }) => {
   const [showMore, setShowMore] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -120,7 +114,7 @@ const BookDetails = ({
       await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
       const token = await auth.currentUser?.getIdToken();
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_BOOKS_API}books/${book.id}/file?collection=${collectionName}`,
+        `${process.env.EXPO_PUBLIC_BOOKS_API}books/${book.id}/file`,
         {
           method: "GET",
           headers: {
@@ -244,7 +238,7 @@ const BookDetails = ({
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
       <View style={styles.imageContainer}>
         <Image
           source={{ uri: book.coverImageUrl }}
@@ -369,7 +363,7 @@ const BookDetails = ({
         </View>
       </ScrollView>
       <Review bookId={book.id} />
-    </ScrollView>
+    </View>
   );
 };
 

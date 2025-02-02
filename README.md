@@ -11,7 +11,7 @@
 
 # To-do
 ## beta
-- collections books/topBooks
+- search
 - add book
 - redesign home lists and genre
 - deploy

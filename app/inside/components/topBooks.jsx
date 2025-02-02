@@ -11,6 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
+import Animated from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get("window");
 
@@ -20,7 +21,7 @@ const TopBooks = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}books/?collection=topBooks`;
+  const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}topBooks`;
 
   useEffect(() => {
     fetch(apiLink)
@@ -74,7 +75,7 @@ const TopBooks = () => {
 
   return (
     <View style={styles.container}>
-      <View style={{ flex: 1 }} sharedTransitionTag="tagger">
+      <View style={{ flex: 1 }}>
         <ScrollView
           horizontal
           pagingEnabled
@@ -99,7 +100,8 @@ const TopBooks = () => {
                 }
                 style={styles.bookCardContent}
               >
-                <Image
+                <Animated.Image
+                  sharedTransitionTag="bookImage"
                   source={{ uri: item.coverImageUrl }}
                   cachePolicy={"memory-disk"}
                   style={styles.bookImage}
