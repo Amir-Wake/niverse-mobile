@@ -3,7 +3,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  I18nManager,
 } from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
@@ -31,7 +30,7 @@ export default function Collections() {
       <View
         style={[
           styles.container,
-          { direction: I18nManager.isRTL ? "rtl" : "ltr" },
+          { direction: i18n.locale=="ku" ? "rtl" : "ltr" },
         ]}
       >
         {collections.map((collection, index) => (

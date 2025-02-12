@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert, I18nManager } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { setLanguage, getLanguage } from "@/assets/languages/i18n";
@@ -36,7 +36,7 @@ const Languages = () => {
   const custumStyle = {
     fontSize: 18,
     margin: 5,
-    textAlign: I18nManager.isRTL ? ("right" as "right") : ("left" as "left"),
+    textAlign: i18n.locale=="ku" ? ("right" as "right") : ("left" as "left"),
   };
 
   return (
@@ -79,7 +79,7 @@ const Languages = () => {
             <Text style={custumStyle}>English</Text>
           </TouchableOpacity>
           <View style={{ height: 1, backgroundColor: "#ccc" }} />
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={{
               padding: 10,
               backgroundColor: currentLanguage === "ar" ? "#ddd" : "#fff",
@@ -87,7 +87,7 @@ const Languages = () => {
             onPress={() => handleLanguageChange("ar")}
           >
             <Text style={custumStyle}>العربیە</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <View style={{ height: 1, backgroundColor: "#ccc" }} />
           <TouchableOpacity
             style={{

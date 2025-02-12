@@ -62,14 +62,14 @@ const AllReviews: React.FC<ReviewProps> = () => {
       <ScrollView>
         <View style={{padding: 10}}>
           <TouchableOpacity onPress={() => router.back()}>
-            <FontAwesome name="arrow-left" size={28} color="black" />
+            <FontAwesome name="remove" size={28} color="black" />
           </TouchableOpacity>
         </View>
         <View style={styles.writeReview}>
           <TouchableOpacity
             style={{ alignItems: "center", alignContent: "center" }}
             onPress={() =>
-              router.push(`/components/review/writeReview?bookId=${bookId}`)
+              router.push(`./writeReview?bookId=${bookId}`)
             }
           >
             <Text

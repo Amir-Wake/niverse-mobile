@@ -126,20 +126,20 @@ export default function Index() {
       onPress={onPress}
       disabled={isSwitch}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        {icon}
-        <Text style={styles.optionText}>
-          {text}
-        </Text>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+      {icon}
+      <Text style={styles.optionText}>
+        {text}
+      </Text>
       </View>
       <View>
-        {isSwitch && (
-          <Switch
-            style={styles.switch}
-            value={switchValue}
-            onValueChange={onSwitchChange}
-          />
-        )}
+      {isSwitch && (
+        <Switch
+          style={styles.switch}
+          value={switchValue}
+          onValueChange={onSwitchChange}
+        />
+      )}
       </View>
     </TouchableOpacity>
   );
@@ -337,7 +337,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
   },
-  switch: {},
+  switch: {
+    
+  },
   signOutButton: {
     backgroundColor: "#ff3b30",
     padding: 12,
@@ -345,6 +347,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     borderRadius: 10,
     alignItems: "center",
+    fontFamily: "Arial",
     marginTop: 20,
   },
   signOutButtonText: {

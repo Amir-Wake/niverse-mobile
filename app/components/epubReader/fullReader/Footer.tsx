@@ -13,7 +13,6 @@ export default function Footer() {
         styles.container,
         {
           backgroundColor: theme.body.background,
-          paddingBottom: Platform.OS === "ios" ? 0 : 10,
         },
       ]}
     >

@@ -2,7 +2,8 @@ import { ScrollView, View, Text, TouchableOpacity, Alert, Modal, TextInput, Styl
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import { auth } from "@/firebase";
-import { getAuth, deleteUser, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
+import { deleteUser, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
+import i18n from "@/assets/languages/i18n";
 
 const PrivacyPolicy = () => {
     const router = useRouter();
@@ -35,6 +36,9 @@ const PrivacyPolicy = () => {
     return (
         <View style={{ flex: 1, backgroundColor: "white" }}>
             <ScrollView style={{ padding: 20, backgroundColor: "#FAF9F6", borderRadius: 20 }}>
+                <Text style={{ fontSize: 16, marginBottom: 10, textAlign: i18n.locale == "ku"? "right": "left" }}>
+                    {i18n.t("aboutApp")}
+                </Text>
                 <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }}>
                     Privacy Policy
                 </Text>
@@ -76,7 +80,7 @@ const PrivacyPolicy = () => {
                         style={styles.deleteButton}
                         onPress={handleDeleteAccount}
                     >
-                        <Text style={styles.deleteButtonText}>Delete Account and All Information</Text>
+                        <Text style={styles.deleteButtonText}>Delete Account</Text>
                     </TouchableOpacity>
                 )}
             </ScrollView>

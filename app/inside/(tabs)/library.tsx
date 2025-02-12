@@ -146,8 +146,8 @@ export default function Library() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.searchContainer}>
         <TextInput
-          placeholder={i18n.t("searchForBooks")}
-          placeholderTextColor="black"
+          // placeholder={i18n.t("searchForBooks")}
+          // placeholderTextColor="black"
           style={styles.searchInput}
           value={search}
           onChangeText={updateSearch}
@@ -162,7 +162,7 @@ export default function Library() {
       </View>
       <View style={styles.collectionContainer}>
         <TouchableOpacity
-          style={styles.collection}
+          style={[styles.collection,{direction: i18n.locale=="ku" ? "rtl" : "ltr"}]}
           onPress={() => router.navigate("../collections")}
         >
           <IconButton icon={"reorder-horizontal"} size={26} />
@@ -176,7 +176,7 @@ export default function Library() {
         keyExtractor={(item, index) => index.toString()}
         numColumns={2}
         columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[styles.container,{direction: i18n.locale=="ku" ? "rtl" : "ltr"}]}
         onScrollBeginDrag={Keyboard.dismiss}
       />
     </SafeAreaView>

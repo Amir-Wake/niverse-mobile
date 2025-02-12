@@ -95,7 +95,7 @@ const Review: React.FC<ReviewProps> = ({ bookId }) => {
         </View>
       ))}
       <View style={styles.writeReview}>
-        <TouchableOpacity onPress={() => router.push(`/components/review/allReviews?bookId=${bookId}`)}>
+        <TouchableOpacity onPress={() => router.push(`../../../inside/allReviews?bookId=${bookId}`)}>
           <Text style={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}>
             Read all reviews
           </Text>

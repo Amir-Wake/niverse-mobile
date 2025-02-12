@@ -10,7 +10,6 @@ import {
   Modal,
   TouchableWithoutFeedback,
   Platform,
-  I18nManager
 } from "react-native";
 import { Image } from "expo-image";
 import { auth } from "@/firebase";
@@ -127,7 +126,7 @@ export default function UpdateProfile() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "white" }}>
-      <View style={I18nManager.isRTL ? styles.containerRtl : styles.container}>
+      <View style={i18n.locale=="ku" ? styles.containerRtl : styles.container}>
         <View style={styles.section}>
           <View style={styles.profileContainer}>
             <TouchableOpacity onPress={pickImage}>
@@ -252,14 +251,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 5,
-    textAlign: I18nManager.isRTL ? "right" : "left"
+    textAlign: i18n.locale=="ku" ? "right" : "left"
   },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
     padding: 10,
     borderRadius: 8,
-    textAlign: I18nManager.isRTL ? "right" : "left"
+    textAlign: i18n.locale=="ku" ? "right" : "left"
   },
   disabledInput: {
     backgroundColor: "#f0f0f0",

@@ -40,7 +40,7 @@ function Component({ src }: ComponentProps) {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const searchListRef = useRef<BottomSheetModal>(null);
   const [currentFontSize, setCurrentFontSize] = useState(16);
-  const [currentFontFamily, setCurrentFontFamily] = useState(availableFonts[0]);
+  // const [currentFontFamily, setCurrentFontFamily] = useState(availableFonts[0]);
   const [defTheme, setDefTheme] = useState(Themes.LIGHT);
   const [bookmarkData, setBookmarkData] = useState<Bookmark[]>([]);
   const [isActive, setIsActive] = useState(false);
@@ -109,12 +109,12 @@ function Component({ src }: ComponentProps) {
     storePreference("currentTheme", JSON.stringify(nextTheme));
   };
 
-  const switchFontFamily = () => {
-    const index = availableFonts.indexOf(currentFontFamily);
-    const nextFontFamily = availableFonts[(index + 1) % availableFonts.length];
-    setCurrentFontFamily(nextFontFamily);
-    changeFontFamily(nextFontFamily);
-  };
+  // const switchFontFamily = () => {
+  //   const index = availableFonts.indexOf(currentFontFamily);
+  //   const nextFontFamily = availableFonts[(index + 1) % availableFonts.length];
+  //   setCurrentFontFamily(nextFontFamily);
+  //   changeFontFamily(nextFontFamily);
+  // };
 
   const handleLocationChange = async () => {
     try {
@@ -166,7 +166,7 @@ function Component({ src }: ComponentProps) {
         increaseFontSize={increaseFontSize}
         decreaseFontSize={decreaseFontSize}
         switchTheme={switchTheme}
-        switchFontFamily={switchFontFamily}
+        // switchFontFamily={switchFontFamily}
         onPressSearch={() => searchListRef.current?.present()}
         onOpenBookmarksList={() => bookmarksListRef.current?.present()}
         onOpenTocList={() => bottomSheetRef.current?.present()}

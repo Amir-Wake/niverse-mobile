@@ -1,32 +1,24 @@
 # Create a new Expo project with create-expo-app:
-
-## Usage for bun, npm, pnpm, and yarn
-- npm create expo
-- bun create expo
-- pnpm create expo
-- yarn create expo
+## Usage for Bun, npm, pnpm, and Yarn
+- `npm create expo`
+- `bun create expo`
+- `pnpm create expo`
+- `yarn create expo`
 
 ## Output help information with all available options
-- npx create-expo --help
+- `npx create-expo --help`
 
 # To-do
-## beta
-- search
-- add book
-- redesign home lists and genre
-- deploy
-
-## v1
 - Smart search
-- Reader scroll search
+- Fix Reader scroll search
 - Help button for each screen
 - RTL and LTR based on user input
-- Fonts for reader
-- Writer profile
+- Fonts for the reader
+- Author profile and work
 - Suggest similar books
 - Finished books collection
 - User progress
-- User guide and toturial
+- User guide and tutorial
 - Reader sections scroll
-- Report
-- log in with gmail
+- Report and feedback
+- Log in with Gmail

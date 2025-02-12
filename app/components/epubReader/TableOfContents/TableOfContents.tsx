@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import React, { forwardRef, useState } from "react";
-import { View, StyleSheet, I18nManager } from "react-native";
+import { View, StyleSheet } from "react-native";
 import {
   Toc,
   Section as SectionType,
@@ -51,7 +51,7 @@ const TableOfContents = forwardRef<Ref, Props>(
 
     const header = React.useCallback(
       () => (
-        <View style={{ backgroundColor: theme.body.background, direction: I18nManager.isRTL ? "rtl" : "ltr" }}>
+        <View style={{ backgroundColor: theme.body.background, direction: i18n.locale=="ku" ? "rtl" : "ltr" }}>
           <View style={styles.title}>
             <Text
               variant="titleMedium"

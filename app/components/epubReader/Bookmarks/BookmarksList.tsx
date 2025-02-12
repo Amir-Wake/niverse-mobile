@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import React, { forwardRef, useEffect, useState } from "react";
-import { View, StyleSheet, TouchableOpacity, I18nManager } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Bookmark, useReader } from "@epubjs-react-native/core";
 import {
   BottomSheetModal,
@@ -80,7 +80,7 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
             ...styles.contentContainer,
           }}
         >
-          <View style={[styles.header, {direction: I18nManager.isRTL ? "rtl" : "ltr"}]}>
+          <View style={[styles.header, {direction: i18n.locale=="ku" ? "rtl" : "ltr"}]}>
             <Text
               variant="titleMedium"
               style={{ color: contrast[theme.body.background] }}
@@ -126,7 +126,7 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
             <View style={{ width: "100%" }}>
               <BottomSheetTextInput
                 defaultValue={note}
-                style={[styles.input,{ textAlign: I18nManager.isRTL ? "right" : "left" }]}
+                style={[styles.input,{ textAlign: i18n.locale=="ku" ? "right" : "left" }]}
                 multiline
                 placeholder={i18n.t("typeAnnotation")}
                 placeholderTextColor={contrast[theme.body.background]}
@@ -145,7 +145,7 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
           )}
 
           {bookmarks.map((bookmark) => (
-            <View key={bookmark.id} style={[styles.bookmarkContainer,{direction: I18nManager.isRTL ? "rtl" : "ltr"}]}>
+            <View key={bookmark.id} style={[styles.bookmarkContainer,{direction: i18n.locale=="ku" ? "rtl" : "ltr"}]}>
               <TouchableOpacity
                 style={styles.bookmarkInfo}
                 onPress={() => {

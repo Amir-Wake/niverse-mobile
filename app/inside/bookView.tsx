@@ -70,7 +70,7 @@ const BookView = () => {
         }}
         width={width}
         renderItem={({ index }) => (
-          <ScrollView style={{ marginTop: 20 }}>
+          <ScrollView  showsVerticalScrollIndicator={false} style={{ marginTop: 20 }}>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => router.dismiss()}

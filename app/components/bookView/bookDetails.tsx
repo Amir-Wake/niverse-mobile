@@ -291,8 +291,8 @@ const BookDetails = ({ book }: { book: Book }) => {
           style={styles.button}
           labelStyle={styles.buttonText}
           loading={isDownloading}
-          disabled={ageRestrictionEnabled && book.ageRate > 13}
-        >
+          disabled={isDownloading || (ageRestrictionEnabled && book.ageRate > 13)}
+          >
           {isDownloaded
             ? i18n.t("read")
             : isDownloading
@@ -392,18 +392,18 @@ const styles = StyleSheet.create({
   },
   headerDetail: {
     width: width * 0.45,
+    padding: 2,
     position: "absolute",
-    padding: 4,
     alignSelf: "flex-end",
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
     marginVertical: 10,
     alignSelf: "center",
   },
   author: {
-    fontSize: 20,
+    fontSize: 18,
     paddingTop: 10,
     textAlign: "center",
   },
@@ -432,6 +432,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 24,
     fontWeight: "bold",
+    marginVertical: 5,
   },
   longDescription: {
     marginVertical: 5,

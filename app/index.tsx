@@ -23,8 +23,6 @@ const randomHint = () => {
 export default function App() {
   const [isReady, setIsReady] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
-  const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}newest`;
-  const apiLink2 = `${process.env.EXPO_PUBLIC_BOOKS_API}books`;
   const apiLink3 = `${process.env.EXPO_PUBLIC_BOOKS_API}books?collection=topBooks`;
 
   const router = useRouter();
@@ -33,18 +31,12 @@ export default function App() {
     async function prepare() {
       try {
         const responses = await Promise.all([
-          fetch(apiLink).then((res) => res.json()).catch(() => {
-            setIsOffline(true);
-            return [];
-          }),
-          fetch(apiLink2).then((res) => res.json()).catch(() => {
-            setIsOffline(true);
-            return [];
-          }),
-          fetch(apiLink3).then((res) => res.json()).catch(() => {
-            setIsOffline(true);
-            return [];
-          }),
+          fetch(apiLink3)
+            .then((res) => res.json())
+            .catch(() => {
+              setIsOffline(true);
+              return [];
+            }),
         ]);
 
         if (isOffline) return;
@@ -82,7 +74,7 @@ export default function App() {
     }
 
     prepare();
-  }, [apiLink, apiLink2, apiLink3, isOffline, router]);
+  }, [apiLink3, isOffline, router]);
 
   if (!isReady) {
     return (

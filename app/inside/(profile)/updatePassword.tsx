@@ -6,7 +6,6 @@ import {
   TextInput,
   Alert,
   TouchableOpacity,
-  I18nManager,
 } from "react-native";
 import { auth } from "@/firebase";
 import {
@@ -59,7 +58,7 @@ export default function UpdatePassword() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "white" }}>
-      <View style={I18nManager.isRTL ? styles.containerRtl : styles.container}>
+      <View style={i18n.locale=="ku" ? styles.containerRtl : styles.container}>
         <View style={styles.section}>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>{i18n.t("currentPassword")}</Text>
@@ -142,7 +141,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   label: {
-    textAlign: I18nManager.isRTL ? "right" : "left",
+    textAlign: i18n.locale=="ku" ? "right" : "left",
     fontSize: 16,
     marginBottom: 5,
   },

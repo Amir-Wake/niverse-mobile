@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
+import i18n from "@/assets/languages/i18n";
 
 const { width, height } = Dimensions.get("window");
 
@@ -15,7 +16,7 @@ const BookList = ({ title, description, genre }) => {
   const router = useRouter();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}${genre}?collection=books`;
+  const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}${genre}`;
 
   useEffect(() => {
     fetch(apiLink)
@@ -34,7 +35,7 @@ const BookList = ({ title, description, genre }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container,{direction: i18n.locale=="ku"? "rtl":"ltr"}]}>
       <View style={styles.header}>
         <Text style={styles.title}>{title}</Text>
       </View>

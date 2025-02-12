@@ -24,7 +24,9 @@ const BookList = lazy(() => import("../components/bookLists"));
 const Index = () => {
   const router = useRouter();
   const [showSearch, setShowSearch] = useState(false);
-  const [locations, setLocations] = useState<{ id: string; title: string }[]>([]);
+  const [locations, setLocations] = useState<{ id: string; title: string }[]>(
+    []
+  );
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -57,7 +59,9 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, [lastInteraction, showSearch]);
 
-  const handleScroll = (event: { nativeEvent: { contentOffset: { y: number } } }): void => {
+  const handleScroll = (event: {
+    nativeEvent: { contentOffset: { y: number } };
+  }): void => {
     const offsetY = event.nativeEvent.contentOffset.y;
     setIsScrolled(offsetY > 0);
     if (showSearch) {
@@ -69,9 +73,12 @@ const Index = () => {
 
   const fetchBooks = async (search: string): Promise<void> => {
     try {
-      const response = await axios.get<{ id: string; title: string }[]>(apiLink, {
-        params: { search },
-      });
+      const response = await axios.get<{ id: string; title: string }[]>(
+        apiLink,
+        {
+          params: { search },
+        }
+      );
       setLocations(response.data);
     } catch (error) {
       console.error("Error fetching books:", error);
@@ -106,12 +113,18 @@ const Index = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent
+      />
       <SafeAreaView
         style={[
           styles.safeArea,
           {
-            backgroundColor: isScrolled ? "rgba(255, 255, 255, 0.95)" : "transparent",
+            backgroundColor: isScrolled
+              ? "rgba(255, 255, 255, 0.95)"
+              : "transparent",
           },
         ]}
       >
@@ -123,19 +136,25 @@ const Index = () => {
             ]}
           >
             {!showSearch && (
-              <Image source={require("@/assets/images/iconTr.png")} style={styles.appIcon} />
+              <Image
+                source={require("@/assets/images/iconTr.png")}
+                style={styles.appIcon}
+              />
             )}
             {showSearch && (
               <TextInput
-                placeholder={i18n.t("searchForBooks")}
-                placeholderTextColor="black"
+                // placeholder={i18n.t("searchForBooks")}
+                // placeholderTextColor="black"
                 style={styles.searchInput}
                 value={searchQuery}
                 onChangeText={handleSearchChange}
                 onFocus={() => setLastInteraction(Date.now())}
               />
             )}
-            <TouchableOpacity onPress={toggleSearch} style={styles.searchButton}>
+            <TouchableOpacity
+              onPress={toggleSearch}
+              style={styles.searchButton}
+            >
               <Ionicons name="search" size={30} color="black" />
             </TouchableOpacity>
           </View>
@@ -146,7 +165,8 @@ const Index = () => {
                   key={index}
                   style={[
                     styles.searchResultItem,
-                    index + 1 !== locations.length && styles.searchResultItemBorder,
+                    index + 1 !== locations.length &&
+                      styles.searchResultItemBorder,
                   ]}
                   onPress={() => handleBookPress(locs)}
                 >
@@ -164,7 +184,9 @@ const Index = () => {
       ) : networkError ? (
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={50} color="red" />
-          <Text style={styles.errorMessage}>Network failed. Please try again later.</Text>
+          <Text style={styles.errorMessage}>
+            Network failed. Please try again later.
+          </Text>
         </View>
       ) : (
         <ScrollView
@@ -175,38 +197,48 @@ const Index = () => {
         >
           <View>
             <Animated.View
-              entering={FadeInDown.delay(100).duration(500).springify().damping(12)}
+              entering={FadeInDown.delay(100)
+                .duration(500)
+                .springify()
+                .damping(12)}
             >
-              <Suspense fallback={<ActivityIndicator size="large" color="red" />}>
+              <Suspense
+                fallback={<ActivityIndicator size="large" color="red" />}
+              >
                 <PickCards />
               </Suspense>
             </Animated.View>
             <Animated.View
-              entering={FadeInDown.delay(400).duration(500).springify().damping(12)}
+              entering={FadeInDown.delay(400)
+                .duration(500)
+                .springify()
+                .damping(12)}
             >
-              <Suspense fallback={<ActivityIndicator size="large" color="red" />}>
+              <Suspense
+                fallback={<ActivityIndicator size="large" color="red" />}
+              >
                 <BookList
-                  title="Best from fiction"
-                  description="Suggestions based on genre."
-                  genre="books/genre/fiction"
+                  title={i18n.t("new")}
+                  description={i18n.t("newDescription")}
+                  genre="newest"
                 />
               </Suspense>
             </Animated.View>
             <Suspense fallback={<ActivityIndicator size="large" color="red" />}>
               <BookList
-                title="Best from science"
-                description="See what's popular right now."
-                genre="books/genre/science"
+                title={i18n.t("novels")}
+                description={i18n.t("novelsDescription")}
+                genre="books/genre/novels"
               />
               <BookList
-                title="Newest"
-                description="See newest books"
-                genre="newest"
+                title={i18n.t("biography")}
+                description={i18n.t("biographyDescription")}
+                genre="books/genre/biography"
               />
               <BookList
-                title="Best from novel"
-                description="See what's popular right now."
-                genre="books/genre/novel"
+                title={i18n.t("nonFiction")}
+                description={i18n.t("nonFictionDescription")}
+                genre="books/genre/Non-fiction"
               />
             </Suspense>
           </View>
