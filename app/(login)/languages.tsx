@@ -81,16 +81,6 @@ const Languages = () => {
           <TouchableOpacity
             style={{
               padding: 10,
-              backgroundColor: currentLanguage === "ar" ? "#ddd" : "#fff",
-            }}
-            onPress={() => handleLanguageChange("ar")}
-          >
-            <Text>العربیە</Text>
-          </TouchableOpacity>
-          <View style={{ height: 1, backgroundColor: "#ccc" }} />
-          <TouchableOpacity
-            style={{
-              padding: 10,
               backgroundColor: currentLanguage === "ku" ? "#ddd" : "#fff",
               borderBottomLeftRadius: 10,
               borderBottomRightRadius: 10,
