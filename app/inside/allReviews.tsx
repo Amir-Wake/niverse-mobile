@@ -12,6 +12,8 @@ import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { Image } from "expo-image";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import i18n from "@/assets/languages/i18n";
+
 interface ReviewProps {
   bookId: string;
 }
@@ -75,7 +77,7 @@ const AllReviews: React.FC<ReviewProps> = () => {
             <Text
               style={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}
             >
-              Leave or edit your review
+              {i18n.t("leaveReview")}
             </Text>
             <View style={styles.ratingContainer}>
               {[...Array(5)].map((_, starIndex) => (

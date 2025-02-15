@@ -5,6 +5,7 @@ import axios from "axios";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
+import i18n from "@/assets/languages/i18n";
 
 interface ReviewProps {
   bookId: string;
@@ -58,7 +59,7 @@ const Review: React.FC<ReviewProps> = ({ bookId }) => {
           onPress={() => router.push(`/inside/writeReview?bookId=${bookId}`)}
         >
           <Text style={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}>
-            Leave or edit your review
+            {i18n.t("leaveReview")}
           </Text>
           <View style={styles.ratingContainer}>
             {[...Array(5)].map((_, starIndex) => (
@@ -97,7 +98,7 @@ const Review: React.FC<ReviewProps> = ({ bookId }) => {
       <View style={styles.writeReview}>
         <TouchableOpacity onPress={() => router.push(`../../../inside/allReviews?bookId=${bookId}`)}>
           <Text style={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}>
-            Read all reviews
+            {i18n.t("allReviews")}
           </Text>
         </TouchableOpacity>
       </View>

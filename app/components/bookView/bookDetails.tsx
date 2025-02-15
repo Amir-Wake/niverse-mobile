@@ -286,7 +286,7 @@ const BookDetails = ({ book }: { book: Book }) => {
                   })
               : handleDownload
           }
-          buttonColor={isDownloaded ? "#FFBF00" : "orange"}
+          buttonColor={isDownloaded ? "lightgray" : "orange"}
           textColor="black"
           style={styles.button}
           labelStyle={styles.buttonText}
@@ -303,7 +303,7 @@ const BookDetails = ({ book }: { book: Book }) => {
           icon={isAddedToCollection ? "check-bold" : "plus"}
           mode="contained"
           onPress={handleAddToCollection}
-          buttonColor={isAddedToCollection ? "#FFBF00" : "orange"}
+          buttonColor={isAddedToCollection ? "lightgray" : "orange"}
           textColor="black"
           style={styles.button}
           labelStyle={styles.buttonText}
@@ -427,6 +427,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 18,
+    fontFamily: "Helvetica",
   },
   description: {
     fontSize: 18,

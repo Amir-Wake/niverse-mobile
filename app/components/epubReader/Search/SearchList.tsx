@@ -223,10 +223,10 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
         onDismiss={handleClose}
         android_keyboardInputMode="adjustResize"
       >
-        <BottomSheetView>
+        {/* <BottomSheetScrollView> */}
           <BottomSheetFlatList<SearchResultType>
             data={data}
-            showsVerticalScrollIndicator={false}
+            showsVerticalScrollIndicator={true}
             keyExtractor={(item, index) => item.cfi.concat(index.toString())}
             renderItem={renderItem}
             ListHeaderComponent={header}
@@ -237,7 +237,7 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
             onEndReachedThreshold={0.2}
             onEndReached={fetchMoreData}
           />
-        </BottomSheetView>
+        {/* </BottomSheetScrollView> */}
       </BottomSheetModal>
     </BottomSheetModalProvider>
   );

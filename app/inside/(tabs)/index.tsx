@@ -132,7 +132,7 @@ const Index = () => {
           <View
             style={[
               styles.searchContainer,
-              { backgroundColor: showSearch ? "white" : "transparent" },
+              { backgroundColor: showSearch ? "lightgray" : "transparent" },
             ]}
           >
             {!showSearch && (
@@ -155,7 +155,7 @@ const Index = () => {
               onPress={toggleSearch}
               style={styles.searchButton}
             >
-              <Ionicons name="search" size={30} color="black" />
+              <Ionicons name="search" size={28} color="orange" />
             </TouchableOpacity>
           </View>
           {locations.length > 0 && showSearch && (
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    height: 56,
+    height: 46,
     borderRadius: 28,
     marginTop: 10,
   },
@@ -285,12 +285,13 @@ const styles = StyleSheet.create({
     color: "black",
     fontSize: 16,
     height: 40,
+    backgroundColor: "transparent",
   },
   searchButton: {
     borderRadius: 50,
-    padding: 6,
+    padding: 5,
     margin: 4,
-    borderColor: "skyblue",
+    borderColor: "orange",
     borderWidth: 1,
     backgroundColor: "#fff",
   },

@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { auth } from "@/firebase";
 import axios, { AxiosError } from "axios";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import i18n from "@/assets/languages/i18n";
 
 interface ReviewData {
     rating: number;
@@ -108,9 +109,9 @@ const WriteReview: React.FC = () => {
                 </TouchableOpacity>
 
                 <View style={styles.headerContainer}>
-                    <Text style={styles.headerText}>Rate & Review</Text>
+                    <Text style={styles.headerText}>{i18n.t("rateReview")}</Text>
                     <Text style={styles.subHeaderText}>
-                        Share your thoughts about this book
+                        {i18n.t("reviewSubHeading")}
                     </Text>
                 </View>
 
@@ -146,7 +147,7 @@ const WriteReview: React.FC = () => {
                             placeholder="What did you like or dislike?"
                             value={comment}
                             onChangeText={setComment}
-                            multiline
+                            
                             placeholderTextColor={COLORS.placeholder}
                             accessibilityLabel="Review comment"
                         />
@@ -160,7 +161,7 @@ const WriteReview: React.FC = () => {
                         {isLoading ? (
                             <ActivityIndicator color={COLORS.white} />
                         ) : (
-                            <Text style={styles.submitButtonText}>Submit</Text>
+                            <Text style={styles.submitButtonText}>{i18n.t("submit")}</Text>
                         )}
                     </TouchableOpacity>
                 </View>
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
     submitButton: {
         backgroundColor: COLORS.black,
         padding: 10,
-        width: "100%",
+        width: "80%",
         borderRadius: 10,
         alignItems: "center",
         marginVertical: 10,

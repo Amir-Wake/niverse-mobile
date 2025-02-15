@@ -81,7 +81,7 @@ export default function Header({
         icon="arrow-left"
         iconColor={iconCol}
         size={28}
-        onPress={() => {console.log(i18n.locale); navigation.back()}}
+        onPress={() =>  navigation.back()}
       />
       <View style={styles.actions}>
         <IconButton
