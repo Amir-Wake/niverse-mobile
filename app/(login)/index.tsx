@@ -198,13 +198,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   appName: {
-    fontSize: 36,
+    fontSize: 34,
     color: "#ff9600",
     fontFamily: "times",
   },
   appIcon: {
-    width: 70,
-    height: 70,
+    width: 65,
+    height: 65,
   },
   languageButton: {
     padding: 10,
@@ -247,11 +247,11 @@ const styles = StyleSheet.create({
     borderColor: "grey",
   },
   radioText: {
-    fontSize: 22,
+    fontSize: 18,
     color: "gray",
   },
   radioTextSelected: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
   },
   radioCircle: {

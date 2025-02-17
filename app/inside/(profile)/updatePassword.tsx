@@ -64,7 +64,6 @@ export default function UpdatePassword() {
             <Text style={styles.label}>{i18n.t("currentPassword")}</Text>
             <TextInput
               style={styles.input}
-              placeholder={i18n.t("currentPassword")}
               value={currentPassword}
               onChangeText={setCurrentPassword}
               secureTextEntry
@@ -74,7 +73,6 @@ export default function UpdatePassword() {
             <Text style={styles.label}>{i18n.t("newPass")}</Text>
             <TextInput
               style={styles.input}
-              placeholder={i18n.t("newPass")}
               value={newPassword}
               onChangeText={setNewPassword}
               secureTextEntry
@@ -84,7 +82,6 @@ export default function UpdatePassword() {
             <Text style={styles.label}>{i18n.t("confirmPassword")}</Text>
             <TextInput
               style={styles.input}
-              placeholder={i18n.t("confirmPassword")}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry

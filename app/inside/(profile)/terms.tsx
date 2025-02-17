@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   scrollView: {
-    padding: 20,
+    padding: 10,
     backgroundColor: "#FAF9F6",
     borderRadius: 20,
     marginBottom: 20,
@@ -48,10 +48,12 @@ const styles = StyleSheet.create({
   bodyText: {
     fontSize: 18,
     marginBottom: 10,
+    letterSpacing: 0.5,
   },
   boldText: {
     fontSize: 18,
     fontWeight: "bold",
+    letterSpacing: 0.5,
   },
 });
 
