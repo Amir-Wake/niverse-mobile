@@ -250,7 +250,7 @@ export default function Index() {
           i18n.t("contact"),
           () =>
             Linking.openURL(
-              "mailto:support@example.com?subject=Contact%20Support"
+              "mailto:amir19225@outlook.com?subject=Contact%20Support"
             )
         )}
       </View>

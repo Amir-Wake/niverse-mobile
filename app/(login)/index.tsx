@@ -171,7 +171,7 @@ export default function Index() {
             <Text style={{ fontSize: 14, color: "#0066CC", textDecorationLine: "underline" }}>{i18n.t("privacyPolicy")}</Text>
           </TouchableOpacity>
           <Text style={{ fontSize: 14, color: "#404040", marginHorizontal: 5 }}>|</Text>
-          <TouchableOpacity onPress={() => Linking.openURL("mailto:test@test.com?subject=Contact and support")}>
+          <TouchableOpacity onPress={() => Linking.openURL("mailto:amir19225@outlook.com?subject=Contact and support")}>
             <Text style={{ fontSize: 14, color: "#0066CC", textDecorationLine: "underline" }}>{i18n.t("contact")}</Text>
           </TouchableOpacity>
         </View>

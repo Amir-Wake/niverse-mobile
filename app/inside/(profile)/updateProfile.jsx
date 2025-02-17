@@ -126,7 +126,7 @@ export default function UpdateProfile() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "white" }}>
-      <View style={i18n.locale=="ku" ? styles.containerRtl : styles.container}>
+      <View style={styles.container}>
         <View style={styles.section}>
           <View style={styles.profileContainer}>
             <TouchableOpacity onPress={pickImage}>
@@ -143,9 +143,9 @@ export default function UpdateProfile() {
             </TouchableOpacity>
           </View>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>{i18n.t('email')}</Text>
+            <Text style={[styles.label,{textAlign: i18n.locale=="ku"?"right":"left"}]}>{i18n.t('email')}</Text>
             <TextInput
-              style={[styles.input, styles.disabledInput]}
+              style={[styles.input, styles.disabledInput,{textAlign: i18n.locale=="ku"?"right":"left"}]}
               placeholder="Email"
               value={email}
               editable={false}
@@ -153,20 +153,19 @@ export default function UpdateProfile() {
             />
           </View>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>{i18n.t('name')}</Text>
+            <Text style={[styles.label,{textAlign: i18n.locale=="ku"?"right":"left"}]}>{i18n.t('name')}</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Full Name"
+              style={[styles.input,{textAlign: i18n.locale=="ku"?"right":"left"}]}
               value={newName}
               onChangeText={(text) => setNewName(text)}
             />
           </View>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>{i18n.t('birthday')}</Text>
+            <Text style={[styles.label,{textAlign: i18n.locale=="ku"?"right":"left"}]}>{i18n.t('birthday')}</Text>
             <TouchableOpacity onPress={() => setShowDatePicker(true)}>
               <View pointerEvents="none">
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input,{textAlign: i18n.locale=="ku"?"right":"left"}]}
                   placeholder="Date of Birth"
                   value={dob}
                   editable={false}
@@ -217,14 +216,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#FAF9F6",
     borderRadius: 20
   },
-  containerRtl: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#FAF9F6",
-    borderRadius: 20,
-    direction: "rtl",
-    textAlign: "right"
-  },
   profileContainer: {
     alignItems: "center",
     marginVertical: 30,
@@ -258,7 +249,6 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     padding: 10,
     borderRadius: 8,
-    textAlign: i18n.locale=="ku" ? "right" : "left"
   },
   disabledInput: {
     backgroundColor: "#f0f0f0",

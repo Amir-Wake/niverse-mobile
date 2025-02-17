@@ -14,6 +14,7 @@ const randomHint = () => {
   const hints = [
     i18n.t("hint1"),
     i18n.t("hint2"),
+    i18n.t("hint3"),
     i18n.t("hint4"),
     i18n.t("hint5"),
   ];
