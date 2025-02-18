@@ -97,11 +97,6 @@ const i18n = new I18n({
     resendVerification: "Resend Verification",
     resendVerificationText:
       "If you did not receive the email, click the button above to resend it.",
-    hint1: "Tip: Did you know that you can search for books by their title and author?",
-    hint2: "Tip: Delete books from your library by pressing and holding on them.",
-    hint3: "Tip: Download books for offline reading by pressing the download icon.",
-    hint4: "Tip: Add books to your collection by pressing the plus icon.",
-    hint5: "Tip: Change the language for Kurdish or English in the profile.",
     typeAnnotation: "Type an annotation here..",
     updateAnnotation: "Update Annotation",
     toc: "Table of Contents",
@@ -221,11 +216,6 @@ const i18n = new I18n({
     resendVerification: "دووبارە پشتڕاستکردنەوە",
     resendVerificationText:
       "ئەگەر ئیمەیلەت پێنەگەیشتوە، کلیک لەسەر دوگمەی سەرەوە بکە بۆ دووبارە ناردنەوە",
-    hint1: "دەتوانیت بە ناوی کتێب و نووسەر بگەڕێیت ",
-    hint2: " کتێبەکان لە کتێبخانەکەت بسڕەوە بە داگرتنی درێژ",
-    hint3: "دەتوانیت کتێبەکانت لە کتێبخانە بخوێنیتەوە بە بێ ئینتەرنێت",
-    hint4: " کتێبەکان بۆ کۆکراوەکانت زیاد بکە بە کرتەکردن لەسەر لیستی دڵخواز",
-    hint5: " دەتوانیت زمان بگۆڕی بۆ ئینگلیزی یان کوردی لە پرۆفایل",
     typeAnnotation: "تێبینی بنووسە ..",
     updateAnnotation: "نوێکردنەوەی تێبینی",
     toc: "ناوەڕۆک",
@@ -235,7 +225,7 @@ const i18n = new I18n({
     privacyPolicyText3: "٢- هاوبەشی زانیاری: ئێمە بە هیچ شێوەیەک زانیاریەکانت لەگەڵ هیچ لایەنێکی سێیەمدا هاوبەشی پێناکەین. ئێمە ئەو زانیارانە تەنها لەگەڵ خزمەتگوزاریە هەوریە گەورە پارێزراوەکاندا کە پێویستن بۆ هەڵگرتن و پاراستنی زانیاریەکان بە شێوەیەکی پارێزراو هاوبەشی پێدەکەین. ئەم هاوبەشی پێکردنە پێویستیەکی بنچینەیە بۆ بەکارهێنان و ئیشکردنی بەرنامەکەمان. ",
     privacyPolicyText4: "٣- ئاگەدارکردنەوەی ئارەزومەندانە: تۆ هەڵبژاردنی ئازادت هەیە لەوەی چ جۆرە ئاگەداریەک یان نامەیەک بە تۆ بگات لە لایەن ئێمەوە، وە دەتوانی هەمووی بوەستێنیت لە هەرکاتێکدا.",
     privacyPolicyText5: "٤- پاراستنی زانیاری: ئێمە هەموو هەوڵێک دەدەین کە زانیاریەکان بپارێزین بە باشترین ڕێگا پارێزراو و متمانە پێکراوە تەکنەلۆژیەکان. لەگەڵ ئەوەشدا، تکایە ئاگادار ببە کە هیچ ڕێگایەکی پەیوەندی ئینتەرنێت ١٠٠% پارێزراو نیە، وە ئێمە باشترین هەوڵی خۆمان دەدەین بەڵام گەرەنتی پارێزراوی تەواو نادەین.",
-    privacyPolicyText6: "٥- پاراستنی تەمەن: ئێمە هەوڵی تەواو دەدەین کە بەرنامەکەمان پارێزی بکات لە تەمەنە جیاوازەکان بە تایبەتی خوار ١٣ ساڵ. ئێمە هانی دایک و باوکان دەدەین کە منداڵەکانیان بپارێزن بە سنوردارکردنی ئەو زانیارانەی کە دەتوانن کۆیبکەنەوە  بە بێ زیان.",
+    privacyPolicyText6: "٥- پاراستنی تەمەن: ئێمە هەوڵی تەواومان دەدەین کە بەرنامەکەمان پارێزی بکات لە تەمەنە جیاوازەکان بە تایبەتی خوار ١٣ ساڵ. ئێمە هانی دایک و باوکان دەدەین کە منداڵەکانیان بپارێزن بە سنوردارکردنی ئەو زانیارانەی کە دەتوانن کۆیبکەنەوە  بە بێ زیان.",
     privacyPolicyText7: "ئێمە گرنگی بە پاراستن و زانیاریەکان دەدەین بە شێوەیەکی پارێزراو و بێ زیان کە یارمەتی بەکارهێنەران بدات کە باشترین ئەزموون وەربگرن. ئەگەر هەر پرسیارێک یان تێبینیەکت هەبوو تکایە پەیوەندیمان پێوە بکە.",
     privacyPolicyText8: "",
     deleteAccount: "لەناوبردنی هەژمار",
@@ -252,99 +242,12 @@ const i18n = new I18n({
     termsText11: "بەبەکارهێنانی ئەم بەرنامیە تۆ ڕەزامەندی لەسەر ئەم مەرج و ڕێنماییانە. ئێمە هەوڵدەدەین باشترین ئەزموون و بەکارهێنان بۆ تۆ دابین بکەین، سوپاس بۆ هەماهەنگیت.",
  
   },
-  ar: {
-    welcome: "مرحبا",
-    home: "الصفحة الرئيسية",
-    library: "مكتبة",
-    profile: "الملف الشخصي",
-    By: "بواسطة",
-    read: "قراءة",
-    download: "تحميل",
-    wantToRead: "أريد قراءة",
-    pages: "صفحات",
-    publicationDate: "تاريخ النشر",
-    publisher: "الناشر",
-    translator: "المترجم",
-    ageRating: "تصنيف العمر",
-    accountDetails: "تفاصيل الحساب",
-    updatePassword: "تحديث كلمة المرور",
-    emailNotifications: "إشعارات البريد الإلكتروني",
-    contact: "اتصل بنا",
-    ageRestriction: "قيود العمر",
-    language: "لغة",
-    privacyPolicy: "سياسة الخصوصية",
-    terms: "الشروط والأحكام",
-    signOut: "خروج",
-    email: "البريد الإلكتروني",
-    password: "كلمة المرور",
-    confirmPassword: "تأكيد كلمة المرور",
-    currentPassword: "كلمة المرور الحالية",
-    name: "الاسم",
-    birthday: "تاريخ الميلاد",
-    saveChanges: "حفظ",
-    selectLanguage: "اختر اللغة",
-    newPass: "كلمة المرور الجديدة",
-    collections: "مجموعات",
-    downloaded: "تم التنزيل",
-    change: "تغيير",
-    enterPassword: "أدخل كلمة المرور الخاصة بك",
-    passwordRequired: "كلمة المرور مطلوبة",
-    search: "بحث",
-    bookmarks: "المرجعية",
-    content: "محتوى",
-    theme: "موضوع",
-    font: "الخط",
-    increase: "زيادة",
-    decrease: "انخفاض",
-    signIn: "تسجيل الدخول",
-    signUp: "سجل",
-    forgotPassword: "نسيت كلمة المرور؟",
-    signInText: "تسجيل الدخول بالبريد الإلكتروني وكلمة المرور",
-    signUpText: "التسجيل بالبريد الإلكتروني وكلمة المرور",
-    searchForBooks: "البحث عن كتاب",
-    deleteBook: "حذف الكتاب",
-    deleteBookText: "هل أنت متأكد أنك تريد حذف هذا الكتاب؟",
-    cancel: "إلغاء",
-    ok: "حسنا",
-    confirm: "تأكيد",
-    languageChangeText:
-      "سيؤدي تغيير اللغة إلى إعادة تشغيل التطبيق. هل أنت متأكد أنك تريد المتابعة؟",
-    success: "نجاح",
-    profileUpdated: "تم تحديث الملف الشخصي بنجاح",
-    error: "خطأ",
-    passwordMismatch: "كلمات المرور غير متطابقة",
-    passwordLength: "يجب أن تكون كلمة المرور مكونة من ٦ أحرف على الأقل",
-    passwordChanged: "تم تغيير كلمة المرور بنجاح",
-    passwordIncorrect: "كلمة المرور الحالية غير صحيحة",
-    userAgreement:
-      "من خلال الاستمرار، فإنك توافق على شروط الخدمة وسياسة الخصوصية لدينا. يرجى التأكد من قراءة وفهم هذه الوثائق قبل المتابعة. استخدامك لخدمتنا يخضع لهذه الشروط والسياسات.",
-    passwordAssistance: "مساعدة كلمة المرور",
-    passwordAssistanceText:
-      "أدخل عنوان بريدك الإلكتروني وسنرسل لك رابطًا لإعادة تعيين كلمة المرور",
-    resetPassword: "إعادة تعيين كلمة المرور",
-    resetPasswordText:
-      "تم إرسال بريد إلكتروني إلى عنوان بريدك الإلكتروني مع رابط لإعادة تعيين كلمة المرور",
-    enterEmail: "أدخل البريد الإلكتروني المرتبط بحسابك",
-    verifyEmail: "تحقق من بريدك الإلكتروني",
-    verifyEmailText:
-      "تم إرسال بريد إلكتروني إلى عنوان بريدك الإلكتروني مع رابط للتحقق من حسابك",
-    resendVerification: "إعادة إرسال التحقق",
-    resendVerificationText:
-      "إذا لم تستلم البريد الإلكتروني، انقر فوق الزر أعلاه لإعادة إرساله",
-    hint1: "نصيحة: هل تعلم أنه يمكنك البحث عن الكتب بعنوانها والمؤلف؟",
-    hint2: "نصيحة: احذف الكتب من مكتبتك بالضغط والاحتفاظ بها.",
-    hint4: "نصيحة: أضف الكتب إلى مجموعتك بالضغط على رمز الزائد.",
-    hint5: "نصيحة: قم بتغيير اللغة إلى الكردية والعربية في الملف الشخصي.",
-    typeAnnotation: "اكتب تعليقًا هنا..",
-    updateAnnotation: "تحديث التعليق",
-    toc: "جدول المحتويات",
-    choosePhoto: "اختر صورة",
-  },
+  // Removed Arabic translations
 });
 
 export const setLanguage = async (language) => {
   i18n.locale = language;
-  if (language === "ku" || language === "ar") {
+  if (language === "ku") {
     I18nManager.isRTL = true;
   } else {
     I18nManager.isRTL = false;
@@ -356,7 +259,7 @@ export const getLanguage = async () => {
   const language = await AsyncStorage.getItem("selectedLanguage");
   if (language) {
     i18n.locale = language;
-    if (language === "ku" || language === "ar") {
+    if (language === "ku") {
       I18nManager.isRTL = true;
     } else {
       I18nManager.isRTL = false;

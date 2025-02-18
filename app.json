@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "niVerse",
+    "name": "Nivese",
     "slug": "ebookd",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -14,10 +14,13 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
+      "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": true,
-      "bundleIdentifier": "com.amir19225.ebookdv1"
+      "bundleIdentifier": "com.amir19225.ebookdv1",
+      "useFrameworks" : "static"
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff",
@@ -36,6 +39,14 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",

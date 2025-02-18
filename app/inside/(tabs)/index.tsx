@@ -155,7 +155,7 @@ const Index = () => {
               onPress={toggleSearch}
               style={styles.searchButton}
             >
-              <Ionicons name="search" size={28} color="orange" />
+              <Ionicons name="search" size={28} color="#F94929" />
             </TouchableOpacity>
           </View>
           {locations.length > 0 && showSearch && (
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     padding: 5,
     margin: 4,
-    borderColor: "orange",
+    borderColor: "#F94929",
     borderWidth: 1,
     backgroundColor: "#fff",
   },

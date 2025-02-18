@@ -96,7 +96,7 @@ export default function Index() {
       <View style={styles.headerContainer}>
         <View style={styles.appNameContainer}>
           <Image source={require("@/assets/images/iconTr.png")} style={styles.appIcon} />
-          <Text style={styles.appName}>niVerse</Text>
+          <Text style={styles.appName}>Niverse</Text>
         </View>
         <TouchableOpacity style={styles.languageButton} onPress={() => navigation.push("./languages")}>
           <Text style={styles.languageButtonText}>🌐</Text>
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   },
   appName: {
     fontSize: 34,
-    color: "#ff9600",
+    color: "#F94929",
     fontFamily: "times",
   },
   appIcon: {

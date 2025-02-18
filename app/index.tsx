@@ -10,17 +10,6 @@ const cacheImages = (images: string[]): Promise<boolean>[] => {
   return images.map((image: string) => Image.prefetch(image));
 };
 
-const randomHint = () => {
-  const hints = [
-    i18n.t("hint1"),
-    i18n.t("hint2"),
-    i18n.t("hint3"),
-    i18n.t("hint4"),
-    i18n.t("hint5"),
-  ];
-  return hints[Math.floor(Math.random() * hints.length)];
-};
-
 export default function App() {
   const [isReady, setIsReady] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
@@ -80,10 +69,7 @@ export default function App() {
   if (!isReady) {
     return (
       <View style={{ flex: 1 }}>
-        <LinearGradient
-          colors={["#ff9600", "#fff", "#fff", "#ff9600"]}
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }} >
           <StatusBar
             barStyle="dark-content"
             backgroundColor="transparent"
@@ -93,15 +79,12 @@ export default function App() {
             source={require("../assets/images/iconTr.png")}
             style={{ width: 200, height: 200 }}
           />
-          <View style={{ marginVertical: 10, padding: 10 }}>
-            <Text style={{ fontSize: 16, color: "#000", textAlign: "center" }}>
-              {randomHint()}
-            </Text>
-          </View>
           <View>
-            <ActivityIndicator size="large" color="#000" />
+            <ActivityIndicator size="large" color="#F42C4E" />
           </View>
-        </LinearGradient>
+          <View style={{ marginVertical: 10, padding: 10 }}>
+          </View>
+        </View>
       </View>
     );
   }
