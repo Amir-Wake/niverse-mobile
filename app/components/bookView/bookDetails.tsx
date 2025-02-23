@@ -27,6 +27,8 @@ import { auth } from "@/firebase";
 import Review from "./review/review";
 import i18n from "@/assets/languages/i18n";
 import { ScrollView } from "react-native-gesture-handler";
+import { LinearGradient } from "expo-linear-gradient";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 const { width } = Dimensions.get("window");
 
@@ -46,6 +48,7 @@ interface Book {
   reviewCount: number;
   averageRating: number;
   ageRate: number;
+  coverDominantColor: string;
 }
 
 const BookDetails = ({ book }: { book: Book }) => {
@@ -238,7 +241,11 @@ const BookDetails = ({ book }: { book: Book }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
+      <LinearGradient
+        colors={[book.coverDominantColor || "#F8F8FF", "#F8F8FF"]}
+        style={styles.bookCard}
+      />
       <View style={styles.imageContainer}>
         <Image
           source={{ uri: book.coverImageUrl }}
@@ -247,123 +254,139 @@ const BookDetails = ({ book }: { book: Book }) => {
           placeholder={require("@/assets/images/booksPlaceHolder.jpg")}
           placeholderContentFit="cover"
           contentFit="cover"
-          transition={1000}
+          transition={100}
         />
       </View>
-      <View style={styles.headerDetail}>
-        <Text style={styles.title}>
-          {book.title.length > 48
-            ? `${book.title.slice(0, 48)}...`
-            : book.title}
-        </Text>
-        <Text style={styles.author}>
-          {i18n.t("By")}: {book.author}
-        </Text>
-        <View style={styles.rating}>
-          {[...Array(5)].map((_, index) => (
-            <FontAwesome
-              key={index}
-              name="star"
-              size={24}
-              color={index < book.averageRating ? "gold" : "gray"}
-            />
-          ))}
-          <Text style={styles.reviewCount}> ({book.reviewCount || 0})</Text>
-        </View>
-      </View>
-      <View style={styles.buttonContainer}>
-        <Button
-          icon={isDownloaded ? "check-bold" : "download"}
-          mode="contained"
-          onPress={
-            isDownloaded
-              ? () =>
-                  router.push({
-                    pathname: "/inside/bookReader",
-                    params: {
-                      fileUrl: `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.title}/${book.title}.epub`,
-                    },
-                  })
-              : handleDownload
-          }
-          buttonColor={isDownloaded ? "lightgray" : "orange"}
-          textColor="black"
-          style={styles.button}
-          labelStyle={styles.buttonText}
-          loading={isDownloading}
-          disabled={isDownloading || (ageRestrictionEnabled && book.ageRate > 13)}
+      <View style={styles.body} >
+        <Animated.View style={styles.headerDetail} entering={FadeInDown.delay(200)
+                                          .duration(500)
+                                          .springify()
+                                          .damping(12)}>
+          <Text style={styles.title}>
+            {book.title.length > 48
+              ? `${book.title.slice(0, 48)}...`
+              : book.title}
+          </Text>
+          <Text style={styles.author}>{book.author}</Text>
+          <View style={styles.rating}>
+            {[...Array(5)].map((_, index) => (
+              <FontAwesome
+                key={index}
+                name="star"
+                size={24}
+                color={index < book.averageRating ? "gold" : "gray"}
+              />
+            ))}
+            <Text style={styles.reviewCount}> ({book.reviewCount || 0})</Text>
+          </View>
+        </Animated.View>
+        <Animated.View style={styles.buttonContainer} entering={FadeInDown.delay(400)
+                                          .duration(500)
+                                          .springify()
+                                          .damping(12)}>
+          <Button
+            icon={isDownloaded ? "check-bold" : "download"}
+            mode="contained"
+            onPress={
+              isDownloaded
+                ? () =>
+                    router.push({
+                      pathname: "/inside/bookReader",
+                      params: {
+                        fileUrl: `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.title}/${book.title}.epub`,
+                      },
+                    })
+                : handleDownload
+            }
+            buttonColor={isDownloaded ? "lightgray" : "orange"}
+            textColor="black"
+            style={styles.button}
+            labelStyle={styles.buttonText}
+            loading={isDownloading}
+            disabled={
+              isDownloading || (ageRestrictionEnabled && book.ageRate > 13)
+            }
           >
-          {isDownloaded
-            ? i18n.t("read")
-            : isDownloading
-            ? ` ${Math.round(downloadProgress * 100)}%`
-            : i18n.t("download")}
-        </Button>
-        <Button
-          icon={isAddedToCollection ? "check-bold" : "plus"}
-          mode="contained"
-          onPress={handleAddToCollection}
-          buttonColor={isAddedToCollection ? "lightgray" : "orange"}
-          textColor="black"
-          style={styles.button}
-          labelStyle={styles.buttonText}
-          loading={isLoading}
-        >
-          {i18n.t("wantToRead")}
-        </Button>
-      </View>
-      <View style={styles.horizontalLine} />
-      <View>
-        <Text style={[styles.description, isRTL && { textAlign: "right" }]}>
-          {book.shortDescription}
-        </Text>
-        <Text style={[styles.longDescription, isRTL && { textAlign: "right" }]}>
-          {showMore
-            ? book.longDescription
-            : `${book.longDescription.slice(0, 200)}...`}
-        </Text>
-        <TouchableOpacity onPress={() => setShowMore(!showMore)}>
-          <Text style={styles.showMoreText}>
-            {showMore ? "Read Less" : "Read More"}
+            {isDownloaded
+              ? i18n.t("read")
+              : isDownloading
+              ? ` ${Math.round(downloadProgress * 100)}%`
+              : i18n.t("download")}
+          </Button>
+          <Button
+            icon={isAddedToCollection ? "check-bold" : "plus"}
+            mode="contained"
+            onPress={handleAddToCollection}
+            buttonColor={isAddedToCollection ? "lightgray" : "orange"}
+            textColor="black"
+            style={styles.button}
+            labelStyle={styles.buttonText}
+            loading={isLoading}
+          >
+            {i18n.t("wantToRead")}
+          </Button>
+        </Animated.View>
+        <View style={styles.horizontalLine} />
+        <Animated.View entering={FadeInDown.delay(600)
+                                          .duration(500)
+                                          .springify()
+                                          .damping(12)}>
+          <Text style={[styles.description, isRTL && { textAlign: "right" }]}>
+            {book.shortDescription}
           </Text>
-        </TouchableOpacity>
-      </View>
-      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-        <View style={styles.bookInfo}>
-          <Text style={styles.infoText}>{i18n.t("pages")}</Text>
-          <FontAwesome name="files-o" size={50} color="black" />
-          <Text style={styles.infoText}>{book.printLength}</Text>
-        </View>
-        <View style={styles.bookInfo}>
-          <Text style={styles.infoText}>{i18n.t("language")}</Text>
-          <FontAwesome name="language" size={50} color="black" />
-          <Text style={styles.infoText}>{book.language}</Text>
-        </View>
-        <View style={styles.bookInfo}>
-          <Text style={styles.infoText}>{i18n.t("publicationDate")}</Text>
-          <MaterialIcons name="date-range" size={50} color="black" />
-          <Text style={styles.infoText}>{book.publicationDate}</Text>
-        </View>
-        <View style={styles.bookInfo}>
-          <Text style={styles.infoText}>{i18n.t("publisher")}</Text>
-          <MaterialIcons name="business" size={50} color="black" />
-          <Text style={styles.infoText}>{book.publisher}</Text>
-        </View>
-        <View style={styles.bookInfo}>
-          <Text style={styles.infoText}>{i18n.t("translator")}</Text>
-          <MaterialIcons name="translate" size={50} color="black" />
-          <Text style={styles.infoText}>{book.translator}</Text>
-        </View>
-        <View style={styles.bookInfo}>
-          <Text style={styles.infoText}>{i18n.t("ageRating")}</Text>
-          <FontAwesome name="ban" size={50} color="black" />
-          <Text style={styles.infoText}>
-            {book.ageRate ? "+" + book.ageRate : "none"}
+          <Text
+            style={[styles.longDescription, isRTL && { textAlign: "right" }]}
+          >
+            {showMore
+              ? book.longDescription
+              : `${book.longDescription.slice(0, 200)}...`}
           </Text>
-        </View>
-      </ScrollView>
-      <Review bookId={book.id} />
-    </View>
+          <TouchableOpacity onPress={() => setShowMore(!showMore)}>
+            <Text style={styles.showMoreText}>
+              {showMore ? i18n.t("less") : i18n.t("more")}
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
+        <Animated.ScrollView horizontal={true} showsHorizontalScrollIndicator={false} entering={FadeInDown.delay(800)
+                                          .duration(500)
+                                          .springify()
+                                          .damping(12)}>
+          <View style={styles.bookInfo}>
+            <Text style={styles.infoText}>{i18n.t("pages")}</Text>
+            <FontAwesome name="files-o" size={50} color="black" />
+            <Text style={styles.infoText}>{book.printLength}</Text>
+          </View>
+          <View style={styles.bookInfo}>
+            <Text style={styles.infoText}>{i18n.t("language")}</Text>
+            <FontAwesome name="language" size={50} color="black" />
+            <Text style={styles.infoText}>{book.language}</Text>
+          </View>
+          <View style={styles.bookInfo}>
+            <Text style={styles.infoText}>{i18n.t("publicationDate")}</Text>
+            <MaterialIcons name="date-range" size={50} color="black" />
+            <Text style={styles.infoText}>{book.publicationDate}</Text>
+          </View>
+          <View style={styles.bookInfo}>
+            <Text style={styles.infoText}>{i18n.t("publisher")}</Text>
+            <MaterialIcons name="business" size={50} color="black" />
+            <Text style={styles.infoText}>{book.publisher}</Text>
+          </View>
+          <View style={styles.bookInfo}>
+            <Text style={styles.infoText}>{i18n.t("translator")}</Text>
+            <MaterialIcons name="translate" size={50} color="black" />
+            <Text style={styles.infoText}>{book.translator}</Text>
+          </View>
+          <View style={styles.bookInfo}>
+            <Text style={styles.infoText}>{i18n.t("ageRating")}</Text>
+            <FontAwesome name="ban" size={50} color="black" />
+            <Text style={styles.infoText}>
+              {book.ageRate ? "+" + book.ageRate : "none"}
+            </Text>
+          </View>
+        </Animated.ScrollView>
+        <Review bookId={book.id} />
+      </View>
+    </ScrollView>
   );
 };
 
@@ -373,34 +396,44 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     marginBottom: 25,
   },
+  body: {
+    padding: 10,
+  },
   bookImage: {
     width: 180,
     height: 270,
-    alignSelf: "flex-start",
     backgroundColor: "white",
     shadowColor: "#000",
     elevation: 5,
   },
   imageContainer: {
-    width: 190,
-    height: 280,
+    width: "100%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
     shadowRadius: 5,
     elevation: 5,
+    alignItems: "center",
+    marginTop: 30,
+  },
+  bookCard: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "30%",
   },
   headerDetail: {
-    width: width * 0.45,
+    width: width * 0.9,
     padding: 2,
-    position: "absolute",
-    alignSelf: "flex-end",
+    alignSelf: "center",
   },
   title: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: "bold",
-    marginVertical: 10,
+    marginVertical: 5,
     alignSelf: "center",
+    textAlign: "center",
   },
   author: {
     fontSize: 18,
@@ -411,7 +444,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 5,
+    marginVertical: 5,
   },
   reviewCount: {
     paddingTop: 5,
@@ -424,6 +457,7 @@ const styles = StyleSheet.create({
   button: {
     textAlign: "center",
     marginTop: 5,
+    borderRadius: 5,
   },
   buttonText: {
     fontSize: 18,
@@ -434,12 +468,14 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontWeight: "bold",
     marginVertical: 5,
+    letterSpacing: 0.5,
   },
   longDescription: {
     marginVertical: 5,
     fontSize: 18,
     lineHeight: 24,
     textAlign: "justify",
+    letterSpacing: 0.5,
   },
   showMoreText: {
     marginVertical: 5,

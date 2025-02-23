@@ -5,8 +5,8 @@ import {
   useReader,
 } from '@epubjs-react-native/core';
 import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import { IconButton, Text } from 'react-native-paper';
+import { StyleSheet, TouchableOpacity, View, I18nManager } from 'react-native';
+import { Text } from 'react-native-paper';
 import { contrast } from '../fullReader/utils';
 
 interface Props {
@@ -23,27 +23,27 @@ function SearchResult({ searchTerm, searchResult, onPress }: Props) {
   return (
     <TouchableOpacity
       key={searchResult.cfi}
-      style={styles.container}
+      style={[styles.container,{direction: I18nManager.isRTL ? 'rtl' : 'ltr'}]}
       onPress={() => onPress(searchResult)}
     >
-      <View style={styles.icon}>
+      {/* <View style={[styles.icon,{direction: i18n.locale === 'ku' ? 'rtl' : 'ltr'}]}>
         <IconButton
           icon="bookmark"
           iconColor={contrast[theme.body.background]}
           size={20}
         />
 
-        {/* <Text style={styles.bookmarkLocationNumber} variant="labelSmall">
+        <Text style={styles.bookmarkLocationNumber} variant="labelSmall">
           {location}
-        </Text> */}
-      </View>
+        </Text>
+      </View> */}
 
       <View style={styles.info}>
         <Text
           numberOfLines={1}
-          style={{ ...styles.chapter, color: contrast[theme.body.background] }}
+          style={{ ...styles.chapter, color: contrast[theme.body.background], fontWeight: 'bold' }}
         >
-          Chapter: {searchResult.section?.label}
+           {searchResult.section?.label}
         </Text>
 
         <View>
@@ -51,6 +51,7 @@ function SearchResult({ searchTerm, searchResult, onPress }: Props) {
             style={{
               ...styles.excerpt,
               color: contrast[theme.body.background],
+              
             }}
             onPress={() => {
               onPress(searchResult);
@@ -85,14 +86,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginVertical: 10,
+    paddingVertical: 10,
+    borderBottomColor: 'rgba(0, 0, 0, 0.2)',
+    borderBottomWidth: 1,
   },
   icon: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   info: {
-    width: '85%',
+    width: '100%',
   },
   chapter: { marginBottom: 2 },
   excerpt: { fontStyle: 'italic' },

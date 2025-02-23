@@ -3,8 +3,7 @@ import { View, Image, ActivityIndicator, Text, StatusBar } from "react-native";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/firebase";
-import { LinearGradient } from "expo-linear-gradient";
-import i18n from "@/assets/languages/i18n";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const cacheImages = (images: string[]): Promise<boolean>[] => {
   return images.map((image: string) => Image.prefetch(image));
@@ -20,18 +19,17 @@ export default function App() {
   useEffect(() => {
     async function prepare() {
       try {
-        const responses = await Promise.all([
-          fetch(apiLink3)
-            .then((res) => res.json())
-            .catch(() => {
-              setIsOffline(true);
-              return [];
-            }),
-        ]);
+        const cachedData = await AsyncStorage.getItem(apiLink3);
+        let data = [];
+        if (cachedData) {
+          data = JSON.parse(cachedData);
+        } else {
+          const response = await fetch(apiLink3);
+          data = await response.json();
+          await AsyncStorage.setItem(apiLink3, JSON.stringify(data));
+        }
 
         if (isOffline) return;
-
-        const data = responses.flat();
 
         interface ApiResponse {
           coverImageUrl: string;

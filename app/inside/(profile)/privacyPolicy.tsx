@@ -124,12 +124,6 @@ const PrivacyPolicy = () => {
             />
             <View style={styles.buttonContainer}>
               <TouchableOpacity
-                style={styles.buttonCancel}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.buttonCancelText}>{i18n.t("cancel")}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
                 style={[styles.button, styles.buttonDelete]}
                 onPress={confirmDeleteAccount}
               >
@@ -145,9 +139,8 @@ const PrivacyPolicy = () => {
 
 const styles = StyleSheet.create({
   buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
+    justifyContent: "center",
+    width: "80%",
   },
   scrollView: {
     padding: 10,

@@ -2,7 +2,12 @@
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import React, { forwardRef, useState } from "react";
-import { ActivityIndicator, View, StyleSheet, I18nManager } from "react-native";
+import {
+  ActivityIndicator,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import {
   SearchResult as SearchResultType,
   useReader,
@@ -12,14 +17,13 @@ import {
   BottomSheetModalProvider,
   BottomSheetFlatList,
   BottomSheetTextInput,
-  BottomSheetView,
-  BottomSheetScrollView
 } from "@gorhom/bottom-sheet";
 import { BottomSheetModalMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
-import { Button, Text } from "react-native-paper";
+import { Text } from "react-native-paper";
 import SearchResult from "./SearchResult";
 import { contrast } from "../fullReader/utils";
 import i18n from "@/assets/languages/i18n";
+import { Ionicons } from "@expo/vector-icons";
 
 interface Props {
   onClose: () => void;
@@ -42,7 +46,7 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
   const [data, setData] = useState<SearchResultType[]>(searchResults.results);
   const [page, setPage] = useState(1);
 
-  const snapPoints = React.useMemo(() => ["80%","95%"], []); // Adjust snap points to full height
+  const snapPoints = React.useMemo(() => ["60%", "95%"], []);
 
   const renderItem = React.useCallback(
     ({ item }: { item: SearchResultType }) => (
@@ -58,7 +62,6 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
           clearSearchResults();
           setPage(1);
           setData([]);
-
           onClose();
         }}
       />
@@ -75,42 +78,56 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
 
   const header = React.useCallback(
     () => (
-      <View>
-        <View style={[styles.title,{direction: I18nManager.isRTL ? "rtl" : "ltr"}]}>
-          <Text
-            variant="titleMedium"
-            style={{ color: contrast[theme.body.background], textAlign: "center" }}
-          >
-            {i18n.t("search")}
-          </Text>
-          <Button
-              mode="text"
-              textColor={contrast[theme.body.background]}
-              onPress={onClose}
+      <View
+        style={{
+          borderBottomWidth: 1,
+          borderBottomColor: "lightgray",
+        }}
+      >
+        <View style={styles.title}>
+          <View>
+            <TouchableOpacity
+              onPress={() => {
+                setSearchTerm("");
+                onClose();
+              }}
+              style={{ padding: 10 }}
             >
-              X
-            </Button>
-        </View>
-
-        <View style={{ width: "100%" }}>
-          <BottomSheetTextInput
-            inputMode="search"
-            returnKeyType="search"
-            returnKeyLabel="Search"
-            autoCorrect={false}
-            autoCapitalize="none"
-            defaultValue={searchTerm}
-            style={[styles.input,{color:contrast[theme.body.background]}]}
-            placeholder="Type an term here..."
-            placeholderTextColor={contrast[theme.body.background]}
-            onSubmitEditing={(event) => {
-              setSearchTerm(event.nativeEvent.text);
-              clearSearchResults();
-              setData([]);
-              setPage(1);
-              search(event.nativeEvent.text, 1, 20);
-            }}
-          />
+              <Text
+                variant="titleMedium"
+                style={{
+                  color: contrast[theme.body.background],
+                  fontFamily: "helvetica",
+                }}
+              >
+                {i18n.t("close")}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.searchSection}>
+            <BottomSheetTextInput
+              inputMode="search"
+              returnKeyType="search"
+              returnKeyLabel="Search"
+              autoCorrect={false}
+              autoCapitalize="none"
+              defaultValue={searchTerm}
+              style={styles.input}
+              onSubmitEditing={(event) => {
+                setSearchTerm(event.nativeEvent.text);
+                clearSearchResults();
+                setData([]);
+                setPage(1);
+                search(event.nativeEvent.text, 1, 20);
+              }}
+            />
+            <Ionicons
+              name="search"
+              size={20}
+              style={styles.searchIcon}
+              color="black"
+            />
+          </View>
         </View>
 
         {isSearching && (
@@ -122,22 +139,21 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
                 color: contrast[theme.body.background],
               }}
             >
-              Searching results...
+              {i18n.t("searching")}
             </Text>
           </View>
         )}
       </View>
     ),
-    [clearSearchResults, isSearching, search, searchTerm, theme.body.background]
+    [theme.body.background,onClose]
   );
 
   const footer = React.useCallback(
     () => (
-      <View style={styles.title}>
+      <View style={{ padding: 20 }}>
         {isSearching && (
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <ActivityIndicator animating />
-
             <Text
               variant="bodyMedium"
               style={{
@@ -146,7 +162,7 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
                 color: contrast[theme.body.background],
               }}
             >
-              fetching results...
+              {i18n.t("moreResult")}
             </Text>
           </View>
         )}
@@ -158,10 +174,11 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
               variant="bodyMedium"
               style={{
                 fontStyle: "italic",
+                textAlign: "center",
                 color: contrast[theme.body.background],
               }}
             >
-              No more results at the moment...
+              {i18n.t("noMoreResult")}
             </Text>
           )}
       </View>
@@ -176,15 +193,16 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
 
   const empty = React.useCallback(
     () => (
-      <View style={styles.title}>
+      <View style={{ padding: 20 }}>
         <Text
           variant="bodyMedium"
           style={{
             fontStyle: "italic",
             color: contrast[theme.body.background],
+            textAlign: "center",
           }}
         >
-          No results...
+          {i18n.t("noResult")}
         </Text>
       </View>
     ),
@@ -208,35 +226,43 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
     if (searchResults.results.length > 0) {
       setData((oldState) => [...oldState, ...searchResults.results]);
     }
-  }, [searchResults]);
+  }, [clearSearchResults, searchResults]);
 
   return (
     <BottomSheetModalProvider>
       <BottomSheetModal
         ref={ref}
-        index={2} 
+        index={2}
         snapPoints={snapPoints}
         enablePanDownToClose
         style={styles.container}
-        handleIndicatorStyle={{backgroundColor:contrast[theme.body.background]}}
-        backgroundStyle={{ backgroundColor: theme.body.background, borderColor:contrast[theme.body.background], borderWidth:1 }}
+        handleIndicatorStyle={{
+          backgroundColor: contrast[theme.body.background],
+        }}
+        backgroundStyle={{
+          backgroundColor: theme.body.background,
+          borderColor: contrast[theme.body.background],
+          borderWidth: 1,
+        }}
         onDismiss={handleClose}
         android_keyboardInputMode="adjustResize"
       >
+        {header()}
         {/* <BottomSheetScrollView> */}
-          <BottomSheetFlatList<SearchResultType>
-            data={data}
-            showsVerticalScrollIndicator={true}
-            keyExtractor={(item, index) => item.cfi.concat(index.toString())}
-            renderItem={renderItem}
-            ListHeaderComponent={header}
-            ListFooterComponent={footer}
-            ListEmptyComponent={empty}
-            style={{ width: "100%" }}
-            maxToRenderPerBatch={20}
-            onEndReachedThreshold={0.2}
-            onEndReached={fetchMoreData}
-          />
+        <BottomSheetFlatList<SearchResultType>
+          data={data}
+          showsVerticalScrollIndicator={true}
+          indicatorStyle={"black"}
+          keyExtractor={(item, index) => item.cfi.concat(index.toString())}
+          renderItem={renderItem}
+          // ListHeaderComponent={header}
+          ListFooterComponent={footer}
+          ListEmptyComponent={empty}
+          style={{ width: "100%" }}
+          maxToRenderPerBatch={20}
+          onEndReachedThreshold={0.2}
+          onEndReached={fetchMoreData}
+        />
         {/* </BottomSheetScrollView> */}
       </BottomSheetModal>
     </BottomSheetModalProvider>
@@ -254,15 +280,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginVertical: 10,
+    marginBottom: 5,
+  },
+  searchSection: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 10,
+    backgroundColor: "#DCDCDC",
+    borderColor: "black",
+    borderWidth: 1,
+  },
+  searchIcon: {
+    padding: 10,
   },
   input: {
-    width: "100%",
-    borderRadius: 10,
-    fontSize: 16,
-    lineHeight: 20,
-    padding: 8,
-    backgroundColor: "rgba(151, 151, 151, 0.25)",
+    flex: 1,
+    paddingTop: 10,
+    paddingRight: 10,
+    paddingBottom: 10,
+    paddingLeft: 10,
   },
 });
 

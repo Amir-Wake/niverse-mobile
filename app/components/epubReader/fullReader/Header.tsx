@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity, StyleSheet, Text, Dimensions, I18nManager } from "react-native";
+import { View, TouchableOpacity, StyleSheet, Text, Dimensions } from "react-native";
 import { Themes, useReader } from "@epubjs-react-native/core";
 import { IconButton, MD3Colors } from "react-native-paper";
 import { MAX_FONT_SIZE, MIN_FONT_SIZE } from "./utils";
@@ -15,7 +15,7 @@ interface Props {
   decreaseFontSize: () => void;
   switchTheme: () => void;
   onPressSearch: () => void;
-  // switchFontFamily: () => void;
+  switchFontFamily: () => void;
   onOpenBookmarksList: () => void;
   onOpenTocList: () => void;
 }
@@ -26,7 +26,7 @@ export default function Header({
   decreaseFontSize,
   switchTheme,
   onPressSearch,
-  // switchFontFamily,
+  switchFontFamily,
   onOpenBookmarksList,
   onOpenTocList,
 }: Props) {
@@ -50,10 +50,6 @@ export default function Header({
       setIconCol("white");
     }
   }, [theme]);
-
-  const switchDirection = () => {
-    I18nManager.isRTL = !I18nManager.isRTL;
-  };
 
   const handleChangeBookmark = () => {
     const location = getCurrentLocation();
@@ -198,7 +194,7 @@ export default function Header({
                 mode="outlined"
               />
             </TouchableOpacity>
-            {/* <TouchableOpacity
+            <TouchableOpacity
               style={[
                 styles.circle,
                 {
@@ -215,28 +211,6 @@ export default function Header({
                 icon="format-font"
                 iconColor={theme === Themes.DARK ? "white" : iconCol}
                 size={22}
-                mode="outlined"
-              />
-            </TouchableOpacity> */}
-            <TouchableOpacity
-              style={[
-                styles.circle,
-                {
-                  backgroundColor: theme.body.background,
-                  borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
-                },
-              ]}
-              onPress={switchDirection}
-              disabled={currentFontSize === MAX_FONT_SIZE}
-            >
-              <Text style={[styles.optionsText, { color: contrast[theme.body.background] }]}>
-                {i18n.t("direction")}
-              </Text>
-              <IconButton
-                icon="swap-horizontal-bold"
-                iconColor={theme === Themes.DARK ? "white" : iconCol}
-                size={22}
-                animated
                 mode="outlined"
               />
             </TouchableOpacity>

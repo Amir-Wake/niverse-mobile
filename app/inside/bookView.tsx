@@ -9,8 +9,8 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Carousel from "react-native-reanimated-carousel";
-import Animated, { FadeInDown } from "react-native-reanimated";
-import { ScrollView } from "react-native-gesture-handler";
+import Animated, { BounceInDown, FadeInDown } from "react-native-reanimated";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get("window");
 const BookDetails = lazy(() => import("@/app/components/bookView/bookDetails"));
@@ -24,9 +24,16 @@ const BookView = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const response = await fetch(apiLink as string);
-        const data = await response.json();
-        setBooks(Array.isArray(data) ? data : [data]);
+        const cachedData = await AsyncStorage.getItem(apiLink as string);
+        if (cachedData) {
+          setBooks(JSON.parse(cachedData));
+          setLoading(false);
+        } else {
+          const response = await fetch(apiLink as string);
+          const data = await response.json();
+          setBooks(Array.isArray(data) ? data : [data]);
+          await AsyncStorage.setItem(apiLink as string, JSON.stringify(data));
+        }
       } catch (error) {
         console.error("Error fetching books:", error);
       } finally {
@@ -40,7 +47,7 @@ const BookView = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="red" />
       </View>
     );
   }
@@ -65,27 +72,29 @@ const BookView = () => {
         loop={false}
         mode="parallax"
         modeConfig={{
-          parallaxScrollingScale: 0.9,
+          parallaxScrollingScale: 0.905,
           parallaxScrollingOffset: 50,
         }}
         width={width}
         renderItem={({ index }) => (
-          <ScrollView  showsVerticalScrollIndicator={false} style={{ marginTop: 20 }}>
+          <Animated.View style={{ marginTop: 20 }} entering={index==defaultIndex?BounceInDown.delay(0).duration(0).springify(0).damping(0):FadeInDown.delay(index*200)
+                                    .duration(500)
+                                    .springify()
+                                    .damping(12)}>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => router.dismiss()}
             >
               <Text style={styles.closeButtonText}>X</Text>
             </TouchableOpacity>
-            <Animated.View
+            <View
               style={styles.container}
-              entering={FadeInDown.duration(200).springify()}
             >
-              <Suspense fallback={<ActivityIndicator size="large" color="#0000ff" />}>
+              <Suspense fallback={<ActivityIndicator style={{flex:1, justifyContent:"center",alignItems:"center"}} size="large" color="red" />}>
                 <BookDetails book={books[index]} />
               </Suspense>
-            </Animated.View>
-          </ScrollView>
+            </View>
+          </Animated.View>
         )}
       />
     </View>
@@ -99,9 +108,9 @@ const styles = StyleSheet.create({
     minHeight: height,
     borderWidth: 2,
     flex: 1,
-    padding: 15,
     backgroundColor: "#F8F8FF",
     borderRadius: 20,
+    overflow: "hidden",
   },
   bookSheetContainer: {
     flex: 1,

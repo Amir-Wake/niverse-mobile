@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import React, { forwardRef, useEffect, useState } from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity, I18nManager } from "react-native";
 import { Bookmark, useReader } from "@epubjs-react-native/core";
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
+  BottomSheetScrollView,
   BottomSheetTextInput,
-  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { BottomSheetModalMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { Button, IconButton, MD3Colors, Text } from "react-native-paper";
@@ -30,9 +30,16 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
     theme,
   } = useReader();
 
-  const snapPoints = React.useMemo(() => ["50%", "75%"], []);
+  const snapPoints = React.useMemo(() => ["60%", "95%"], []);
   const [note, setNote] = useState("");
   const [currentBookmark, setCurrentBookmark] = useState<Bookmark | null>(null);
+
+  const isKurdishArabicScript = (text: string) => {
+    const kurdishArabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\u06A9\u06C5\u06D5\u06D2\u06D3]/;
+    setNote(kurdishArabicRegex.test(text)==true? 'rtl'+text:'ltr'+text)
+    return kurdishArabicRegex.test(text);
+  };
+  
 
   useEffect(() => {
     if (isBookmarked) {
@@ -58,14 +65,14 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
     <BottomSheetModalProvider>
       <BottomSheetModal
         ref={ref}
-        index={1}
+        index={2}
         enablePanDownToClose
         android_keyboardInputMode="adjustResize"
         handleIndicatorStyle={{
           backgroundColor: contrast[theme.body.background],
         }}
         backgroundStyle={{ backgroundColor: theme.body.background }}
-        snapPoints={["95%"]}
+        snapPoints={snapPoints}
         handleStyle={{ backgroundColor: theme.body.background }}
         style={{
           ...styles.contentContainer,
@@ -75,26 +82,34 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
           borderRadius: 10,
         }}
       >
-        <BottomSheetView
-          style={{
-            ...styles.contentContainer,
-          }}
-        >
-          <View style={[styles.header, {direction: i18n.locale=="ku" ? "rtl" : "ltr"}]}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={onClose}>
             <Text
               variant="titleMedium"
-              style={{ color: contrast[theme.body.background] }}
+              style={{
+                color: contrast[theme.body.background],
+                padding: 10,
+                fontFamily: "helvetica",
+              }}
             >
-              {i18n.t("bookmarks")}
+              {i18n.t("close")}
             </Text>
-            <IconButton
-              icon="close"
-              size={24}
-              iconColor={contrast[theme.body.background]}
-              onPress={onClose}
-            />
-          </View>
-
+          </TouchableOpacity>
+          <Text
+            variant="titleMedium"
+            style={{
+              color: contrast[theme.body.background],
+              padding: 10,
+              fontFamily: "helvetica",
+            }}
+          >
+            {i18n.t("bookmarks")}
+          </Text>
+        </View>
+        <BottomSheetScrollView
+          indicatorStyle={"black"}
+          style={styles.contentContainer}
+        >
           {/* {bookmarks.length > 0 && (
             <Button
               mode="text"
@@ -115,37 +130,43 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
                 style={{
                   fontStyle: "italic",
                   color: contrast[theme.body.background],
+                  textAlign: "center",
                 }}
               >
-                No bookmarks...
+                {i18n.t("noBookmarks")}
               </Text>
             </View>
           )}
 
           {isBookmarked && (
             <View style={{ width: "100%" }}>
+              <Text variant="titleMedium" style={{textAlign:"center", fontSize:18, color: contrast[theme.body.background], padding: 5}}>{i18n.t("annotation")}</Text>
               <BottomSheetTextInput
-                defaultValue={note}
-                style={[styles.input,{ textAlign: i18n.locale=="ku" ? "right" : "left" }]}
-                multiline
-                placeholder={i18n.t("typeAnnotation")}
-                placeholderTextColor={contrast[theme.body.background]}
-                onChangeText={(text) => setNote(text)}
+              defaultValue={note.replace(/^rtl|^ltr/, '')}
+              style={[styles.input, { textAlign: note.startsWith('rtl') ? 'right' : 'left' }]}
+              multiline
+              onChangeText={(text) => { isKurdishArabicScript(text) }}
               />
 
               <Button
-                mode="text"
-                style={{ alignSelf: "flex-end" }}
-                onPress={() => updateBookmark(currentBookmark!.id, { note })}
-                textColor={contrast[theme.body.background]}
+              mode="text"
+              style={{ alignSelf: "flex-end" }}
+              onPress={() => updateBookmark(currentBookmark!.id, { note })}
+              textColor={contrast[theme.body.background]}
               >
-                {i18n.t("updateAnnotation")}
+              {i18n.t("updateAnnotation")}
               </Button>
             </View>
           )}
 
           {bookmarks.map((bookmark) => (
-            <View key={bookmark.id} style={[styles.bookmarkContainer,{direction: i18n.locale=="ku" ? "rtl" : "ltr"}]}>
+            <View
+              key={bookmark.id}
+              style={[
+                styles.bookmarkContainer,
+                { direction: I18nManager.isRTL ? "rtl" : "ltr" },
+              ]}
+            >
               <TouchableOpacity
                 style={styles.bookmarkInfo}
                 onPress={() => {
@@ -179,11 +200,11 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
                       color: contrast[theme.body.background],
                     }}
                   >
-                    Chapter: {bookmark.section?.label}
+                    {bookmark.section?.label}
                   </Text>
 
                   <Text
-                    numberOfLines={2}
+                    numberOfLines={3}
                     style={{
                       fontStyle: "italic",
                       color: contrast[theme.body.background],
@@ -205,7 +226,7 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
               />
             </View>
           ))}
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
     </BottomSheetModalProvider>
   );
@@ -219,20 +240,23 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    alignItems: "center",
-    paddingHorizontal: 20,
+    padding: 10,
   },
   header: {
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "gray",
+    paddingBottom: 5,
   },
   bookmarkContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginVertical: 10,
+    padding: 10,
+    borderBottomColor: "rgba(0, 0, 0, 0.2)",
+    borderBottomWidth: 1,
   },
   bookmarkInfo: {
     flexDirection: "row",
@@ -241,9 +265,8 @@ const styles = StyleSheet.create({
     width: "80%",
   },
   title: {
+    marginTop: 20,
     width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
   },
   bookmarkIcon: {

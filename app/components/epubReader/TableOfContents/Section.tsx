@@ -1,10 +1,10 @@
 /* eslint-disable react/no-array-index-key */
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import { Section as SectionType, useReader } from '@epubjs-react-native/core';
-import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import { IconButton, MD3Colors, Text } from 'react-native-paper';
-import { contrast } from '../fullReader/utils';
+import { Section as SectionType, useReader } from "@epubjs-react-native/core";
+import React from "react";
+import { StyleSheet, TouchableOpacity, View, I18nManager } from "react-native";
+import { IconButton, MD3Colors, Text } from "react-native-paper";
+import { contrast } from "../fullReader/utils";
 
 interface Props {
   searchTerm: string;
@@ -16,12 +16,12 @@ interface Props {
 function Section({ searchTerm, isCurrentSection, section, onPress }: Props) {
   const { theme } = useReader();
 
-  const regex = new RegExp(`(${searchTerm})`, 'gi');
+  const regex = new RegExp(`(${searchTerm})`, "gi");
   const parts = section?.label.split(regex);
   return (
     <TouchableOpacity
       key={section.id}
-      style={styles.container}
+      style={[styles.container,{direction:I18nManager.isRTL?"rtl":"ltr"}]}
       onPress={() => onPress(section)}
     >
       <View style={styles.icon}>
@@ -79,22 +79,25 @@ function Section({ searchTerm, isCurrentSection, section, onPress }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    height: 'auto',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    width: "100%",
+    height: "auto",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    direction: "rtl",
+    borderBottomColor: "rgba(0, 0, 0, 0.2)",
+    borderBottomWidth: 1,
   },
   icon: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   info: {
-    width: '85%',
+    width: "85%",
   },
   chapter: { marginBottom: 2 },
-  name: { fontStyle: 'italic' },
-  highlight: { backgroundColor: 'yellow' },
+  name: { fontStyle: "italic" },
+  highlight: { backgroundColor: "yellow" },
 });
 
 export default Section;

@@ -12,6 +12,7 @@ import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
+  sendPasswordResetEmail
 } from "firebase/auth";
 import { useRouter } from "expo-router";
 import i18n from "@/assets/languages/i18n";
@@ -56,6 +57,41 @@ export default function UpdatePassword() {
     }
   };
 
+  const handleResetPassword = () => {
+    Alert.alert(
+      i18n.t('confirm'),
+      i18n.t('resetPasswordConfirmation'),
+      [
+      {
+        text: i18n.t('cancel'),
+        style: 'cancel',
+      },
+      {
+        text: i18n.t('ok'),
+        onPress: () => {
+        if (auth.currentUser && auth.currentUser.email) {
+          sendPasswordResetEmail(auth, auth.currentUser.email)
+          .then(() => {
+            Alert.alert(i18n.t("success"), i18n.t("resetPasswordText"));
+          })
+          .catch((error) => {
+            const errorMessages = {
+            "auth/user-not-found": i18n.t("userNotFound"),
+            "auth/invalid-email": i18n.t("invalidEmail"),
+            };
+            const errorCode = (error as { code: keyof typeof errorMessages }).code;
+            Alert.alert(i18n.t('error'), errorMessages[errorCode] || error.message);
+          });
+        } else {
+          Alert.alert(i18n.t('error'), i18n.t('userNotAuthenticated'));
+        }
+        },
+      },
+      ],
+      { cancelable: false }
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: "white" }}>
       <View style={i18n.locale=="ku" ? styles.containerRtl : styles.container}>
@@ -92,6 +128,14 @@ export default function UpdatePassword() {
             onPress={handleSavePassword}
           >
             <Text style={styles.saveButtonText}>{i18n.t("saveChanges")}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+          style={{ alignItems: "center", padding: 10 }}
+          onPress={handleResetPassword}
+           >
+          <Text style={{ fontSize: 16, color: "#0066CC" }}>
+            {i18n.t("forgotPassword")}
+          </Text>
           </TouchableOpacity>
         </View>
       </View>

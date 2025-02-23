@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Nivese",
+    "name": "Niverse",
     "slug": "ebookd",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,13 +9,14 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/splash-icon.png",
       "resizeMode": "cover",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#ffffff",
+      "imageWidth": 200
     },
     "ios": {
       "googleServicesFile": "./GoogleService-Info.plist",
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.amir19225.ebookdv1",
       "useFrameworks" : "static"
     },
@@ -25,7 +26,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff",
         "splash": {
-          "image": "./assets/images/splash.png",
+          "image": "./assets/images/splash-icon.png",
           "resizeMode": "cover",
           "backgroundColor": "#ffffff"
         }
@@ -36,7 +37,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/icon.png"
     },
     "plugins": [
       [
@@ -52,8 +53,9 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#ffffff",
-          "image": "./assets/images/splash.png",
-          "resizeMode": "cover"
+          "image": "./assets/images/splash-icon.png",
+          "resizeMode": "cover",
+          "imageWidth": 200
         }
       ]
     ],

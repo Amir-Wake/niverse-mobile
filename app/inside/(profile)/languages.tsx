@@ -69,7 +69,7 @@ const Languages = () => {
         >
           <TouchableOpacity
             style={{
-              padding: 10,
+              padding: 5,
               backgroundColor: currentLanguage === "en" ? "#DCDCDC" : "#fff",
               borderTopLeftRadius: 10,
               borderTopRightRadius: 10,
@@ -91,7 +91,7 @@ const Languages = () => {
           <View style={{ height: 1, backgroundColor: "#ccc" }} />
           <TouchableOpacity
             style={{
-              padding: 10,
+              padding: 5,
               backgroundColor: currentLanguage === "ku" ? "#ddd" : "#fff",
               borderBottomLeftRadius: 10,
               borderBottomRightRadius: 10,

@@ -11,7 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
-import Animated from 'react-native-reanimated';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get("window");
 
@@ -24,17 +24,27 @@ const TopBooks = () => {
   const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}topBooks`;
 
   useEffect(() => {
-    fetch(apiLink)
-      .then((response) => response.json())
-      .then((data) => {
-        setData(data);
-        setLoading(false);
-      })
-      .catch((error) => {
+    const fetchData = async () => {
+      try {
+        const cachedData = await AsyncStorage.getItem(apiLink);
+        if (cachedData) {
+          setData(JSON.parse(cachedData));
+          setLoading(false);
+        } else {
+          const response = await fetch(apiLink);
+          const data = await response.json();
+          setData(data);
+          await AsyncStorage.setItem(apiLink, JSON.stringify(data));
+          setLoading(false);
+        }
+      } catch (error) {
         console.error("Error fetching data:", error);
         setLoading(false);
-      });
-  }, []);
+      }
+    };
+
+    fetchData();
+  }, [apiLink]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -68,7 +78,7 @@ const TopBooks = () => {
       <ActivityIndicator
         style={styles.loadingCustomStyle}
         size="large"
-        color="#0000ff"
+        color="red"
       />
     );
   }
@@ -100,7 +110,7 @@ const TopBooks = () => {
                 }
                 style={styles.bookCardContent}
               >
-                <Animated.Image
+                <Image
                   sharedTransitionTag="bookImage"
                   source={{ uri: item.coverImageUrl }}
                   cachePolicy={"memory-disk"}
@@ -146,7 +156,7 @@ const styles = StyleSheet.create({
   },
   containerCustomStyle: {
     width: width,
-    height: height * 0.6,
+    height: height * 0.58,
   },
   loadingCustomStyle: {
     width: width,
@@ -167,20 +177,20 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   bookCardContent: {
-    marginTop: "10%",
+    marginTop: "15%",
     width: width,
     alignItems: "center",
     justifyContent: "center",
   },
   bookImage: {
-    width: width * 0.55,
-    height: height * 0.4,
+    width: 250,
+    height: 375,
     borderRadius: 15,
     shadowColor: "black",
   },
   bookAuthorText: {
     textAlign: "center",
-    marginTop: 10,
+    marginTop: 15,
     fontWeight: "bold",
     fontSize: 18,
   },
@@ -189,7 +199,7 @@ const styles = StyleSheet.create({
     shadowColor: "black",
     justifyContent: "center",
     position: "absolute",
-    bottom: 20,
+    bottom: 0,
   },
   touchableCircle: {
     padding: 5,

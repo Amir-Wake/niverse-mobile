@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useWindowDimensions, View, Platform } from "react-native";
+import { useWindowDimensions, View, Platform, I18nManager } from "react-native";
 import {
   ReaderProvider,
   Reader,
@@ -34,13 +34,14 @@ function Component({ src }: ComponentProps) {
     goToLocation,
     currentLocation,
     bookmarks,
+    getMeta
   } = useReader();
 
   const bookmarksListRef = useRef<BottomSheetModal>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const searchListRef = useRef<BottomSheetModal>(null);
   const [currentFontSize, setCurrentFontSize] = useState(16);
-  // const [currentFontFamily, setCurrentFontFamily] = useState(availableFonts[0]);
+  const [currentFontFamily, setCurrentFontFamily] = useState(availableFonts[0]);
   const [defTheme, setDefTheme] = useState(Themes.LIGHT);
   const [bookmarkData, setBookmarkData] = useState<Bookmark[]>([]);
   const [isActive, setIsActive] = useState(false);
@@ -109,12 +110,12 @@ function Component({ src }: ComponentProps) {
     storePreference("currentTheme", JSON.stringify(nextTheme));
   };
 
-  // const switchFontFamily = () => {
-  //   const index = availableFonts.indexOf(currentFontFamily);
-  //   const nextFontFamily = availableFonts[(index + 1) % availableFonts.length];
-  //   setCurrentFontFamily(nextFontFamily);
-  //   changeFontFamily(nextFontFamily);
-  // };
+  const switchFontFamily = () => {
+    const index = availableFonts.indexOf(currentFontFamily);
+    const nextFontFamily = availableFonts[(index + 1) % availableFonts.length];
+    setCurrentFontFamily(nextFontFamily);
+    changeFontFamily(nextFontFamily);
+  };
 
   const handleLocationChange = async () => {
     try {
@@ -140,6 +141,11 @@ function Component({ src }: ComponentProps) {
   };
 
   const handleLocationReady = async () => {
+    if (getMeta().language == "ku"||"ar"){
+      I18nManager.isRTL = true;
+    }if (getMeta().language == "en"){
+      I18nManager.isRTL = false;
+    }
     try {
       const storedLocation = await AsyncStorage.getItem(`${src}`);
       if (storedLocation) {
@@ -166,7 +172,7 @@ function Component({ src }: ComponentProps) {
         increaseFontSize={increaseFontSize}
         decreaseFontSize={decreaseFontSize}
         switchTheme={switchTheme}
-        // switchFontFamily={switchFontFamily}
+        switchFontFamily={switchFontFamily}
         onPressSearch={() => searchListRef.current?.present()}
         onOpenBookmarksList={() => bookmarksListRef.current?.present()}
         onOpenTocList={() => bottomSheetRef.current?.present()}

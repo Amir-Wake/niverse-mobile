@@ -196,26 +196,18 @@ const Index = () => {
           showsVerticalScrollIndicator={false}
         >
           <View>
-            <Animated.View
-              entering={FadeInDown.delay(100)
-                .duration(500)
-                .springify()
-                .damping(12)}
+            <View
             >
               <Suspense
-                fallback={<ActivityIndicator size="large" color="red" />}
+                fallback={<View/>}
               >
                 <PickCards />
               </Suspense>
-            </Animated.View>
-            <Animated.View
-              entering={FadeInDown.delay(400)
-                .duration(500)
-                .springify()
-                .damping(12)}
+            </View>
+            <View
             >
               <Suspense
-                fallback={<ActivityIndicator size="large" color="red" />}
+                fallback={<View/>}
               >
                 <BookList
                   title={i18n.t("new")}
@@ -223,8 +215,8 @@ const Index = () => {
                   genre="newest"
                 />
               </Suspense>
-            </Animated.View>
-            <Suspense fallback={<ActivityIndicator size="large" color="red" />}>
+            </View>
+            <Suspense fallback={<View/>}>
               <BookList
                 title={i18n.t("novels")}
                 description={i18n.t("novelsDescription")}
@@ -272,8 +264,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     height: 46,
-    borderRadius: 28,
-    marginTop: 10,
+    borderRadius: 10,
+    marginTop: 15,
   },
   appIcon: {
     width: 70,

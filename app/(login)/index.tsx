@@ -17,7 +17,15 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  GoogleAuthProvider,
+  signInWithCredential,
 } from "firebase/auth";
+import {
+  GoogleSignin,
+  isErrorWithCode,
+  statusCodes,
+  GoogleSigninButton,
+} from "@react-native-google-signin/google-signin";
 import { useRouter } from "expo-router";
 import i18n from "@/assets/languages/i18n";
 
@@ -29,6 +37,38 @@ export default function Index() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigation = useRouter();
+
+  GoogleSignin.configure({
+    webClientId:
+      "696156084695-jtn3er5vaav5503nm3dd2id7ia5cfjfq.apps.googleusercontent.com",
+  });
+
+  const googleSignIn = async () => {
+    try {
+      await GoogleSignin.hasPlayServices({
+        showPlayServicesUpdateDialog: true,
+      });
+      const signInResult = await GoogleSignin.signIn();
+      console.log(signInResult);
+
+      const response = signInResult.data?.idToken;
+      const googleCredential = GoogleAuthProvider.credential(response || null);
+      // Sign-in the user with the credential
+      await signInWithCredential(auth, googleCredential);
+      navigation.replace("/inside/(tabs)");
+    } catch (error) {
+      if (isErrorWithCode(error)) {
+        switch (error.code) {
+          case statusCodes.IN_PROGRESS:
+            break;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            break;
+          default:
+        }
+      } else {
+      }
+    }
+  };
 
   const handleAuth = async (event: any) => {
     event.preventDefault();
@@ -48,14 +88,22 @@ export default function Index() {
 
     try {
       if (isSignUp) {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
         await sendEmailVerification(userCredential.user);
         setPassword("");
         setConfirmPassword("");
         navigation.push(`/(login)/verification?email=${email}`);
         setEmail("");
       } else {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
         const user = userCredential.user;
         if (user.emailVerified) {
           navigation.replace("/inside/(tabs)");
@@ -91,31 +139,59 @@ export default function Index() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#FAF9F6" }}>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent
+      />
       <SafeAreaView style={{ marginTop: Platform.OS == "android" ? 40 : 0 }} />
       <View style={styles.headerContainer}>
         <View style={styles.appNameContainer}>
-          <Image source={require("@/assets/images/iconTr.png")} style={styles.appIcon} />
+          <Image
+            source={require("@/assets/images/iconTr.png")}
+            style={styles.appIcon}
+          />
           <Text style={styles.appName}>Niverse</Text>
         </View>
-        <TouchableOpacity style={styles.languageButton} onPress={() => navigation.push("./languages")}>
+        <TouchableOpacity
+          style={styles.languageButton}
+          onPress={() => navigation.push("./languages")}
+        >
           <Text style={styles.languageButtonText}>🌐</Text>
-          <Text style={styles.languageButtonText}>{i18n.locale.toUpperCase()}</Text>
+          <Text style={styles.languageButtonText}>
+            {i18n.locale.toUpperCase()}
+          </Text>
         </TouchableOpacity>
       </View>
       <View style={styles.radioContainer}>
-        <TouchableOpacity onPress={toggleSignUp} style={[styles.radioButton, !isSignUp && styles.radioButtonSelected]}>
-          <View style={styles.radioCircle}>{!isSignUp && <View style={styles.selectedRb} />}</View>
-          <Text style={isSignUp ? styles.radioText : styles.radioTextSelected}>{i18n.t("signIn")}</Text>
+        <TouchableOpacity
+          onPress={toggleSignUp}
+          style={[styles.radioButton, !isSignUp && styles.radioButtonSelected]}
+        >
+          <View style={styles.radioCircle}>
+            {!isSignUp && <View style={styles.selectedRb} />}
+          </View>
+          <Text style={isSignUp ? styles.radioText : styles.radioTextSelected}>
+            {i18n.t("signIn")}
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={toggleSignUp} style={[styles.radioButton, isSignUp && styles.radioButtonSelected]}>
-          <View style={styles.radioCircle}>{isSignUp && <View style={styles.selectedRb} />}</View>
-          <Text style={isSignUp ? styles.radioTextSelected : styles.radioText}>{i18n.t("signUp")}</Text>
+        <TouchableOpacity
+          onPress={toggleSignUp}
+          style={[styles.radioButton, isSignUp && styles.radioButtonSelected]}
+        >
+          <View style={styles.radioCircle}>
+            {isSignUp && <View style={styles.selectedRb} />}
+          </View>
+          <Text style={isSignUp ? styles.radioTextSelected : styles.radioText}>
+            {i18n.t("signUp")}
+          </Text>
         </TouchableOpacity>
       </View>
       <View style={styles.formContainer}>
         {error && <Text style={styles.error}>{error}</Text>}
-        <Text style={styles.header}>{isSignUp ? i18n.t("signUpText") : i18n.t("signInText")}</Text>
+        <Text style={styles.header}>
+          {isSignUp ? i18n.t("signUpText") : i18n.t("signInText")}
+        </Text>
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -151,32 +227,92 @@ export default function Index() {
           {loading ? (
             <ActivityIndicator size="small" color="#0000ff" />
           ) : (
-            <Text style={styles.authButtonText}>{isSignUp ? i18n.t("signUp") : i18n.t("signIn")}</Text>
+            <Text style={styles.authButtonText}>
+              {isSignUp ? i18n.t("signUp") : i18n.t("signIn")}
+            </Text>
           )}
         </TouchableOpacity>
-        <TouchableOpacity style={{ alignItems: "center", padding: 10 }} onPress={() => navigation.push("/(login)/restPassword")}>
-          <Text style={{ fontSize: 16, color: "#0066CC" }}>{i18n.t("forgotPassword")}</Text>
+        <GoogleSigninButton
+          style={{ width: "80%", alignSelf: "center", borderRadius: 10 }}
+          size={GoogleSigninButton.Size.Wide}
+          color={GoogleSigninButton.Color.Dark}
+          onPress={googleSignIn}
+        />
+        <TouchableOpacity
+          style={{ alignItems: "center", padding: 10 }}
+          onPress={() => navigation.push("/(login)/restPassword")}
+        >
+          <Text style={{ fontSize: 16, color: "#0066CC" }}>
+            {i18n.t("forgotPassword")}
+          </Text>
         </TouchableOpacity>
       </View>
       <View style={styles.footer}>
         <Text style={styles.footerText}>{i18n.t("userAgreement")}</Text>
       </View>
       <View style={{ marginTop: 100 }}>
-        <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 10 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            marginTop: 10,
+          }}
+        >
           <TouchableOpacity onPress={() => navigation.push("./terms")}>
-            <Text style={{ fontSize: 14, color: "#0066CC", textDecorationLine: "underline" }}>{i18n.t("terms")}</Text>
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#0066CC",
+                textDecorationLine: "underline",
+              }}
+            >
+              {i18n.t("terms")}
+            </Text>
           </TouchableOpacity>
-          <Text style={{ fontSize: 14, color: "#404040", marginHorizontal: 5 }}>|</Text>
+          <Text style={{ fontSize: 14, color: "#404040", marginHorizontal: 5 }}>
+            |
+          </Text>
           <TouchableOpacity onPress={() => navigation.push("./privacyPolicy")}>
-            <Text style={{ fontSize: 14, color: "#0066CC", textDecorationLine: "underline" }}>{i18n.t("privacyPolicy")}</Text>
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#0066CC",
+                textDecorationLine: "underline",
+              }}
+            >
+              {i18n.t("privacyPolicy")}
+            </Text>
           </TouchableOpacity>
-          <Text style={{ fontSize: 14, color: "#404040", marginHorizontal: 5 }}>|</Text>
-          <TouchableOpacity onPress={() => Linking.openURL("mailto:amir19225@outlook.com?subject=Contact and support")}>
-            <Text style={{ fontSize: 14, color: "#0066CC", textDecorationLine: "underline" }}>{i18n.t("contact")}</Text>
+          <Text style={{ fontSize: 14, color: "#404040", marginHorizontal: 5 }}>
+            |
+          </Text>
+          <TouchableOpacity
+            onPress={() =>
+              Linking.openURL(
+                "mailto:amir19225@outlook.com?subject=Contact and support"
+              )
+            }
+          >
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#0066CC",
+                textDecorationLine: "underline",
+              }}
+            >
+              {i18n.t("contact")}
+            </Text>
           </TouchableOpacity>
         </View>
-        <Text style={{ textAlign: "center", fontSize: 14, color: "#404040", marginTop: 10 }}>
-          © {new Date().getFullYear()} niVerse, Inc.
+        <Text
+          style={{
+            textAlign: "center",
+            fontSize: 14,
+            color: "#404040",
+            marginTop: 10,
+          }}
+        >
+          © {new Date().getFullYear()} Niverse, Inc.
         </Text>
       </View>
     </View>
@@ -198,13 +334,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   appName: {
-    fontSize: 34,
+    fontSize: 32,
     color: "#F94929",
     fontFamily: "times",
   },
   appIcon: {
-    width: 65,
-    height: 65,
+    width: 60,
+    height: 60,
   },
   languageButton: {
     padding: 10,
@@ -271,16 +407,17 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     padding: 4,
-    width: "100%",
+    width: "95%",
+    alignSelf: "center",
   },
   authButton: {
     backgroundColor: "#24a0ed",
-    padding: 12,
+    padding: 10,
     width: "80%",
     alignSelf: "center",
-    borderRadius: 10,
+    borderRadius: 5,
     alignItems: "center",
-    marginVertical: 10,
+    marginBottom: 8,
   },
   authButtonDisabled: {
     backgroundColor: "gray",
@@ -288,7 +425,7 @@ const styles = StyleSheet.create({
   authButtonText: {
     color: "white",
     fontFamily: "arial",
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
   },
   loadingContainer: {
@@ -311,3 +448,6 @@ const styles = StyleSheet.create({
     color: "#404040",
   },
 });
+function firebaseAuth() {
+  throw new Error("Function not implemented.");
+}

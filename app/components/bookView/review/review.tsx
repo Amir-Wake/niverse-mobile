@@ -151,9 +151,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     paddingVertical: 4,
+    textAlign: "center",
   },
   reviewComment: {
     fontSize: 20,
+    textAlign: "center",
   },
 });
 

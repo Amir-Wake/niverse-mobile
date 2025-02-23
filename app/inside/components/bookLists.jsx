@@ -9,6 +9,7 @@ import {
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 import i18n from "@/assets/languages/i18n";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get("window");
 
@@ -19,15 +20,25 @@ const BookList = ({ title, description, genre }) => {
   const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}${genre}`;
 
   useEffect(() => {
-    fetch(apiLink)
-      .then((response) => response.json())
-      .then((data) => {
-        setData(data);
-        setLoading(false);
-      })
-      .catch((error) => {
+    const fetchData = async () => {
+      try {
+        const cachedData = await AsyncStorage.getItem(apiLink);
+        if (cachedData) {
+          setData(JSON.parse(cachedData));
+          setLoading(false);
+        } else {
+          const response = await fetch(apiLink);
+          const data = await response.json();
+          setData(data);
+          await AsyncStorage.setItem(apiLink, JSON.stringify(data));
+          setLoading(false);
+        }
+      } catch (error) {
         console.error(error);
-      });
+      }
+    };
+
+    fetchData();
   }, [genre]);
 
   if (loading) {
@@ -35,11 +46,11 @@ const BookList = ({ title, description, genre }) => {
   }
 
   return (
-    <View style={[styles.container,{direction: i18n.locale=="ku"? "rtl":"ltr"}]}>
-      <View style={styles.header}>
+    <View style={styles.container}>
+      <View style={[styles.header,{direction: i18n.locale=="ku"? "rtl":"ltr"}]}>
         <Text style={styles.title}>{title}</Text>
       </View>
-      <View style={styles.header}>
+      <View style={[styles.header,{direction: i18n.locale=="ku"? "rtl":"ltr"}]}>
         <Text style={styles.description}>{description}</Text>
       </View>
       <ScrollView
@@ -64,11 +75,11 @@ const BookList = ({ title, description, genre }) => {
                 placeholder={require("@/assets/images/listsPlaceHolder.jpg")}
                 placeholderContentFit="cover"
                 contentFit="cover"
-                transition={1000}
+                transition={100}
               />
               <Text style={styles.bookTitle}>
-                {item.title.length > 14
-                  ? `${item.title.substring(0, 14)}...`
+                {item.title.length > 19
+                  ? `${item.title.substring(0, 16)}...`
                   : item.title}
               </Text>
             </TouchableOpacity>
@@ -84,7 +95,7 @@ const styles = {
     marginBottom: 0,
     paddingBottom: 10,
     backgroundColor: "#F8F8FF",
-    borderWidth: 1,
+    borderBottomWidth: 1,
     borderColor: "#A9A9A9",
   },
   header: {
@@ -96,12 +107,12 @@ const styles = {
   title: {
     color: "#101010",
     paddingTop: 6,
-    fontSize: 24,
+    fontSize: 26,
   },
   description: {
     color: "#101010",
     paddingBottom: 6,
-    fontSize: 16,
+    fontSize: 18,
   },
   scrollViewContent: {
     paddingHorizontal: 15,
@@ -111,13 +122,14 @@ const styles = {
     marginTop: 10,
   },
   bookImage: {
-    width: width * 0.34,
-    height: height * 0.22,
+    width: 170,
+    height: 255,
     borderRadius: 10,
   },
   bookTitle: {
     color: "#101010",
     fontSize: 18,
+    textAlign: "center",
   },
 };
 

@@ -4,12 +4,9 @@ export const MAX_FONT_SIZE = 32;
 export const MIN_FONT_SIZE = 12;
 
 export const availableFonts: Array<string> = [
-  'Helvetica',
-  'Georgia',
+  'Fira Mono',
   'AmericanTypewriter-Bold',
-  'monospace',
-  'cursive',
-  'sans-serif'
+  'Courier New',
 ];
 
 export const themes = Object.values(Themes);

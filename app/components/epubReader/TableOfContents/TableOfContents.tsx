@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import React, { forwardRef, useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import {
   Toc,
   Section as SectionType,
@@ -12,10 +12,9 @@ import {
   BottomSheetModal,
   BottomSheetModalProvider,
   BottomSheetFlatList,
-  BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import { BottomSheetModalMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
-import { Button, Text } from "react-native-paper";
+import { Text } from "react-native-paper";
 import Section from "./Section";
 import { contrast } from "../fullReader/utils";
 import i18n from "@/assets/languages/i18n";
@@ -33,7 +32,7 @@ const TableOfContents = forwardRef<Ref, Props>(
     const [searchTerm, setSearchTerm] = useState("");
     const [data, setData] = useState<Toc>(toc);
 
-    const snapPoints = React.useMemo(() => ["50%", "95%"], []);
+    const snapPoints = React.useMemo(() => ["60%", "95%"], []);
 
     const renderItem = React.useCallback(
       ({ item }: { item: SectionType }) => (
@@ -51,25 +50,43 @@ const TableOfContents = forwardRef<Ref, Props>(
 
     const header = React.useCallback(
       () => (
-        <View style={{ backgroundColor: theme.body.background, direction: i18n.locale=="ku" ? "rtl" : "ltr" }}>
+        <View
+          style={{
+            backgroundColor: theme.body.background,
+            borderBottomColor: "gray",
+            borderBottomWidth: 1,
+            paddingBottom: 5,
+          }}
+        >
           <View style={styles.title}>
+            <TouchableOpacity
+              onPress={() => {
+                setSearchTerm("");
+                onClose();
+              }}
+            >
+              <Text
+                variant="titleMedium"
+                style={{
+                  color: contrast[theme.body.background],
+                  padding: 10,
+                  fontFamily: "helvetica",
+                }}
+              >
+                {i18n.t("close")}
+              </Text>
+            </TouchableOpacity>
             <Text
               variant="titleMedium"
-              style={{ color: contrast[theme.body.background] }}
+              style={{
+                color: contrast[theme.body.background],
+                fontFamily: "helvetica",
+                padding: 10,
+              }}
             >
               {i18n.t("toc")}
             </Text>
-
-            <Button
-              mode="text"
-              textColor={contrast[theme.body.background]}
-              onPress={onClose}
-            >
-              X
-            </Button>
-          </View>
-
-          <View style={{ width: "100%" }}>
+            {/* <View style={styles.searchSection}>
             <BottomSheetTextInput
               inputMode="search"
               returnKeyType="search"
@@ -77,9 +94,7 @@ const TableOfContents = forwardRef<Ref, Props>(
               autoCorrect={false}
               autoCapitalize="none"
               defaultValue={searchTerm}
-              style={[styles.input, { color: contrast[theme.body.background] }]}
-              placeholder="Type an term here..."
-              placeholderTextColor={contrast[theme.body.background]}
+              style={styles.input}
               onSubmitEditing={(event) => {
                 event.persist();
 
@@ -91,10 +106,17 @@ const TableOfContents = forwardRef<Ref, Props>(
                 );
               }}
             />
+                      <Ionicons
+              name="search"
+              size={20}
+              style={{padding: 10}}
+              color="black"
+            />
+          </View> */}
           </View>
         </View>
       ),
-      [onClose, searchTerm, theme.body.background, toc]
+      [onClose, theme.body.background, toc]
     );
 
     React.useEffect(() => {
@@ -104,7 +126,7 @@ const TableOfContents = forwardRef<Ref, Props>(
       <BottomSheetModalProvider>
         <BottomSheetModal
           ref={ref}
-          index={1}
+          index={2}
           snapPoints={snapPoints}
           enablePanDownToClose
           android_keyboardInputMode="adjustResize"
@@ -122,12 +144,13 @@ const TableOfContents = forwardRef<Ref, Props>(
           backgroundStyle={{ backgroundColor: theme.body.background }}
           onDismiss={() => setSearchTerm("")}
         >
+          {header()}
           <BottomSheetFlatList
             data={data}
-            showsVerticalScrollIndicator={false}
+            showsVerticalScrollIndicator={true}
+            indicatorStyle={"black"}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
-            ListHeaderComponent={header}
             style={{ width: "100%" }}
             maxToRenderPerBatch={20}
           />
@@ -150,13 +173,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
   },
+  searchSection: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 10,
+    backgroundColor: "#DCDCDC",
+    borderColor: "black",
+    borderWidth: 1,
+  },
   input: {
+    flex: 1,
     width: "100%",
     borderRadius: 10,
     fontSize: 16,
     lineHeight: 20,
-    padding: 8,
-    backgroundColor: "rgba(151, 151, 151, 0.25)",
+    padding: 10,
   },
 });
 

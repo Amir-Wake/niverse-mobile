@@ -135,19 +135,19 @@ const WriteReview: React.FC = () => {
                     <View style={styles.inputContainer}>
                         <TextInput
                             style={styles.titleInput}
-                            placeholder="Review Title"
+                            placeholder={i18n.t("title")}
                             value={title}
                             onChangeText={setTitle}
                             placeholderTextColor={COLORS.placeholder}
                             accessibilityLabel="Review title"
                         />
-                        <View style={styles.separator} />
+                        <Text style={{textAlign: "center",padding: 10}}>
+                            {i18n.t("comment")}
+                        </Text>
                         <TextInput
                             style={styles.commentInput}
-                            placeholder="What did you like or dislike?"
                             value={comment}
                             onChangeText={setComment}
-                            
                             placeholderTextColor={COLORS.placeholder}
                             accessibilityLabel="Review comment"
                         />
@@ -189,21 +189,25 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         width: "100%",
-        borderColor: COLORS.separator,
-        borderWidth: 1,
-        borderRadius: 8,
     },
     titleInput: {
         width: "100%",
         height: 40,
         textAlign: "center",
         color: COLORS.black,
+        borderColor: "gray",
+        borderWidth: 1,
+        borderRadius: 10,
     },
     commentInput: {
         width: "100%",
         height: 100,
         padding: 10,
         color: COLORS.black,
+        borderColor: "gray",
+        borderWidth: 1,
+        borderRadius: 10,
+        textAlign: "center",
     },
     separator: {
         borderBottomWidth: 1,
