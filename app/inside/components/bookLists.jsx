@@ -26,13 +26,17 @@ const BookList = ({ title, description, genre }) => {
         if (cachedData) {
           setData(JSON.parse(cachedData));
           setLoading(false);
-        } else {
-          const response = await fetch(apiLink);
-          const data = await response.json();
+        }
+
+        const response = await fetch(apiLink);
+        const data = await response.json();
+
+        if (JSON.stringify(data) !== cachedData) {
           setData(data);
           await AsyncStorage.setItem(apiLink, JSON.stringify(data));
-          setLoading(false);
         }
+
+        setLoading(false);
       } catch (error) {
         console.error(error);
       }
@@ -78,8 +82,8 @@ const BookList = ({ title, description, genre }) => {
                 transition={100}
               />
               <Text style={styles.bookTitle}>
-                {item.title.length > 19
-                  ? `${item.title.substring(0, 16)}...`
+                {item.title.length > 18
+                  ? `${item.title.substring(0, 15)}...`
                   : item.title}
               </Text>
             </TouchableOpacity>
@@ -122,8 +126,8 @@ const styles = {
     marginTop: 10,
   },
   bookImage: {
-    width: 170,
-    height: 255,
+    width: width*0.4,
+    height: (width*0.4)*1.5,
     borderRadius: 10,
   },
   bookTitle: {

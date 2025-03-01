@@ -8,8 +8,8 @@ import {
   TextInput,
   StyleSheet,
 } from "react-native";
-import React, { useState } from "react";
-import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { useNavigation, useRouter } from "expo-router";
 import { auth } from "@/firebase";
 import {
   deleteUser,
@@ -22,6 +22,13 @@ const PrivacyPolicy = () => {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [password, setPassword] = useState("");
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.getParent()!.setOptions({
+      headerTitle: i18n.t('privacyPolicy'),
+    });
+  }, []);
 
   const handleDeleteAccount = () => {
     setModalVisible(true);
@@ -62,7 +69,7 @@ const PrivacyPolicy = () => {
         >
           {i18n.t("privacyPolicyText1")}
         </Text>
-        {Array.from({ length: 5 }, (_, i) => (
+        {Array.from({ length: 6 }, (_, i) => (
           <View key={i}>
             <Text
               style={[
@@ -88,7 +95,7 @@ const PrivacyPolicy = () => {
             { textAlign: i18n.locale == "ku" ? "right" : "left" },
           ]}
         >
-          {i18n.t("privacyPolicyText7")}
+          {i18n.t("privacyPolicyText8")}
         </Text>
         {auth.currentUser && (
           <TouchableOpacity

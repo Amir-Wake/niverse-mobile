@@ -17,22 +17,27 @@ import * as ImagePicker from "expo-image-picker";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import * as ImageManipulator from "expo-image-manipulator";
-import { useRouter } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import i18n from '@/assets/languages/i18n';
+import { useNavigation } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
 export default function UpdateProfile() {
   const [profileImage, setProfileImage] = useState(null);
-  const [username, setUsername] = useState("Unknown");
   const [dob, setDob] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const email = auth.currentUser?.email || "";
   const storage = getStorage();
   const firestore = getFirestore();
   const [newName, setNewName] = useState("");
-  const router = useRouter();
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.getParent().setOptions({
+      headerTitle: i18n.t('accountDetails'),
+  });
+}, []);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -44,7 +49,6 @@ export default function UpdateProfile() {
           setProfileImage({ uri: data.profileImageUrl });
         }
         if (data.name) {
-          setUsername(data.name);
           setNewName(data.name);
         }
         if (data.dob) {
@@ -61,7 +65,7 @@ export default function UpdateProfile() {
     if (status !== "granted") {
       Alert.alert(
         "Permission Denied",
-        "We need access to your photo library to pick an image."
+        "You need to grant permission to access the photo library."
       );
       return;
     }
@@ -109,6 +113,7 @@ export default function UpdateProfile() {
   };
 
   const handleSaveName = async () => {
+    if (!newName.trim()) {return}
     let profileImageUrl = null;
     if (profileImage) {
       profileImageUrl = await uploadImage(profileImage.uri);
@@ -120,7 +125,6 @@ export default function UpdateProfile() {
       updateData.profileImageUrl = profileImageUrl;
     }
     await setDoc(userDoc, updateData, { merge: true });
-    setUsername(newName);
     Alert.alert(i18n.t('success'), i18n.t('profileUpdated'), [{ text: i18n.t('ok') }]);
   };
 

@@ -1,13 +1,19 @@
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "expo-router";
+import { useNavigation } from "expo-router";
 import { setLanguage, getLanguage } from "@/assets/languages/i18n";
 import i18n from "@/assets/languages/i18n";
 import * as Updates from "expo-updates";
 
 const Languages = () => {
-  const router = useRouter();
   const [currentLanguage, setCurrentLanguage] = useState<string>("en");
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.getParent()!.setOptions({
+      headerTitle: i18n.t('language'),
+  });
+}, []);
 
   useEffect(() => {
     const fetchLanguage = async () => {

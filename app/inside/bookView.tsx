@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Carousel from "react-native-reanimated-carousel";
-import Animated, { BounceInDown, FadeInDown } from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get("window");
@@ -18,7 +18,6 @@ const BookDetails = lazy(() => import("@/app/components/bookView/bookDetails"));
 const BookView = () => {
   const router = useRouter();
   const [books, setBooks] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const { index, apiLink } = useLocalSearchParams<{ index: string; apiLink: string }>();
 
   useEffect(() => {
@@ -27,30 +26,29 @@ const BookView = () => {
         const cachedData = await AsyncStorage.getItem(apiLink as string);
         if (cachedData) {
           setBooks(JSON.parse(cachedData));
-          setLoading(false);
-        } else {
-          const response = await fetch(apiLink as string);
-          const data = await response.json();
-          setBooks(Array.isArray(data) ? data : [data]);
-          await AsyncStorage.setItem(apiLink as string, JSON.stringify(data));
+        }
+
+        const response = await fetch(apiLink as string);
+        const data = await response.json();
+        const booksData = Array.isArray(data) ? data : [data];
+
+        if (JSON.stringify(booksData) !== cachedData) {
+          setBooks(booksData);
+          await AsyncStorage.setItem(apiLink as string, JSON.stringify(booksData));
         }
       } catch (error) {
         console.error("Error fetching books:", error);
-      } finally {
-        setLoading(false);
+        if (!books.length) {
+          const cachedData = await AsyncStorage.getItem(apiLink as string);
+          if (cachedData) {
+            setBooks(JSON.parse(cachedData));
+          }
+        }
       }
     };
 
     fetchBooks();
   }, [apiLink]);
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="red" />
-      </View>
-    );
-  }
 
   if (!books.length) {
     return (
@@ -64,39 +62,53 @@ const BookView = () => {
 
   return (
     <View style={styles.bookSheetContainer}>
-      <Carousel
-        autoPlay={false}
-        data={books}
-        height={height}
-        defaultIndex={defaultIndex}
-        loop={false}
-        mode="parallax"
-        modeConfig={{
-          parallaxScrollingScale: 0.905,
-          parallaxScrollingOffset: 50,
-        }}
-        width={width}
-        renderItem={({ index }) => (
-          <Animated.View style={{ marginTop: 20 }} entering={index==defaultIndex?BounceInDown.delay(0).duration(0).springify(0).damping(0):FadeInDown.delay(index*200)
-                                    .duration(500)
-                                    .springify()
-                                    .damping(12)}>
-            <TouchableOpacity
+      {books.length > 0 && (
+        <Carousel
+          key={books.length} // Add key to force re-render
+          autoPlay={false}
+          data={books}
+          height={height}
+          defaultIndex={defaultIndex}
+          loop={false}
+          mode="parallax"
+          modeConfig={{
+            parallaxScrollingScale: 0.905,
+            parallaxScrollingOffset: 50,
+          }}
+          width={width}
+          renderItem={({ index }) => (
+            <Animated.View
+              style={{ marginTop: 20 }}
+              sharedTransitionTag="booklists"
+              entering={index === defaultIndex ? undefined : FadeInDown.delay(index * 250)
+                  .duration(500)
+                  .springify()
+                  .damping(12)
+              }
+            >
+              <TouchableOpacity
               style={styles.closeButton}
               onPress={() => router.dismiss()}
-            >
+              >
               <Text style={styles.closeButtonText}>X</Text>
-            </TouchableOpacity>
-            <View
-              style={styles.container}
-            >
-              <Suspense fallback={<ActivityIndicator style={{flex:1, justifyContent:"center",alignItems:"center"}} size="large" color="red" />}>
+              </TouchableOpacity>
+              <View style={styles.container}>
+              <Suspense
+                fallback={
+                <ActivityIndicator
+                  style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+                  size="large"
+                  color="red"
+                />
+                }
+              >
                 <BookDetails book={books[index]} />
               </Suspense>
-            </View>
-          </Animated.View>
-        )}
-      />
+              </View>
+            </Animated.View>
+          )}
+        />
+      )}
     </View>
   );
 };

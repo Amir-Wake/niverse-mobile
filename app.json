@@ -18,10 +18,12 @@
       "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": false,
       "bundleIdentifier": "com.amir19225.ebookdv1",
-      "useFrameworks" : "static"
+      "useFrameworks": "static",
+      "useAppleSignIn": true
     },
     "android": {
       "googleServicesFile": "./google-services.json",
+      "supportsTablet": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff",
@@ -57,7 +59,14 @@
           "resizeMode": "cover",
           "imageWidth": 200
         }
-      ]
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Niverse requests access to your Photo Library to allow you to upload a profile picture, which will be used to personalise your account."
+        }
+      ],
+      "expo-apple-authentication"
     ],
     "experiments": {
       "typedRoutes": true
@@ -76,6 +85,14 @@
     },
     "updates": {
       "url": "https://u.expo.dev/1fad877f-425e-4f91-829f-cc787928f8c1"
+    },
+    "submit": {
+      "production": {
+        "android": {
+          "serviceAccountKeyPath": "./service-account-file.json",
+          "track": "internal"
+        }
+      }
     }
   }
 }

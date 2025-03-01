@@ -19,6 +19,7 @@ import {
   sendEmailVerification,
   GoogleAuthProvider,
   signInWithCredential,
+  OAuthProvider,
 } from "firebase/auth";
 import {
   GoogleSignin,
@@ -28,6 +29,8 @@ import {
 } from "@react-native-google-signin/google-signin";
 import { useRouter } from "expo-router";
 import i18n from "@/assets/languages/i18n";
+import * as AppleAuthentication from "expo-apple-authentication";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 
 export default function Index() {
   const [email, setEmail] = useState("");
@@ -37,6 +40,7 @@ export default function Index() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigation = useRouter();
+  const firestore = getFirestore();
 
   GoogleSignin.configure({
     webClientId:
@@ -48,13 +52,34 @@ export default function Index() {
       await GoogleSignin.hasPlayServices({
         showPlayServicesUpdateDialog: true,
       });
+      setLoading(true);
       const signInResult = await GoogleSignin.signIn();
-      console.log(signInResult);
-
+      signInResult.type === "cancelled" && setLoading(false);
       const response = signInResult.data?.idToken;
       const googleCredential = GoogleAuthProvider.credential(response || null);
       // Sign-in the user with the credential
-      await signInWithCredential(auth, googleCredential);
+      const userCredential = await signInWithCredential(auth, googleCredential);
+
+      // Update user profile with email and name
+      if (auth.currentUser?.uid) {
+        const userDoc = doc(firestore, "users", auth.currentUser.uid);
+        const docSnap = await getDoc(userDoc);
+        const data = docSnap.data();
+        if (!data?.name) {
+          const name = userCredential.user.displayName;
+          if (name) {
+            await setDoc(userDoc, { name: name }, { merge: true });
+          }
+        }
+        if (!data?.email) {
+          const email = userCredential.user.email;
+          if (email) {
+            await setDoc(userDoc, { email: email }, { merge: true });
+          }
+        }
+      }
+
+      setLoading(false);
       navigation.replace("/inside/(tabs)");
     } catch (error) {
       if (isErrorWithCode(error)) {
@@ -67,6 +92,52 @@ export default function Index() {
         }
       } else {
       }
+    }
+  };
+
+  const appleSignIn = async () => {
+    try {
+      setLoading(true);
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      const { identityToken, email, fullName } = credential;
+      if (identityToken) {
+        const appleProvider = new OAuthProvider("apple.com");
+        appleProvider.addScope("email");
+        appleProvider.addScope("name");
+        const appleCredential = appleProvider.credential({
+          idToken: identityToken,
+        });
+        const userCredential = await signInWithCredential(
+          auth,
+          appleCredential
+        );
+
+        // Update user profile with email and name
+        if (auth.currentUser?.uid) {
+          const userDoc = doc(firestore, "users", auth.currentUser.uid);
+          const docSnap = await getDoc(userDoc);
+          const data = docSnap.data();
+          if (!data?.name && fullName?.givenName && fullName?.familyName) {
+            const name = `${fullName.givenName} ${fullName.familyName}`;
+            await setDoc(userDoc, { name: name }, { merge: true });
+          }
+          if (!data?.email && email) {
+            await setDoc(userDoc, { email: email }, { merge: true });
+          }
+        }
+
+        navigation.replace("/inside/(tabs)");
+      }
+    } catch (error) {
+      setError("Apple Sign-In failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -233,10 +304,27 @@ export default function Index() {
           )}
         </TouchableOpacity>
         <GoogleSigninButton
-          style={{ width: "80%", alignSelf: "center", borderRadius: 10 }}
+          style={{
+            width: "80%",
+            alignSelf: "center",
+            borderRadius: 10,
+            marginBottom: 8,
+          }}
           size={GoogleSigninButton.Size.Wide}
           color={GoogleSigninButton.Color.Dark}
           onPress={googleSignIn}
+        />
+        <AppleAuthentication.AppleAuthenticationButton
+          buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+          cornerRadius={5}
+          style={{
+            width: "80%",
+            height: 44,
+            alignSelf: "center",
+            borderRadius: 5,
+          }}
+          onPress={appleSignIn}
         />
         <TouchableOpacity
           style={{ alignItems: "center", padding: 10 }}
@@ -448,6 +536,3 @@ const styles = StyleSheet.create({
     color: "#404040",
   },
 });
-function firebaseAuth() {
-  throw new Error("Function not implemented.");
-}

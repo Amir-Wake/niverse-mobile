@@ -27,16 +27,22 @@ const TopBooks = () => {
     const fetchData = async () => {
       try {
         const cachedData = await AsyncStorage.getItem(apiLink);
+        const response = await fetch(apiLink);
+        const data = await response.json();
+
         if (cachedData) {
-          setData(JSON.parse(cachedData));
-          setLoading(false);
+          const parsedCachedData = JSON.parse(cachedData);
+          if (JSON.stringify(parsedCachedData) !== JSON.stringify(data)) {
+            setData(data);
+            await AsyncStorage.setItem(apiLink, JSON.stringify(data));
+          } else {
+            setData(parsedCachedData);
+          }
         } else {
-          const response = await fetch(apiLink);
-          const data = await response.json();
           setData(data);
           await AsyncStorage.setItem(apiLink, JSON.stringify(data));
-          setLoading(false);
         }
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
         setLoading(false);
@@ -183,8 +189,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   bookImage: {
-    width: 250,
-    height: 375,
+    width: width*0.58,
+    height: height*0.4,
     borderRadius: 15,
     shadowColor: "black",
   },

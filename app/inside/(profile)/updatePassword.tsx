@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -14,14 +14,20 @@ import {
   EmailAuthProvider,
   sendPasswordResetEmail
 } from "firebase/auth";
-import { useRouter } from "expo-router";
+import { useNavigation } from "expo-router";
 import i18n from "@/assets/languages/i18n";
 
 export default function UpdatePassword() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
-  const router = useRouter();
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.getParent()!.setOptions({
+      headerTitle: i18n.t('updatePassword'),
+    });
+  }, []);
 
   const handleSavePassword = async () => {
     if (newPassword !== confirmPassword) {

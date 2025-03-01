@@ -122,7 +122,7 @@ const AllReviews: React.FC<ReviewProps> = () => {
               {review.createdDate ? review.createdDate.slice(0, 17) : ""}
             </Text>
             <Text style={styles.reviewTitle}>{review.title}</Text>
-            <Text style={styles.reviewComment}>{review.comment}</Text>
+            <Text style={[styles.reviewComment,{textAlign: review.comment.startsWith("rtl")?"right":"left"}]}>{review.comment.replace(/^rtl|^ltr/, '')}</Text>
           </View>
         ))}
       </ScrollView>
@@ -175,6 +175,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     paddingVertical: 4,
+    textAlign: "center",
   },
   reviewComment: {
     fontSize: 20,

@@ -35,6 +35,12 @@ const WriteReview: React.FC = () => {
     const router = useRouter();
     const { bookId } = useLocalSearchParams();
 
+    const isKurdishArabicScript = (text: string) => {
+        const kurdishArabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\u06A9\u06C5\u06D5\u06D2\u06D3]/;
+        kurdishArabicRegex.test(text)? setComment('rtl'+text): setComment(text);
+        return kurdishArabicRegex.test(text);
+      };
+
     useEffect(() => {
         if (!user || !bookId) {
             router.back();
@@ -71,12 +77,11 @@ const WriteReview: React.FC = () => {
 
         setIsLoading(true);
         setError("");
-
         try {
             const reviewData: ReviewData = {
                 rating,
-                title,
-                comment,
+                title: title,
+                comment: comment,
                 userId: user.uid,
             };
 
@@ -145,9 +150,9 @@ const WriteReview: React.FC = () => {
                             {i18n.t("comment")}
                         </Text>
                         <TextInput
-                            style={styles.commentInput}
-                            value={comment}
-                            onChangeText={setComment}
+                            style={[styles.commentInput,{textAlign: comment.startsWith('rtl') ? 'right' : 'left'}]}
+                            value={comment.startsWith('rtl') ? comment.slice(3) : comment}
+                            onChangeText={(text)=>isKurdishArabicScript(text)}
                             placeholderTextColor={COLORS.placeholder}
                             accessibilityLabel="Review comment"
                         />
@@ -198,6 +203,7 @@ const styles = StyleSheet.create({
         borderColor: "gray",
         borderWidth: 1,
         borderRadius: 10,
+        
     },
     commentInput: {
         width: "100%",
@@ -207,7 +213,6 @@ const styles = StyleSheet.create({
         borderColor: "gray",
         borderWidth: 1,
         borderRadius: 10,
-        textAlign: "center",
     },
     separator: {
         borderBottomWidth: 1,

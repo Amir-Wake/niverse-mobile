@@ -132,7 +132,7 @@ const Index = () => {
           <View
             style={[
               styles.searchContainer,
-              { backgroundColor: showSearch ? "lightgray" : "transparent" },
+              { backgroundColor: showSearch ? "#E5E4E2" : "transparent" },
             ]}
           >
             {!showSearch && (
@@ -196,14 +196,15 @@ const Index = () => {
           showsVerticalScrollIndicator={false}
         >
           <View>
-            <View
+            <Animated.View
+            sharedTransitionTag="topbooks"
             >
               <Suspense
                 fallback={<View/>}
               >
                 <PickCards />
               </Suspense>
-            </View>
+            </Animated.View>
             <View
             >
               <Suspense

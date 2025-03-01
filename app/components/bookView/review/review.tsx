@@ -31,15 +31,18 @@ const Review: React.FC<ReviewProps> = ({ bookId }) => {
     try {
       const response = await axios.get(`${apiLink}${bookId}/reviews`);
       const reviewsWithUserDetails = await Promise.all(
-        response.data.slice(-3).map(async (review: any) => {
-          const userDoc = await getDoc(doc(firestore, "users", review.userId));
-          const userData = userDoc.data();
-          return {
-            ...review,
-            userName: userData?.name || "Anonymous",
-            userImage: userData?.profileImageUrl || "",
-          };
-        })
+        response.data
+          .filter((review: any) => review.comment && review.title)
+          .slice(0, 5)
+          .map(async (review: any) => {
+            const userDoc = await getDoc(doc(firestore, "users", review.userId));
+            const userData = userDoc.data();
+            return {
+              ...review,
+              userName: userData?.name || i18n.t("anonymous"),
+              userImage: userData?.profileImageUrl || "",
+            };
+          })
       );
       setReviews(reviewsWithUserDetails);
     } catch (error) {
@@ -92,7 +95,7 @@ const Review: React.FC<ReviewProps> = ({ bookId }) => {
             {review.createdDate ? review.createdDate.slice(0, 17) : ""}
           </Text>
           <Text style={styles.reviewTitle}>{review.title}</Text>
-          <Text style={styles.reviewComment}>{review.comment}</Text>
+          <Text style={[styles.reviewComment,{textAlign: review.comment.startsWith("rtl")?"right":"left"}]}>{review.comment.replace(/^rtl|^ltr/, '')}</Text>
         </View>
       ))}
       <View style={styles.writeReview}>
