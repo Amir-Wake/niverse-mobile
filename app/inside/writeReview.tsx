@@ -8,6 +8,7 @@ import {
     TouchableOpacity,
     Alert,
     ActivityIndicator,
+    Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { auth } from "@/firebase";
@@ -22,6 +23,7 @@ interface ReviewData {
     userId: string;
 }
 
+const {width,height} = Dimensions.get('window');
 const WriteReview: React.FC = () => {
     const apiLink = `${process.env.EXPO_PUBLIC_REVIEWS_API}`;
     const [rating, setRating] = useState(0);
@@ -186,11 +188,15 @@ const COLORS = {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        marginTop: height*0.1,
     },
     content: {
-        padding: 10,
         backgroundColor: COLORS.white,
         flex: 1,
+        marginTop: 20,
+        padding: width*0.05,
+
+
     },
     inputContainer: {
         width: "100%",

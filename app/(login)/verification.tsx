@@ -1,10 +1,12 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import {sendEmailVerification} from "firebase/auth";
 import { auth } from "@/firebase";
 import i18n from "@/assets/languages/i18n";
 
+const {width} = Dimensions.get("window");
+const isIpad = Platform.OS === "ios" && Platform.isPad;
   export default function Verification() {
     const navigation  = useRouter();
 
@@ -43,9 +45,8 @@ import i18n from "@/assets/languages/i18n";
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: 50,
+        padding: width * 0.1,
         alignItems: "center",
-        padding: 20,
         backgroundColor: "#FAF9F6"
     },
     content: {
@@ -53,11 +54,11 @@ const styles = StyleSheet.create({
     },
     title: {
         marginVertical: 10,
-        fontSize: 26,
+        fontSize: isIpad? 28 : 24,
         textAlign: "center",
     },
     message: {
-        fontSize: 18,
+        fontSize: isIpad? 20 : 16,
         textAlign: "center",
     },
     button: {
@@ -72,6 +73,6 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: "#fff",
-        fontSize: 20,
+        fontSize: isIpad? 24 : 18,
     },
 });

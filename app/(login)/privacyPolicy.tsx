@@ -1,7 +1,9 @@
-import { ScrollView, View, Text, StyleSheet } from "react-native";
+import { ScrollView, View, Text, StyleSheet, Dimensions, Platform } from "react-native";
 import React from "react";
 import i18n from "@/assets/languages/i18n";
 
+const {width} = Dimensions.get("window");
+const isIpad = Platform.OS === "ios" && Platform.isPad;
 const PrivacyPolicy = () => {
   return (
     <View style={{ flex: 1, backgroundColor: "white" }}>
@@ -14,7 +16,7 @@ const PrivacyPolicy = () => {
         >
           {i18n.t("privacyPolicyText1")}
         </Text>
-        {Array.from({ length: 5 }, (_, i) => (
+        {Array.from({ length: 6 }, (_, i) => (
           <View key={i}>
             <Text
               style={[
@@ -40,7 +42,7 @@ const PrivacyPolicy = () => {
             { textAlign: i18n.locale == "ku" ? "right" : "left" },
           ]}
         >
-          {i18n.t("privacyPolicyText7")}
+          {i18n.t("privacyPolicyText8")}
         </Text>
       </ScrollView>
     </View>
@@ -49,18 +51,18 @@ const PrivacyPolicy = () => {
 
 const styles = StyleSheet.create({
   scrollView: {
-    padding: 10,
+    padding: width*0.05,
     backgroundColor: "#FAF9F6",
     borderRadius: 20,
     marginBottom: 20,
   },
   bodyText: {
-    fontSize: 18,
+    fontSize: isIpad?24:18,
     marginBottom: 10,
     letterSpacing: 0.5,
   },
   boldText: {
-    fontSize: 18,
+    fontSize: isIpad?24:18,
     fontWeight: "bold",
     letterSpacing: 0.5,
   },

@@ -1,8 +1,10 @@
-import { ScrollView, View, Text, StyleSheet } from "react-native";
+import { ScrollView, View, Text, StyleSheet, Dimensions, Platform } from "react-native";
 import React, { useEffect } from "react";
 import { useNavigation } from "expo-router";
 import i18n from "@/assets/languages/i18n";
 
+const {width} = Dimensions.get("window");
+const isIpad = Platform.OS === "ios" && Platform.isPad;
 const Terms = () => {
   const navigation = useNavigation();
 
@@ -14,7 +16,6 @@ const Terms = () => {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView}>
-        <Text style={styles.headerText}>{i18n.t("terms")}</Text>
         <Text
           style={[
             styles.bodyText,
@@ -62,24 +63,18 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   scrollView: {
-    padding: 10,
+    padding: width*0.05,
     backgroundColor: "#FAF9F6",
     borderRadius: 20,
     marginBottom: 20,
   },
-  headerText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-    textAlign: "center",
-  },
   bodyText: {
-    fontSize: 18,
+    fontSize: isIpad?24:18,
     marginBottom: 10,
     letterSpacing: 0.5,
   },
   boldText: {
-    fontSize: 18,
+    fontSize: isIpad?24:18,
     fontWeight: "bold",
     letterSpacing: 0.5,
   },

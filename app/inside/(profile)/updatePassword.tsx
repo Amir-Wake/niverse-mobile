@@ -6,6 +6,8 @@ import {
   TextInput,
   Alert,
   TouchableOpacity,
+  Dimensions,
+  ScrollView,
 } from "react-native";
 import { auth } from "@/firebase";
 import {
@@ -17,6 +19,7 @@ import {
 import { useNavigation } from "expo-router";
 import i18n from "@/assets/languages/i18n";
 
+const {width} = Dimensions.get("window");
 export default function UpdatePassword() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -99,8 +102,8 @@ export default function UpdatePassword() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "white" }}>
-      <View style={i18n.locale=="ku" ? styles.containerRtl : styles.container}>
+      <ScrollView style={[styles.container,{direction:i18n.locale=="ku"?"rtl":"ltr"}]}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center",padding: 10 }}>
         <View style={styles.section}>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>{i18n.t("currentPassword")}</Text>
@@ -139,37 +142,28 @@ export default function UpdatePassword() {
           style={{ alignItems: "center", padding: 10 }}
           onPress={handleResetPassword}
            >
-          <Text style={{ fontSize: 16, color: "#0066CC" }}>
+          <Text style={{ fontSize: width>720?22:18, color: "#0066CC" }}>
             {i18n.t("forgotPassword")}
           </Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </View>
+        </View>
+
+      </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     paddingTop: 50,
     backgroundColor: "#FAF9F6",
     borderRadius: 20,
-  },
-  containerRtl: {
-    flex: 1,
-    padding: 20,
-    paddingTop: 50,
-    backgroundColor: "#FAF9F6",
-    borderRadius: 20,
-    direction: "rtl",
-    textAlign: "right",
   },
   saveButton: {
     backgroundColor: "#24a0ed",
     padding: 12,
-    width: '80%',
+    width: width*0.5,
     alignSelf: "center",
     borderRadius: 10,
     alignItems: "center",
@@ -177,7 +171,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: width>720?22:18,
     fontWeight: "bold",
     fontFamily: "arial",
   },
@@ -186,10 +180,11 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginBottom: 10,
+    width: width*0.9,
   },
   label: {
     textAlign: i18n.locale=="ku" ? "right" : "left",
-    fontSize: 16,
+    fontSize: width>720?22:18,
     marginBottom: 5,
   },
   input: {

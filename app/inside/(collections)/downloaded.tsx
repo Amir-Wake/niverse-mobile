@@ -6,12 +6,16 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Dimensions,
+  Platform,
 } from "react-native";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { auth } from "@/firebase";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
+const { width } = Dimensions.get("window");
 
+const isIpad = Platform.OS === "ios" && Platform.isPad;
 const Downloaded = () => {
   interface Book {
     title: string;
@@ -81,7 +85,7 @@ const Downloaded = () => {
           data={books}
           renderItem={renderItem}
           keyExtractor={(item, index) => index.toString()}
-          numColumns={2}
+          numColumns={isIpad?3:2}
           contentContainerStyle={styles.listContainer}
         />
       </View>
@@ -110,19 +114,18 @@ const styles = StyleSheet.create({
   },
   bookContainer: {
     flex: 1,
-    alignItems: "flex-start",
-    padding: 10,
+    padding: width * 0.025,
   },
   bookImage: {
-    width: 170,
-    height: 280,
+    width: isIpad?(width / 3)-60:(width / 2)-40,
+    height: isIpad?((width / 3)-60) * 1.5:((width / 2)-40) * 1.5,
     resizeMode: "cover",
   },
   bookTitle: {
-    fontSize: 16,
+    fontSize: isIpad?24:16,
     fontWeight: "bold",
     textAlign: "center",
-    maxWidth: 170,
+    maxWidth: isIpad?(width / 3)-60:(width / 2)-40,
   },
 });
 

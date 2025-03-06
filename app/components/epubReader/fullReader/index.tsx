@@ -9,7 +9,7 @@ import {
 } from "@epubjs-react-native/core";
 import { useFileSystem } from "@epubjs-react-native/expo-file-system";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -160,13 +160,12 @@ function Component({ src }: ComponentProps) {
 
   return (
     <View
-      style={{
-        flex: 1,
-        paddingTop: Platform.OS === "ios" ? insets.top - 20 : insets.top,
-        paddingBottom: insets.bottom - 20,
-        backgroundColor: theme.body.background,
-      }}
-    >
+    style={{
+      flex: 1,
+      paddingTop: Platform.OS === "ios" ? insets.top - 10 : insets.top,
+      backgroundColor: theme.body.background,
+    }}
+  >
       <Header
         currentFontSize={currentFontSize}
         increaseFontSize={increaseFontSize}
@@ -177,10 +176,10 @@ function Component({ src }: ComponentProps) {
         onOpenBookmarksList={() => bookmarksListRef.current?.present()}
         onOpenTocList={() => bottomSheetRef.current?.present()}
       />
-      <View style={{ flex: 1, top: -10 }}>
+      <View style={{ flex: 1, }}>
         <Reader
           src={src}
-          width={width}
+          width={Platform.OS=='ios'&&Platform.isPad?width*2:width}
           height={height * 0.87}
           enableSelection={true}
           fileSystem={useFileSystem}
@@ -210,7 +209,9 @@ function Component({ src }: ComponentProps) {
           onClose={() => bottomSheetRef.current?.dismiss()}
         />
       </View>
-      <Footer />
+      <View style={{ position: "absolute", bottom: 10, width: width }}>
+        <Footer />
+        </View>
     </View>
   );
 }

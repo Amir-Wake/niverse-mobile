@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Platform
 } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -14,7 +15,7 @@ import { Image } from "expo-image";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get("window");
-
+const isIpad = Platform.OS == "ios" && Platform.isPad;
 const TopBooks = () => {
   const scrollViewRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -121,7 +122,7 @@ const TopBooks = () => {
                   source={{ uri: item.coverImageUrl }}
                   cachePolicy={"memory-disk"}
                   style={styles.bookImage}
-                  placeholder={require("@/assets/images/picksPlaceHolder.jpg")}
+                  placeholder={require("@/assets/images/picksPlaceHolder.png")}
                   placeholderContentFit="cover"
                   contentFit="cover"
                   transition={1000}
@@ -131,7 +132,6 @@ const TopBooks = () => {
             </View>
           ))}
         </ScrollView>
-      </View>
       <View style={styles.circleBar}>
         {Array.from({ length: data.length }).map((_, index) => (
           <TouchableOpacity
@@ -148,6 +148,7 @@ const TopBooks = () => {
           </TouchableOpacity>
         ))}
       </View>
+      </View>
     </View>
   );
 };
@@ -156,13 +157,14 @@ export default memo(TopBooks);
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: "#F8F8FF",
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
   containerCustomStyle: {
     width: width,
-    height: height * 0.58,
+    height: height * 0.55,
   },
   loadingCustomStyle: {
     width: width,
@@ -179,33 +181,31 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
-    width: "100%",
+    width: width*2,
     height: "100%",
   },
   bookCardContent: {
-    marginTop: "15%",
+    marginTop: isIpad? height * 0.05 : height * 0.1,
     width: width,
     alignItems: "center",
     justifyContent: "center",
   },
   bookImage: {
-    width: width*0.58,
-    height: height*0.4,
+    width: isIpad ? width * 0.4 : width * 0.57,
+    height: isIpad ? (width * 0.4)*1.5 : (width * 0.57)*1.5,
     borderRadius: 15,
     shadowColor: "black",
   },
   bookAuthorText: {
     textAlign: "center",
-    marginTop: 15,
+    marginVertical: 10,
     fontWeight: "bold",
-    fontSize: 18,
+    fontSize: isIpad?24:18,
   },
   circleBar: {
     flexDirection: "row",
     shadowColor: "black",
     justifyContent: "center",
-    position: "absolute",
-    bottom: 0,
   },
   touchableCircle: {
     padding: 5,

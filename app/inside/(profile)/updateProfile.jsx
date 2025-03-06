@@ -10,6 +10,7 @@ import {
   Modal,
   TouchableWithoutFeedback,
   Platform,
+  ScrollView
 } from "react-native";
 import { Image } from "expo-image";
 import { auth } from "@/firebase";
@@ -20,9 +21,10 @@ import * as ImageManipulator from "expo-image-manipulator";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import i18n from '@/assets/languages/i18n';
 import { useNavigation } from "expo-router";
+import { FontAwesome } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
-
+const isIpad = Platform.OS === "ios" && Platform.isPad;
 export default function UpdateProfile() {
   const [profileImage, setProfileImage] = useState(null);
   const [dob, setDob] = useState("");
@@ -32,7 +34,7 @@ export default function UpdateProfile() {
   const firestore = getFirestore();
   const [newName, setNewName] = useState("");
   const navigation = useNavigation();
-
+  const [ageRestrictionEnabled, setAgeRestrictionEnabled] = useState(false);
   useEffect(() => {
     navigation.getParent().setOptions({
       headerTitle: i18n.t('accountDetails'),
@@ -53,6 +55,9 @@ export default function UpdateProfile() {
         }
         if (data.dob) {
           setDob(data.dob);
+        }
+        if (data.ageRestrictionEnabled) {
+          setAgeRestrictionEnabled(data.ageRestrictionEnabled);
         }
       }
     };
@@ -113,7 +118,12 @@ export default function UpdateProfile() {
   };
 
   const handleSaveName = async () => {
-    if (!newName.trim()) {return}
+    if (ageRestrictionEnabled) {
+      Alert.alert("", i18n.t('ageRestrictionEnabled'));
+      return;
+    }
+    if (!newName.trim()) {Alert.alert("", i18n.t("emptyName"));
+      return;}
     let profileImageUrl = null;
     if (profileImage) {
       profileImageUrl = await uploadImage(profileImage.uri);
@@ -130,7 +140,7 @@ export default function UpdateProfile() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "white" }}>
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <View style={styles.section}>
           <View style={styles.profileContainer}>
             <TouchableOpacity onPress={pickImage}>
@@ -148,26 +158,33 @@ export default function UpdateProfile() {
           </View>
           <View style={styles.inputContainer}>
             <Text style={[styles.label,{textAlign: i18n.locale=="ku"?"right":"left"}]}>{i18n.t('email')}</Text>
-            <TextInput
-              style={[styles.input, styles.disabledInput,{textAlign: i18n.locale=="ku"?"right":"left"}]}
-              placeholder="Email"
-              value={email}
-              editable={false}
-              selectTextOnFocus={false}
-            />
+            <View style={styles.inputWrapper}>
+              <FontAwesome name="envelope" size={20} color="gray" style={styles.icon} />
+              <TextInput
+                style={[styles.input, styles.disabledInput,{textAlign: i18n.locale=="ku"?"right":"left"}]}
+                placeholder="Email"
+                value={email}
+                editable={false}
+                selectTextOnFocus={false}
+              />
+            </View>
           </View>
           <View style={styles.inputContainer}>
             <Text style={[styles.label,{textAlign: i18n.locale=="ku"?"right":"left"}]}>{i18n.t('name')}</Text>
-            <TextInput
-              style={[styles.input,{textAlign: i18n.locale=="ku"?"right":"left"}]}
-              value={newName}
-              onChangeText={(text) => setNewName(text)}
-            />
+            <View style={styles.inputWrapper}>
+              <FontAwesome name="user" size={20} color="gray" style={styles.icon} />
+              <TextInput
+                style={[styles.input,{textAlign: i18n.locale=="ku"?"right":"left"}]}
+                value={newName}
+                onChangeText={(text) => setNewName(text)}
+              />
+            </View>
           </View>
           <View style={styles.inputContainer}>
             <Text style={[styles.label,{textAlign: i18n.locale=="ku"?"right":"left"}]}>{i18n.t('birthday')}</Text>
             <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-              <View pointerEvents="none">
+              <View pointerEvents="none" style={styles.inputWrapper}>
+                <FontAwesome name="calendar" size={20} color="gray" style={styles.icon} />
                 <TextInput
                   style={[styles.input,{textAlign: i18n.locale=="ku"?"right":"left"}]}
                   placeholder="Date of Birth"
@@ -208,7 +225,7 @@ export default function UpdateProfile() {
             <Text style={styles.saveButtonText}>{i18n.t('saveChanges')}</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -216,7 +233,7 @@ export default function UpdateProfile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: width * 0.05,
     backgroundColor: "#FAF9F6",
     borderRadius: 20
   },
@@ -244,15 +261,25 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   label: {
-    fontSize: 16,
+    fontSize: isIpad?22:18,
     marginBottom: 5,
     textAlign: i18n.locale=="ku" ? "right" : "left"
   },
-  input: {
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderColor: "#ccc",
-    padding: 10,
     borderRadius: 8,
+    paddingLeft: 10,
+  },
+  icon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    padding: 10,
+    fontSize: isIpad?22:18,
   },
   disabledInput: {
     backgroundColor: "#f0f0f0",
@@ -263,13 +290,13 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
-    width: '80%',
+    width: width * 0.5,
     alignSelf: "center",
     marginVertical: 10,
   },
   saveButtonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: isIpad?22:18,
     fontWeight: "bold",
   },
   modalContainer: {

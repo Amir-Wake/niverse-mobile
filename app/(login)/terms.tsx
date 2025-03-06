@@ -1,8 +1,9 @@
-import { ScrollView, View, Text, StyleSheet } from "react-native";
+import { ScrollView, View, Text, StyleSheet, Platform } from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
 import i18n from "@/assets/languages/i18n";
 
+const isIpad = Platform.OS === "ios" && Platform.isPad;
 const Terms = () => {
   const router = useRouter();
   return (
@@ -37,12 +38,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   bodyText: {
-    fontSize: 18,
+    fontSize: isIpad?24:18,
     marginBottom: 10,
     letterSpacing: 0.5,
   },
   boldText: {
-    fontSize: 18,
+    fontSize: isIpad?24:18,
     fontWeight: "bold",
     letterSpacing: 0.5,
   },

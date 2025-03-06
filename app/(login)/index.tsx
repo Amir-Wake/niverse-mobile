@@ -11,6 +11,8 @@ import {
   ActivityIndicator,
   Linking,
   Image,
+  Dimensions,
+  ScrollView,
 } from "react-native";
 import { auth } from "@/firebase";
 import {
@@ -25,12 +27,15 @@ import {
   GoogleSignin,
   isErrorWithCode,
   statusCodes,
-  GoogleSigninButton,
 } from "@react-native-google-signin/google-signin";
 import { useRouter } from "expo-router";
 import i18n from "@/assets/languages/i18n";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { AntDesign } from "@expo/vector-icons";
+
+const {width} = Dimensions.get('window');
+const isIpad: boolean = Platform.OS == "ios" && Platform.isPad;
 
 export default function Index() {
   const [email, setEmail] = useState("");
@@ -209,7 +214,7 @@ export default function Index() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#FAF9F6" }}>
+    <ScrollView style={{ flex: 1, backgroundColor: "#FAF9F6" }}>
       <StatusBar
         barStyle="dark-content"
         backgroundColor="transparent"
@@ -263,32 +268,41 @@ export default function Index() {
         <Text style={styles.header}>
           {isSignUp ? i18n.t("signUpText") : i18n.t("signInText")}
         </Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="gray"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="gray"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-        {isSignUp && (
+        <View style={styles.inputContainer}>
+          <AntDesign name="mail" size={isIpad?24:20} color="gray" />
           <TextInput
             style={styles.input}
-            placeholder="Confirm Password"
+            placeholder="Email"
             placeholderTextColor="gray"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <AntDesign name="lock" size={isIpad?24:20} color="gray" />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="gray"
+            value={password}
+            onChangeText={setPassword}
             secureTextEntry
           />
+        </View>
+        {isSignUp && (
+          <View style={styles.inputContainer}>
+            <AntDesign name="lock" size={isIpad?24:20} color="gray" />
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm Password"
+              placeholderTextColor="gray"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+            />
+          </View>
         )}
         <TouchableOpacity
           style={[styles.authButton, loading && styles.authButtonDisabled]}
@@ -303,42 +317,58 @@ export default function Index() {
             </Text>
           )}
         </TouchableOpacity>
-        <GoogleSigninButton
+        {/* <GoogleSigninButton
           style={{
-            width: "80%",
+            width: width*0.7,
+            height: 44,
             alignSelf: "center",
-            borderRadius: 10,
-            marginBottom: 8,
+            borderRadius: 15,
+            marginBottom: 10,
           }}
           size={GoogleSigninButton.Size.Wide}
           color={GoogleSigninButton.Color.Dark}
           onPress={googleSignIn}
-        />
-        <AppleAuthentication.AppleAuthenticationButton
-          buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-          cornerRadius={5}
-          style={{
-            width: "80%",
-            height: 44,
-            alignSelf: "center",
-            borderRadius: 5,
-          }}
-          onPress={appleSignIn}
-        />
+        /> */}
         <TouchableOpacity
-          style={{ alignItems: "center", padding: 10 }}
+          style={{ alignItems: "center", padding: 10, }}
           onPress={() => navigation.push("/(login)/restPassword")}
         >
-          <Text style={{ fontSize: 16, color: "#0066CC" }}>
+          <Text style={{ fontSize: isIpad?24:18, color: "#0066CC" }}>
             {i18n.t("forgotPassword")}
           </Text>
         </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
+          <View style={{ flex: 1, height: 1, backgroundColor: 'gray' }} />
+          <Text style={{ fontSize: isIpad? 24 : 18, textAlign: 'center', marginHorizontal: 10 }}>or use</Text>
+          <View style={{ flex: 1, height: 1, backgroundColor: 'gray' }} />
+        </View>
+        <TouchableOpacity style={{backgroundColor: "transparent", alignSelf: "center", marginVertical: 5}} onPress={googleSignIn}>
+          <Image
+            source={require("@/assets/images/googleContinue.png")}
+            style={{
+              width: isIpad?300:200,
+              height: isIpad?74:54,
+              alignSelf: "center",
+            }}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+        <AppleAuthentication.AppleAuthenticationButton
+          buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+          cornerRadius={5}
+          style={{
+            width: isIpad?300:200,
+            height: isIpad?64:44,
+            alignSelf: "center",
+          }}
+          onPress={appleSignIn}
+        />
       </View>
       <View style={styles.footer}>
         <Text style={styles.footerText}>{i18n.t("userAgreement")}</Text>
       </View>
-      <View style={{ marginTop: 100 }}>
+      <View style={{ marginTop: 40 }}>
         <View
           style={{
             flexDirection: "row",
@@ -348,30 +378,22 @@ export default function Index() {
         >
           <TouchableOpacity onPress={() => navigation.push("./terms")}>
             <Text
-              style={{
-                fontSize: 14,
-                color: "#0066CC",
-                textDecorationLine: "underline",
-              }}
+              style={styles.footerLinks}
             >
               {i18n.t("terms")}
             </Text>
           </TouchableOpacity>
-          <Text style={{ fontSize: 14, color: "#404040", marginHorizontal: 5 }}>
+          <Text style={{ fontSize: 16, color: "#404040", marginHorizontal: 5 }}>
             |
           </Text>
           <TouchableOpacity onPress={() => navigation.push("./privacyPolicy")}>
             <Text
-              style={{
-                fontSize: 14,
-                color: "#0066CC",
-                textDecorationLine: "underline",
-              }}
+              style={styles.footerLinks}
             >
               {i18n.t("privacyPolicy")}
             </Text>
           </TouchableOpacity>
-          <Text style={{ fontSize: 14, color: "#404040", marginHorizontal: 5 }}>
+          <Text style={{ fontSize: 16, color: "#404040", marginHorizontal: 5 }}>
             |
           </Text>
           <TouchableOpacity
@@ -382,11 +404,7 @@ export default function Index() {
             }
           >
             <Text
-              style={{
-                fontSize: 14,
-                color: "#0066CC",
-                textDecorationLine: "underline",
-              }}
+              style={styles.footerLinks}
             >
               {i18n.t("contact")}
             </Text>
@@ -395,7 +413,7 @@ export default function Index() {
         <Text
           style={{
             textAlign: "center",
-            fontSize: 14,
+            fontSize: isIpad?20:14,
             color: "#404040",
             marginTop: 10,
           }}
@@ -403,13 +421,14 @@ export default function Index() {
           © {new Date().getFullYear()} Niverse, Inc.
         </Text>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     justifyContent: "center",
+    padding: width * 0.1,
   },
   headerContainer: {
     flexDirection: "row",
@@ -434,26 +453,33 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   languageButtonText: {
-    fontSize: 18,
+    fontSize: isIpad?24:18,
     color: "#0066CC",
   },
   header: {
-    fontSize: 16,
+    fontSize: isIpad?24:18,
     textAlign: "center",
     marginBottom: 10,
   },
-  input: {
-    height: 40,
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     borderColor: "gray",
     borderWidth: 1,
     marginBottom: 12,
-    paddingHorizontal: 8,
+    paddingHorizontal: 8 
+  },
+  input: {
+    flex: 1,
+    height: isIpad?50:40,
+    marginLeft: 10,
+    fontSize: isIpad?24:18,
   },
   error: {
     color: "red",
     marginBottom: 12,
     textAlign: "center",
-    fontSize: 16,
+    fontSize: isIpad?22:16,
   },
   radioContainer: {
     flexDirection: "row",
@@ -471,11 +497,11 @@ const styles = StyleSheet.create({
     borderColor: "grey",
   },
   radioText: {
-    fontSize: 18,
+    fontSize: isIpad?24:18,
     color: "gray",
   },
   radioTextSelected: {
-    fontSize: 20,
+    fontSize: isIpad?26:20,
     fontWeight: "bold",
   },
   radioCircle: {
@@ -497,23 +523,24 @@ const styles = StyleSheet.create({
     padding: 4,
     width: "95%",
     alignSelf: "center",
+
   },
   authButton: {
     backgroundColor: "#24a0ed",
     padding: 10,
-    width: "80%",
+    width: width*0.5,
     alignSelf: "center",
     borderRadius: 5,
     alignItems: "center",
     marginBottom: 8,
   },
   authButtonDisabled: {
-    backgroundColor: "gray",
+    backgroundColor: "lightgray",
   },
   authButtonText: {
     color: "white",
     fontFamily: "arial",
-    fontSize: 18,
+    fontSize: isIpad?24:18,
     fontWeight: "bold",
   },
   loadingContainer: {
@@ -523,7 +550,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    fontSize: 18,
+    fontSize: isIpad?24:18,
     color: "gray",
   },
   footer: {
@@ -532,7 +559,13 @@ const styles = StyleSheet.create({
   },
   footerText: {
     textAlign: "center",
-    fontSize: 14,
+    fontSize: isIpad?20:14,
     color: "#404040",
+  },
+  footerLinks: {
+    fontSize: isIpad?20:14,
+    color: "#0066CC",
+    marginHorizontal: 5,
+    textDecorationLine: "underline",
   },
 });

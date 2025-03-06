@@ -1,9 +1,11 @@
-import { View, Text, TouchableOpacity, Alert, I18nManager } from "react-native";
+import { View, Text, TouchableOpacity, Alert, I18nManager, Dimensions, Platform } from "react-native";
 import React, { useState, useEffect } from "react";
 import { setLanguage, getLanguage } from "@/assets/languages/i18n";
 import i18n from "@/assets/languages/i18n";
 import * as Updates from "expo-updates";
 
+const {width} = Dimensions.get("window");
+const isIpad = Platform.OS === "ios" && Platform.isPad;
 const Languages = () => {
   const [currentLanguage, setCurrentLanguage] = useState<string>("en");
 
@@ -42,7 +44,7 @@ const Languages = () => {
     <View style={{ flex: 1, backgroundColor: "white" }}>
       <View
         style={{
-          padding: 20,
+          padding: width*0.1,
           backgroundColor: "#FAF9F6",
           borderRadius: 20,
           flex: 1,
@@ -50,7 +52,7 @@ const Languages = () => {
       >
         <Text
           style={{
-            fontSize: 24,
+            fontSize: isIpad?28:24,
             fontWeight: "bold",
             marginBottom: 10,
             textAlign: "center",
@@ -75,7 +77,7 @@ const Languages = () => {
             }}
             onPress={() => handleLanguageChange("en")}
           >
-            <Text>English</Text>
+            <Text style={{fontSize:isIpad?24:18}}>English</Text>
           </TouchableOpacity>
           <View style={{ height: 1, backgroundColor: "#ccc" }} />
           <TouchableOpacity
@@ -87,7 +89,7 @@ const Languages = () => {
             }}
             onPress={() => handleLanguageChange("ku")}
           >
-            <Text>کوردی</Text>
+            <Text style={{fontSize:width>750?24:18}}>کوردی</Text>
           </TouchableOpacity>
         </View>
       </View>

@@ -270,6 +270,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginHorizontal: 10,
+    height: height * 0.05,
   },
   actions: {
     flexDirection: "row",

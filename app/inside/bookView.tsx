@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Carousel from "react-native-reanimated-carousel";
@@ -64,22 +65,22 @@ const BookView = () => {
     <View style={styles.bookSheetContainer}>
       {books.length > 0 && (
         <Carousel
-          key={books.length} // Add key to force re-render
+          key={books.length} 
           autoPlay={false}
           data={books}
-          height={height}
+          height={height+50}
           defaultIndex={defaultIndex}
           loop={false}
           mode="parallax"
           modeConfig={{
-            parallaxScrollingScale: 0.905,
+            parallaxScrollingScale: Platform.OS=='ios'&& Platform.isPad? 0.95:0.905,
             parallaxScrollingOffset: 50,
           }}
           width={width}
           renderItem={({ index }) => (
-            <Animated.View
+            <Animated.ScrollView
+              showsVerticalScrollIndicator={false}
               style={{ marginTop: 20 }}
-              sharedTransitionTag="booklists"
               entering={index === defaultIndex ? undefined : FadeInDown.delay(index * 250)
                   .duration(500)
                   .springify()
@@ -105,7 +106,7 @@ const BookView = () => {
                 <BookDetails book={books[index]} />
               </Suspense>
               </View>
-            </Animated.View>
+            </Animated.ScrollView>
           )}
         />
       )}
@@ -115,7 +116,7 @@ const BookView = () => {
 
 const styles = StyleSheet.create({
   container: {
-    width,
+    width: width,
     borderColor: "black",
     minHeight: height,
     borderWidth: 2,

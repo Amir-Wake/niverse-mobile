@@ -20,8 +20,8 @@ import i18n from "@/assets/languages/i18n";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { auth } from "@/firebase";
 
-const { height } = Dimensions.get("window");
-
+const { width, height } = Dimensions.get("window");
+const isIpad = Platform.OS === "ios" && Platform.isPad;
 export default function Library() {
   interface Book {
     title: string;
@@ -165,7 +165,7 @@ export default function Library() {
           style={[styles.collection,{direction: i18n.locale=="ku" ? "rtl" : "ltr"}]}
           onPress={() => router.navigate("../collections")}
         >
-          <IconButton icon={"reorder-horizontal"} size={26} />
+          <IconButton icon={"reorder-horizontal"} size={isIpad?34:26} />
           <Text style={styles.collectionText}>{i18n.t("collections")}</Text>
         </TouchableOpacity>
       </View>
@@ -174,7 +174,7 @@ export default function Library() {
         data={books}
         renderItem={renderItem}
         keyExtractor={(item, index) => index.toString()}
-        numColumns={2}
+        numColumns={isIpad?3:2}
         columnWrapperStyle={styles.row}
         contentContainerStyle={[styles.container,{direction: i18n.locale=="ku" ? "rtl" : "ltr"}]}
         onScrollBeginDrag={Keyboard.dismiss}
@@ -200,12 +200,13 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     color: "black",
+    fontSize: isIpad?24:18,
   },
   searchButton: {
     padding: 10,
   },
   container: {
-    padding: 10,
+    paddingHorizontal: 10,
   },
   row: {
     justifyContent: "space-between",
@@ -231,12 +232,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   collectionText: {
-    fontSize: 20,
+    fontSize: isIpad?30:20,
     paddingVertical: 15,
   },
   bookImage: {
-    width: 160,
-    height: 260,
+    width: isIpad?(width / 3)-60:(width / 2)-40,
+    height: isIpad?((width / 3)-60) * 1.5:((width / 2)-40) * 1.5,
     borderRadius: 10,
     elevation: 5,
   },

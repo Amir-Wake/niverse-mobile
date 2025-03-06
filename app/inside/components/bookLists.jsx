@@ -5,13 +5,15 @@ import {
   ScrollView,
   Dimensions,
   TouchableOpacity,
+  Platform
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 import i18n from "@/assets/languages/i18n";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
+const isIpad = Platform.OS == "ios" && Platform.isPad;
 
 const BookList = ({ title, description, genre }) => {
   const router = useRouter();
@@ -76,15 +78,15 @@ const BookList = ({ title, description, genre }) => {
                 source={{ uri: item.coverImageUrl }}
                 style={styles.bookImage}
                 cachePolicy="memory-disk"
-                placeholder={require("@/assets/images/listsPlaceHolder.jpg")}
+                placeholder={require("@/assets/images/listsPlaceHolder.png")}
                 placeholderContentFit="cover"
                 contentFit="cover"
                 transition={100}
               />
               <Text style={styles.bookTitle}>
-                {item.title.length > 18
+                {!isIpad&&item.title.length > 18
                   ? `${item.title.substring(0, 15)}...`
-                  : item.title}
+                  : isIpad&&item.title.length>23?`${item.title.substring(0, 20)}...`:item.title}
               </Text>
             </TouchableOpacity>
           </View>
@@ -111,12 +113,12 @@ const styles = {
   title: {
     color: "#101010",
     paddingTop: 6,
-    fontSize: 26,
+    fontSize: isIpad?34:26,
   },
   description: {
     color: "#101010",
     paddingBottom: 6,
-    fontSize: 18,
+    fontSize: isIpad?24:18,
   },
   scrollViewContent: {
     paddingHorizontal: 15,
@@ -126,13 +128,13 @@ const styles = {
     marginTop: 10,
   },
   bookImage: {
-    width: width*0.4,
-    height: (width*0.4)*1.5,
+    width: Platform.isPad ? width * 0.3 : width * 0.4,
+    height: Platform.isPad ? (width * 0.3) * 1.5 : (width * 0.4) * 1.5,
     borderRadius: 10,
   },
   bookTitle: {
     color: "#101010",
-    fontSize: 18,
+    fontSize: isIpad?21:18,
     textAlign: "center",
   },
 };

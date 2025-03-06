@@ -7,8 +7,8 @@ export default function HomeLayout() {
     <Stack >
       <Stack.Screen name="(tabs)" options={{ title: "", headerShown:false}}/>
       <Stack.Screen name="bookView" options={{ title: "bookView", headerShown:false, presentation:"transparentModal", animation:"fade" }}/>
-      <Stack.Screen name="writeReview" options={{ title: "writeReview", headerShown:false, presentation:"modal" }}/>
-      <Stack.Screen name="allReviews" options={{ title: "writeReview", headerShown:false, presentation:"modal" }}/>
+      <Stack.Screen name="writeReview" options={{ title: "writeReview", headerShown:false, presentation:"transparentModal" }}/>
+      <Stack.Screen name="allReviews" options={{ title: "writeReview", headerShown:false, presentation:"transparentModal" }}/>
       <Stack.Screen name="bookReader" options={{ title: "bookReader", headerShown:false, presentation:"fullScreenModal" }}/>
       <Stack.Screen name="(collections)" options={{ title: i18n.t("collections"), headerShown:true }}/>
       <Stack.Screen name="collections" options={{ title: i18n.t("collections"), headerShown:true }}/>

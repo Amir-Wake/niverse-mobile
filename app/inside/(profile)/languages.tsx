@@ -1,10 +1,12 @@
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Alert, Dimensions, Platform } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useNavigation } from "expo-router";
 import { setLanguage, getLanguage } from "@/assets/languages/i18n";
 import i18n from "@/assets/languages/i18n";
 import * as Updates from "expo-updates";
 
+const isIpad = Platform.OS === "ios" && Platform.isPad;
+const {width} = Dimensions.get("window");
 const Languages = () => {
   const [currentLanguage, setCurrentLanguage] = useState<string>("en");
   const navigation = useNavigation();
@@ -40,7 +42,7 @@ const Languages = () => {
     ]);
   };
   const custumStyle = {
-    fontSize: 18,
+    fontSize: isIpad?22:18,
     margin: 5,
     textAlign: i18n.locale=="ku" ? ("right" as "right") : ("left" as "left"),
   };
@@ -49,7 +51,7 @@ const Languages = () => {
     <View style={{ flex: 1, backgroundColor: "white" }}>
       <View
         style={{
-          padding: 20,
+          padding: width*0.05,
           backgroundColor: "#FAF9F6",
           borderRadius: 20,
           flex: 1,
@@ -57,7 +59,7 @@ const Languages = () => {
       >
         <Text
           style={{
-            fontSize: 24,
+            fontSize: isIpad?28:24,
             fontWeight: "bold",
             marginBottom: 10,
             textAlign: "center",

@@ -7,6 +7,8 @@ import {
   Modal,
   TextInput,
   StyleSheet,
+  Dimensions,
+  Platform,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useNavigation, useRouter } from "expo-router";
@@ -18,6 +20,8 @@ import {
 } from "firebase/auth";
 import i18n from "@/assets/languages/i18n";
 
+const isIpad = Platform.OS === "ios" && Platform.isPad;
+const {width} = Dimensions.get("window");
 const PrivacyPolicy = () => {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
@@ -150,18 +154,18 @@ const styles = StyleSheet.create({
     width: "80%",
   },
   scrollView: {
-    padding: 10,
+    padding: width*0.05,
     backgroundColor: "#FAF9F6",
     borderRadius: 20,
     marginBottom: 20,
   },
   bodyText: {
-    fontSize: 18,
+    fontSize: isIpad?24:18,
     marginBottom: 10,
     letterSpacing: 0.5,
   },
   boldText: {
-    fontSize: 18,
+    fontSize: isIpad?24:18,
     fontWeight: "bold",
     letterSpacing: 0.5,
   },
@@ -236,15 +240,17 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: "red",
+    width:width*0.5,
     padding: 12,
     margin: 20,
     marginBottom: 40,
     borderRadius: 10,
     alignItems: "center",
+    alignSelf: "center",
   },
   deleteButtonText: {
     color: "white",
-    fontSize: 18,
+    fontSize: isIpad?24:18,
     fontFamily: "arial",
   },
 });

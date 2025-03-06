@@ -4,6 +4,8 @@ import { I18nManager } from "react-native";
 
 const i18n = new I18n({
   en: {
+    ageRestrictionEnabled: "Age restriction enabled! You must disable it before saving any change.",
+    emptyName: "Name cannot be empty",
     anonymous: "Anonymous",
     title: "Title",
     comment: "What do you like or dislike about this book?",
@@ -73,8 +75,8 @@ const i18n = new I18n({
     increase: "Increase",
     decrease: "Decrease",
     direction: "Direction",
-    signIn: "Sign In",
-    signUp: "Sign Up",
+    signIn: "LOG IN",
+    signUp: "SIGN UP",
     forgotPassword: "Forgot your password?",
     signInText: "Log in with your email and password",
     signUpText: "Sign up with your email and password",
@@ -135,7 +137,9 @@ const i18n = new I18n({
     termsText11: "By using our app, you agree to follow these terms and conditions. We’re committed to creating a positive experience for all users, and we appreciate your cooperation.",
   },
   ku: {
-    anonymous: "بێ ناو",
+    ageRestrictionEnabled: "تەمەنی دیاریکراو چالاککراوە! پێویستە لەپێش پاشەکەوتکردنی گۆڕانکاریەکەت ناچالاکی بکەیت.",
+    emptyName: "ناو نابێت بەتاڵ بێت",
+    anonymous: "بێناو",
     comment: "سەرنجت دەربارەی ئەم کتێبە؟",
     title: "سەردێڕ",
     more:"زیاتر",
@@ -221,7 +225,7 @@ const i18n = new I18n({
     profileUpdated: "پرۆفایل بە سەرکەوتوو نوێکرایەوە",
     error: "هەڵە",
     passwordMismatch: "تێپەڕەکان هاوبه‌ش نین",
-    passwordLength: "تێپەڕەکە بەلایەنی ٦ پیت بێت",
+    passwordLength: "تێپەڕەکە کەمتر لە ٦ پیتە",
     passwordChanged: "تێپەڕەکە بە سەرکەوتوویی گۆڕدرا",
     passwordIncorrect: "تێپەڕی ئێستا هەڵەیە",
     userAgreement:

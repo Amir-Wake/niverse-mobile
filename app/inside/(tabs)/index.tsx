@@ -10,17 +10,19 @@ import {
   ActivityIndicator,
   StyleSheet,
   Image,
+  Dimensions,
+  SafeAreaView
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import axios from "axios";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import i18n from "@/assets/languages/i18n";
 
 const PickCards = lazy(() => import("../components/topBooks"));
 const BookList = lazy(() => import("../components/bookLists"));
-
+const isIpad: boolean = Platform.OS == "ios" && Platform.isPad;
+const { width } = Dimensions.get("window");
 const Index = () => {
   const router = useRouter();
   const [showSearch, setShowSearch] = useState(false);
@@ -33,6 +35,7 @@ const Index = () => {
   const [lastInteraction, setLastInteraction] = useState(Date.now());
   const [networkError, setNetworkError] = useState(false);
   const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}books`;
+
 
   useEffect(() => {
     setLoading(true);
@@ -119,16 +122,10 @@ const Index = () => {
         translucent
       />
       <SafeAreaView
-        style={[
-          styles.safeArea,
-          {
-            backgroundColor: isScrolled
-              ? "rgba(255, 255, 255, 0.95)"
-              : "transparent",
-          },
-        ]}
-      >
-        <View style={styles.header}>
+        style={[styles.safeArea,{backgroundColor: isScrolled
+          ? "rgba(255, 255, 255, 0.95)"
+          : "transparent"}]}>
+        <View style={[styles.header,{}]}>
           <View
             style={[
               styles.searchContainer,
@@ -155,7 +152,7 @@ const Index = () => {
               onPress={toggleSearch}
               style={styles.searchButton}
             >
-              <Ionicons name="search" size={28} color="#F94929" />
+              <Ionicons name="search" size={isIpad?36:28} color="#F94929" />
             </TouchableOpacity>
           </View>
           {locations.length > 0 && showSearch && (
@@ -170,7 +167,7 @@ const Index = () => {
                   ]}
                   onPress={() => handleBookPress(locs)}
                 >
-                  <Text>{locs.title}</Text>
+                  <Text style={{fontSize:isIpad?22:18}}>{locs.title}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -250,39 +247,39 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     position: "absolute",
-    top: Platform.OS === "ios" ? -20 : -10,
+    top: Platform.OS === "ios" ? 0 : -10,
     left: 0,
     right: 0,
     zIndex: 50,
+    
   },
   header: {
-    marginBottom: Platform.OS === "ios" ? -25 : 10,
-    marginHorizontal: 16,
-    position: "relative",
+    padding: 5,
+    width: width,
+    paddingHorizontal: 20,
   },
   searchContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    height: 46,
+    height: isIpad?56:46,
     borderRadius: 10,
-    marginTop: 15,
   },
   appIcon: {
-    width: 70,
-    height: 70,
+    width: isIpad?80:70,
+    height: isIpad?80:70,
   },
   searchInput: {
     paddingLeft: 24,
     flex: 1,
     color: "black",
-    fontSize: 16,
+    fontSize: isIpad?24:18,
     height: 40,
     backgroundColor: "transparent",
   },
   searchButton: {
     borderRadius: 50,
-    padding: 5,
+    padding: isIpad?6:5,
     margin: 4,
     borderColor: "#F94929",
     borderWidth: 1,
@@ -294,6 +291,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     top: 64,
     borderRadius: 24,
+    alignSelf: "center",
   },
   searchResultItem: {
     flexDirection: "row",

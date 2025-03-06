@@ -2,8 +2,11 @@ import { Tabs } from "expo-router";
 import React from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import i18n from "@/assets/languages/i18n";
+import { Platform } from "react-native";
 
+const isIpad=Platform.OS=="ios" && Platform.isPad;
 export default function TabsLayout() {
+  const iconSize = isIpad ? 30 : 24;
   return (
     <Tabs
       screenOptions={{
@@ -23,7 +26,7 @@ export default function TabsLayout() {
             <Ionicons
               name={focused ? "home" : "home-outline"}
               color={color}
-              size={size}
+              size={iconSize}
             />
           ),
         }}
@@ -36,7 +39,7 @@ export default function TabsLayout() {
             <Ionicons
               name={focused ? "library" : "library-outline"}
               color={color}
-              size={size}
+              size={iconSize}
             />
           ),
         }}
@@ -49,7 +52,7 @@ export default function TabsLayout() {
             <Ionicons
               name={focused ? "person" : "person-outline"}
               color={color}
-              size={size}
+              size={iconSize}
             />
           ),
         }}

@@ -6,6 +6,7 @@ import {
   Alert,
   Dimensions,
   TouchableOpacity,
+  Platform,
 } from "react-native";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -26,12 +27,11 @@ import {
 import { auth } from "@/firebase";
 import Review from "./review/review";
 import i18n from "@/assets/languages/i18n";
-import { ScrollView } from "react-native-gesture-handler";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 const { width } = Dimensions.get("window");
-
+const isIpad = Platform.OS === "ios" && Platform.isPad;
 interface Book {
   id: string;
   coverImageUrl: string;
@@ -62,7 +62,7 @@ const BookDetails = ({ book }: { book: Book }) => {
   const [isRTL, setIsRTL] = useState(false);
   const router = useRouter();
   const firestore = getFirestore();
-
+  const [userAge, setUserAge] = useState(12);
   useEffect(() => {
     const checkFileExistence = async () => {
       const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.title}/`;
@@ -91,6 +91,13 @@ const BookDetails = ({ book }: { book: Book }) => {
       if (userDoc.exists()) {
         const userData = userDoc.data();
         setAgeRestrictionEnabled(userData?.ageRestrictionEnabled);
+        if(userData?.dob){
+        const dob = new Date(userData?.dob);
+        const ageDiffMs = Date.now() - dob.getTime();
+        const ageDate = new Date(ageDiffMs);
+        const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+        setUserAge(age);
+        }
       }
     };
 
@@ -241,7 +248,7 @@ const BookDetails = ({ book }: { book: Book }) => {
   };
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
+    <View style={styles.container}>
       <LinearGradient
         colors={[book.coverDominantColor || "#F8F8FF", "#F8F8FF"]}
         style={styles.bookCard}
@@ -251,21 +258,19 @@ const BookDetails = ({ book }: { book: Book }) => {
           source={{ uri: book.coverImageUrl }}
           cachePolicy={"memory-disk"}
           style={styles.bookImage}
-          placeholder={require("@/assets/images/booksPlaceHolder.jpg")}
+          placeholder={require("@/assets/images/booksPlaceHolder.png")}
           placeholderContentFit="cover"
           contentFit="cover"
           transition={100}
         />
       </View>
-      <View style={styles.body} >
-        <Animated.View style={styles.headerDetail} entering={FadeInDown.delay(200)
-                                          .duration(500)
-                                          .springify()
-                                          .damping(12)}>
+      <View style={styles.body}>
+        <Animated.View
+          style={styles.headerDetail}
+          entering={FadeInDown.delay(200).duration(500).springify().damping(12)}
+        >
           <Text style={styles.title}>
-            {book.title.length > 48
-              ? `${book.title.slice(0, 48)}...`
-              : book.title}
+           {book.title}
           </Text>
           <Text style={styles.author}>{book.author}</Text>
           <View style={styles.rating}>
@@ -280,10 +285,10 @@ const BookDetails = ({ book }: { book: Book }) => {
             <Text style={styles.reviewCount}> ({book.reviewCount || 0})</Text>
           </View>
         </Animated.View>
-        <Animated.View style={styles.buttonContainer} entering={FadeInDown.delay(400)
-                                          .duration(500)
-                                          .springify()
-                                          .damping(12)}>
+        <Animated.View
+          style={styles.buttonContainer}
+          entering={FadeInDown.delay(400).duration(500).springify().damping(12)}
+        >
           <Button
             icon={isDownloaded ? "check-bold" : "download"}
             mode="contained"
@@ -304,7 +309,7 @@ const BookDetails = ({ book }: { book: Book }) => {
             labelStyle={styles.buttonText}
             loading={isDownloading}
             disabled={
-              isDownloading || (ageRestrictionEnabled && book.ageRate > 13)
+              isDownloading || (ageRestrictionEnabled && book.ageRate > userAge)
             }
           >
             {isDownloaded
@@ -327,10 +332,9 @@ const BookDetails = ({ book }: { book: Book }) => {
           </Button>
         </Animated.View>
         <View style={styles.horizontalLine} />
-        <Animated.View entering={FadeInDown.delay(600)
-                                          .duration(500)
-                                          .springify()
-                                          .damping(12)}>
+        <Animated.View
+          entering={FadeInDown.delay(600).duration(500).springify().damping(12)}
+        >
           <Text style={[styles.description, isRTL && { textAlign: "right" }]}>
             {book.shortDescription}
           </Text>
@@ -347,10 +351,11 @@ const BookDetails = ({ book }: { book: Book }) => {
             </Text>
           </TouchableOpacity>
         </Animated.View>
-        <Animated.ScrollView horizontal={true} showsHorizontalScrollIndicator={false} entering={FadeInDown.delay(800)
-                                          .duration(500)
-                                          .springify()
-                                          .damping(12)}>
+        <Animated.ScrollView
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          entering={FadeInDown.delay(800).duration(500).springify().damping(12)}
+        >
           <View style={styles.bookInfo}>
             <Text style={styles.infoText}>{i18n.t("pages")}</Text>
             <FontAwesome name="files-o" size={50} color="black" />
@@ -386,7 +391,7 @@ const BookDetails = ({ book }: { book: Book }) => {
         </Animated.ScrollView>
         <Review bookId={book.id} />
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
@@ -397,11 +402,11 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   body: {
-    padding: 10,
+    padding: width * 0.05,
   },
   bookImage: {
-    width: 180,
-    height: 270,
+    width: width / 2,
+    height: (width / 2) * 1.5,
     backgroundColor: "white",
     shadowColor: "#000",
     elevation: 5,
@@ -429,14 +434,14 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   title: {
-    fontSize: 22,
+    fontSize: isIpad ? 32 : 22, 
     fontWeight: "bold",
     marginVertical: 5,
     alignSelf: "center",
     textAlign: "center",
   },
   author: {
-    fontSize: 18,
+    fontSize: isIpad ? 28 : 18, 
     paddingTop: 10,
     textAlign: "center",
   },
@@ -451,36 +456,36 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 5,
+    justifyContent: "space-evenly",
+    marginTop: 5,
+
   },
   button: {
     textAlign: "center",
-    marginTop: 5,
     borderRadius: 5,
   },
   buttonText: {
-    fontSize: 18,
+    fontSize: isIpad? 22 : 18,
     fontFamily: "Helvetica",
   },
   description: {
-    fontSize: 18,
-    lineHeight: 24,
+    fontSize: isIpad? 24 : 18, 
+    lineHeight: isIpad? 30 : 24, 
     fontWeight: "bold",
     marginVertical: 5,
     letterSpacing: 0.5,
   },
   longDescription: {
     marginVertical: 5,
-    fontSize: 18,
-    lineHeight: 24,
+    fontSize: isIpad ? 24 : 18,
+    lineHeight: isIpad ? 30 : 24,
     textAlign: "justify",
     letterSpacing: 0.5,
   },
   showMoreText: {
     marginVertical: 5,
     fontWeight: "bold",
-    fontSize: 18,
+    fontSize:isIpad ? 24 : 18, 
     color: "#0096FF",
     textAlign: "center",
   },
@@ -495,7 +500,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     padding: 10,
-    fontSize: 14,
+    fontSize: isIpad ? 20 : 14, 
     fontWeight: "bold",
     textAlign: "center",
   },

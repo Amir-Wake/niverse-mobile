@@ -10,6 +10,8 @@ import {
   Modal,
   TextInput,
   Linking,
+  ScrollView,
+  Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { auth } from "@/firebase";
@@ -19,6 +21,7 @@ import { Image } from "expo-image";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import i18n from "@/assets/languages/i18n";
+const { width } = Dimensions.get("window");
 
 export default function Index() {
   const [profileImage, setProfileImage] = useState<{ uri: string } | null>(null);
@@ -145,9 +148,10 @@ export default function Index() {
   );
 
   return (
-    <View style={[styles.container, { direction: isRTL ? "rtl" : "ltr" }]}>
+    <ScrollView showsVerticalScrollIndicator={false} style={[styles.container, { direction: isRTL ? "rtl" : "ltr" }]}>
       <StatusBar barStyle="dark-content" />
-      <SafeAreaView style={{ marginTop: 80 }} />
+      <SafeAreaView style={{ marginTop: 50 }} />
+      <View style={styles.contentContainer}>
       <View style={styles.profileContainer}>
         <Image
           source={
@@ -292,20 +296,26 @@ export default function Index() {
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: "#fff",
+  },
+  contentContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   profileContainer: {
     borderRadius: 10,
     padding: 10,
     alignItems: "center",
+
   },
   profileImage: {
     width: 90,
@@ -325,9 +335,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 10,
     borderColor: "#ccc",
+    width: width*0.9,
   },
   optionText: {
-    fontSize: 18,
+    fontSize: width>720?24:18,
     marginHorizontal: 10,
   },
   icon: {
@@ -342,17 +353,19 @@ const styles = StyleSheet.create({
   },
   signOutButton: {
     backgroundColor: "#ff3b30",
-    padding: 12,
-    width: 250,
+    padding: 8,
+    width: width*0.5,
     alignSelf: "center",
     borderRadius: 10,
     alignItems: "center",
     fontFamily: "Arial",
     marginTop: 20,
+    marginBottom: 20,
+
   },
   signOutButtonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: width>750?24:18,
     fontWeight: "bold",
   },
   modalContainer: {
@@ -390,7 +403,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "green",
-    padding: 12,
+    padding: 10,
     width: '80%',
     borderRadius: 8,
     alignItems: "center",

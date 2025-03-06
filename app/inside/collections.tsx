@@ -3,12 +3,14 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  Platform,
 } from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
 import { IconButton } from "react-native-paper";
 import i18n from "@/assets/languages/i18n";
 
+const isIpad = Platform.OS == "ios" && Platform.isPad;
 export default function Collections() {
   const router = useRouter();
 
@@ -39,7 +41,7 @@ export default function Collections() {
             style={styles.collectionItem}
             onPress={() => router.navigate(collection.route as any)}
           >
-            <IconButton icon={collection.icon} size={30} />
+            <IconButton icon={collection.icon} size={isIpad?38:30} />
             <Text style={styles.collectionText}>{collection.name}</Text>
           </TouchableOpacity>
         ))}
@@ -67,7 +69,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   collectionText: {
-    fontSize: 20,
+    fontSize: isIpad?28:20,
     padding: 15,
   },
 });

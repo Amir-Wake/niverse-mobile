@@ -16,14 +16,15 @@
     },
     "ios": {
       "googleServicesFile": "./GoogleService-Info.plist",
-      "supportsTablet": false,
       "bundleIdentifier": "com.amir19225.ebookdv1",
       "useFrameworks": "static",
-      "useAppleSignIn": true
+      "useAppleSignIn": true,
+      "supportsTablet": true,
+      "requireFullScreen": true
     },
     "android": {
       "googleServicesFile": "./google-services.json",
-      "supportsTablet": false,
+      "supportsTablet": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff",
@@ -42,6 +43,12 @@
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "PORTRAIT"
+        }
+      ],
       [
         "expo-build-properties",
         {
