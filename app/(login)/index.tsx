@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -47,6 +47,15 @@ export default function Index() {
   const navigation = useRouter();
   const firestore = getFirestore();
 
+  useEffect(() => {
+    const onAuthStateChanged = auth.onAuthStateChanged((user) => {
+      if (user&&user.emailVerified) {
+        navigation.replace("/inside/(tabs)");
+      }
+    });
+    return onAuthStateChanged;
+  }, []);
+  
   GoogleSignin.configure({
     webClientId:
       "696156084695-jtn3er5vaav5503nm3dd2id7ia5cfjfq.apps.googleusercontent.com",
@@ -85,7 +94,6 @@ export default function Index() {
       }
 
       setLoading(false);
-      navigation.replace("/inside/(tabs)");
     } catch (error) {
       if (isErrorWithCode(error)) {
         switch (error.code) {
@@ -136,8 +144,6 @@ export default function Index() {
             await setDoc(userDoc, { email: email }, { merge: true });
           }
         }
-
-        navigation.replace("/inside/(tabs)");
       }
     } catch (error) {
       setError("Apple Sign-In failed");
@@ -172,8 +178,8 @@ export default function Index() {
         await sendEmailVerification(userCredential.user);
         setPassword("");
         setConfirmPassword("");
-        navigation.push(`/(login)/verification?email=${email}`);
         setEmail("");
+        navigation.push(`/(login)/verification?email=${email}`);
       } else {
         const userCredential = await signInWithEmailAndPassword(
           auth,

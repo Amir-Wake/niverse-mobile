@@ -21,7 +21,7 @@ import {
 import i18n from "@/assets/languages/i18n";
 
 const isIpad = Platform.OS === "ios" && Platform.isPad;
-const {width} = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 const PrivacyPolicy = () => {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
@@ -30,7 +30,7 @@ const PrivacyPolicy = () => {
 
   useEffect(() => {
     navigation.getParent()!.setOptions({
-      headerTitle: i18n.t('privacyPolicy'),
+      headerTitle: i18n.t("privacyPolicy"),
     });
   }, []);
 
@@ -154,18 +154,18 @@ const styles = StyleSheet.create({
     width: "80%",
   },
   scrollView: {
-    padding: width*0.05,
+    padding: width * 0.05,
     backgroundColor: "#FAF9F6",
     borderRadius: 20,
     marginBottom: 20,
   },
   bodyText: {
-    fontSize: isIpad?24:18,
+    fontSize: isIpad ? 24 : 18,
     marginBottom: 10,
     letterSpacing: 0.5,
   },
   boldText: {
-    fontSize: isIpad?24:18,
+    fontSize: isIpad ? 24 : 18,
     fontWeight: "bold",
     letterSpacing: 0.5,
   },
@@ -191,10 +191,12 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     textAlign: "center",
+    fontSize: isIpad ? 22 : 16,
   },
   modalText: {
     marginBottom: 15,
     textAlign: "center",
+    fontSize: isIpad ? 22 : 16,
   },
   modalContainer: {
     flex: 1,
@@ -205,7 +207,7 @@ const styles = StyleSheet.create({
   modalView: {
     backgroundColor: "#d3d3d3",
     borderRadius: 20,
-    padding: 35,
+    padding: 15,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
@@ -217,7 +219,7 @@ const styles = StyleSheet.create({
     elevation: 5,
     borderWidth: 1,
     borderColor: "#aaa",
-    width: 300,
+    width: width * 0.7,
   },
   input: {
     height: 50,
@@ -229,6 +231,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     color: "#333",
     borderRadius: 5,
+    fontSize: isIpad ? 22 : 16,
   },
   button: {
     backgroundColor: "#b0b0b0",
@@ -237,10 +240,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#888",
+    width: width * 0.5,
+    alignSelf: "center",
   },
   deleteButton: {
     backgroundColor: "red",
-    width:width*0.5,
+    width: width * 0.5,
     padding: 12,
     margin: 20,
     marginBottom: 40,
@@ -250,7 +255,7 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     color: "white",
-    fontSize: isIpad?24:18,
+    fontSize: isIpad ? 24 : 18,
     fontFamily: "arial",
   },
 });

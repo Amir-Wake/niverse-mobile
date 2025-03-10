@@ -9,8 +9,9 @@ import {
     Alert,
     ActivityIndicator,
     Dimensions,
+    ScrollView,
+    SafeAreaView
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { auth } from "@/firebase";
 import axios, { AxiosError } from "axios";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -108,11 +109,12 @@ const WriteReview: React.FC = () => {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.content}>
+                <ScrollView>
                 <TouchableOpacity 
                     onPress={() => router.back()}
                     accessibilityLabel="Close review form"
                 >
-                    <FontAwesome name="close" size={28} color="black" />
+                    <FontAwesome name="close" size={30} color="black" />
                 </TouchableOpacity>
 
                 <View style={styles.headerContainer}>
@@ -172,6 +174,7 @@ const WriteReview: React.FC = () => {
                         )}
                     </TouchableOpacity>
                 </View>
+                </ScrollView>
             </View>
         </SafeAreaView>
     );
@@ -189,14 +192,12 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         marginTop: height*0.1,
+        backgroundColor: COLORS.white,
     },
     content: {
         backgroundColor: COLORS.white,
         flex: 1,
-        marginTop: 20,
-        padding: width*0.05,
-
-
+        padding: 10,
     },
     inputContainer: {
         width: "100%",

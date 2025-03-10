@@ -21,6 +21,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
+          tabBarLabelStyle: { fontSize: isIpad?18:14 },
           title: i18n.t('home'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
@@ -34,6 +35,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="library"
         options={{
+          tabBarLabelStyle: { fontSize: isIpad?18:14 },
           title: i18n.t('library'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
@@ -47,6 +49,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
+          tabBarLabelStyle: { fontSize: isIpad?18:14 },
           title: i18n.t('profile'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons

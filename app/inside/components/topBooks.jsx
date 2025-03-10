@@ -28,22 +28,17 @@ const TopBooks = () => {
     const fetchData = async () => {
       try {
         const cachedData = await AsyncStorage.getItem(apiLink);
-        const response = await fetch(apiLink);
-        const data = await response.json();
-
         if (cachedData) {
-          const parsedCachedData = JSON.parse(cachedData);
-          if (JSON.stringify(parsedCachedData) !== JSON.stringify(data)) {
-            setData(data);
-            await AsyncStorage.setItem(apiLink, JSON.stringify(data));
-          } else {
-            setData(parsedCachedData);
-          }
+          setData(JSON.parse(cachedData));
+          setLoading(false);
+          return;
         } else {
+          const response = await fetch(apiLink);
+          const data = await response.json();
           setData(data);
           await AsyncStorage.setItem(apiLink, JSON.stringify(data));
+          setLoading(false);
         }
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
         setLoading(false);

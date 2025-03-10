@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  Platform,
 } from "react-native";
 import axios from "axios";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
@@ -14,6 +15,7 @@ import { Image } from "expo-image";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import i18n from "@/assets/languages/i18n";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ReviewProps {
   bookId: string;
@@ -29,6 +31,7 @@ interface Review {
   userImage: string;
 }
 
+const isIpad = Platform.OS == "ios" && Platform.isPad;
 const {width,height} = Dimensions.get('window');
 const AllReviews: React.FC<ReviewProps> = () => {
   const apiLink = `${process.env.EXPO_PUBLIC_REVIEWS_API}`;
@@ -39,6 +42,15 @@ const AllReviews: React.FC<ReviewProps> = () => {
 
   const fetchReviews = async () => {
     try {
+      const cachedReviews = await AsyncStorage.getItem(`allreviews_${bookId}`);
+      const cachedTimestamp = await AsyncStorage.getItem(`allreviews_timestamp_${bookId}`);
+      const currentTime = new Date().getTime();
+
+      if (cachedReviews && cachedTimestamp && currentTime - parseInt(cachedTimestamp) < 24 * 60 * 60 * 1000) {
+        setReviews(JSON.parse(cachedReviews));
+        return;
+      }
+
       const response = await axios.get(`${apiLink}${bookId}/reviews`);
       const reviewsWithUserDetails = await Promise.all(
         response.data.map(async (review: any) => {
@@ -51,7 +63,14 @@ const AllReviews: React.FC<ReviewProps> = () => {
           };
         })
       );
-      setReviews(reviewsWithUserDetails);
+
+      const filteredReviews = reviewsWithUserDetails.filter(
+        (review) => review.title && review.comment
+      );
+
+      setReviews(filteredReviews);
+      await AsyncStorage.setItem(`allreviews_${bookId}`, JSON.stringify(filteredReviews));
+      await AsyncStorage.setItem(`allreviews_timestamp_${bookId}`, currentTime.toString());
     } catch (error) {
       console.error("Error fetching reviews:", error);
     }
@@ -63,7 +82,6 @@ const AllReviews: React.FC<ReviewProps> = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={{ flex: 1, backgroundColor: "#f0f0f0", padding: 10 }}>
         <View style={{padding: 10}}>
           <TouchableOpacity onPress={() => router.back()}>
             <FontAwesome name="remove" size={28} color="black" />
@@ -77,7 +95,7 @@ const AllReviews: React.FC<ReviewProps> = () => {
             }
           >
             <Text
-              style={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}
+              style={{ fontSize: isIpad?20:16, textAlign: "center", fontWeight: "bold" }}
             >
               {i18n.t("leaveReview")}
             </Text>
@@ -86,13 +104,14 @@ const AllReviews: React.FC<ReviewProps> = () => {
                 <FontAwesome
                   key={starIndex}
                   name="star-o"
-                  size={24}
+                  size={isIpad?30:24}
                   color="gold"
                 />
               ))}
             </View>
           </TouchableOpacity>
         </View>
+        <ScrollView style={{ flex: 1, backgroundColor: "#f0f0f0", padding: 10 }}>
         {reviews.map((review, index) => (
           <View key={index} style={styles.reviewContainer}>
             <View style={styles.userContainer}>
@@ -115,7 +134,7 @@ const AllReviews: React.FC<ReviewProps> = () => {
                 <FontAwesome
                   key={starIndex}
                   name={starIndex < review.rating ? "star" : "star-o"}
-                  size={24}
+                  size={isIpad?30:24}
                   color="gold"
                 />
               ))}
@@ -136,15 +155,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginTop: height * 0.1,
+    backgroundColor: "#f0f0f0",
+    
   },
   reviewContainer: {
     flex: 1,
-    padding: width * 0.05,
+    padding: 10,
     marginTop: 20,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#ddd",
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
   },
   writeReview: {
     padding: 10,
@@ -159,12 +180,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   userImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: isIpad?60:40,
+    height: isIpad?60:40,
+    borderRadius: 40,
   },
   userName: {
-    fontSize: 18,
+    fontSize: isIpad?24:18,
     padding: 8,
   },
   ratingContainer: {
@@ -176,13 +197,13 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   reviewTitle: {
-    fontSize: 20,
+    fontSize: isIpad?26:20,
     fontWeight: "bold",
     paddingVertical: 4,
     textAlign: "center",
   },
   reviewComment: {
-    fontSize: 20,
+    fontSize: isIpad?26:20,
   },
 });
 

@@ -9,12 +9,21 @@ import {
   Dimensions,
   Platform,
 } from "react-native";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  deleteDoc,
+  doc,
+  query,
+  where,
+} from "firebase/firestore";
 import { auth } from "@/firebase";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
-const { width } = Dimensions.get("window");
+import i18n from "@/assets/languages/i18n";
 
+const { width } = Dimensions.get("window");
 const isIpad = Platform.OS === "ios" && Platform.isPad;
 const Downloaded = () => {
   interface Book {
@@ -54,6 +63,40 @@ const Downloaded = () => {
     fetchBooks();
   }, []);
 
+  const confirmDeleteBook = (bookId: string) => {
+    Alert.alert(
+      "",
+      i18n.t("confirmDeleteCollection"),
+      [
+        { text: i18n.t("cancel"), style: "cancel" },
+        { text: i18n.t("ok"), onPress: () => deleteBook(bookId) },
+      ],
+      { cancelable: false }
+    );
+  };
+
+  const deleteBook = async (bookId: string) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        Alert.alert("Error", "You need to be logged in to delete a book.");
+        return;
+      }
+      const q = query(
+        collection(firestore, "users", user.uid, "Downloaded"),
+        where("bookId", "==", bookId)
+      );
+      const querySnapshot = await getDocs(q);
+      const docId = querySnapshot.docs[0].id;
+      const docRef = doc(firestore, "users", user.uid, "Downloaded", docId);
+      await deleteDoc(docRef);
+      setBooks(books.filter((book) => book.bookId !== bookId));
+    } catch (error) {
+      console.error("Error deleting book:", error);
+      Alert.alert("Error", "Failed to delete book.");
+    }
+  };
+
   const renderItem = ({ item }: { item: Book }) => {
     const newApiLink = `${apiLink}/${item.bookId}`;
     return (
@@ -65,6 +108,7 @@ const Downloaded = () => {
               params: { apiLink: newApiLink },
             })
           }
+          onLongPress={() => confirmDeleteBook(item.bookId)}
         >
           <Image
             source={{ uri: item.coverImageUrl }}
@@ -85,7 +129,7 @@ const Downloaded = () => {
           data={books}
           renderItem={renderItem}
           keyExtractor={(item, index) => index.toString()}
-          numColumns={isIpad?3:2}
+          numColumns={isIpad ? 3 : 2}
           contentContainerStyle={styles.listContainer}
         />
       </View>
@@ -98,7 +142,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     backgroundColor: "#FAF9F6",
-    borderRadius: 20
+    borderRadius: 20,
   },
   navigation: {
     flexDirection: "row",
@@ -117,15 +161,15 @@ const styles = StyleSheet.create({
     padding: width * 0.025,
   },
   bookImage: {
-    width: isIpad?(width / 3)-60:(width / 2)-40,
-    height: isIpad?((width / 3)-60) * 1.5:((width / 2)-40) * 1.5,
+    width: isIpad ? width / 3 - 60 : width / 2 - 40,
+    height: isIpad ? (width / 3 - 60) * 1.5 : (width / 2 - 40) * 1.5,
     resizeMode: "cover",
   },
   bookTitle: {
-    fontSize: isIpad?24:16,
+    fontSize: isIpad ? 24 : 16,
     fontWeight: "bold",
     textAlign: "center",
-    maxWidth: isIpad?(width / 3)-60:(width / 2)-40,
+    maxWidth: isIpad ? width / 3 - 60 : width / 2 - 40,
   },
 });
 

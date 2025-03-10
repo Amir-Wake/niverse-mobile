@@ -9,7 +9,7 @@ import {
 } from "@epubjs-react-native/core";
 import { useFileSystem } from "@epubjs-react-native/expo-file-system";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -179,8 +179,10 @@ function Component({ src }: ComponentProps) {
       <View style={{ flex: 1, }}>
         <Reader
           src={src}
-          width={Platform.OS=='ios'&&Platform.isPad?width*2:width}
+          width={width}
           height={height * 0.87}
+          flow={'paginated'}
+          spread="none"
           enableSelection={true}
           fileSystem={useFileSystem}
           defaultTheme={defTheme}

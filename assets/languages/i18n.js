@@ -4,6 +4,7 @@ import { I18nManager } from "react-native";
 
 const i18n = new I18n({
   en: {
+    confirmDeleteCollection: "Are you sure you want to remove this book from your collection",
     ageRestrictionEnabled: "Age restriction enabled! You must disable it before saving any change.",
     emptyName: "Name cannot be empty",
     anonymous: "Anonymous",
@@ -137,6 +138,7 @@ const i18n = new I18n({
     termsText11: "By using our app, you agree to follow these terms and conditions. We’re committed to creating a positive experience for all users, and we appreciate your cooperation.",
   },
   ku: {
+    confirmDeleteCollection: "دڵنیایت کە دەتەوێت ئەم کتێبە لە کۆکراوەکانت بسڕیتەوە؟",
     ageRestrictionEnabled: "تەمەنی دیاریکراو چالاککراوە! پێویستە لەپێش پاشەکەوتکردنی گۆڕانکاریەکەت ناچالاکی بکەیت.",
     emptyName: "ناو نابێت بەتاڵ بێت",
     anonymous: "بێناو",

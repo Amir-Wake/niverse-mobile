@@ -1,11 +1,12 @@
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native";
 import axios from "axios";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import i18n from "@/assets/languages/i18n";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ReviewProps {
   bookId: string;
@@ -21,14 +22,27 @@ interface Review {
   userImage: string;
 }
 
+const isIpad = Platform.OS == "ios" && Platform.isPad;
 const Review: React.FC<ReviewProps> = ({ bookId }) => {
   const apiLink = `${process.env.EXPO_PUBLIC_REVIEWS_API}`;
   const [reviews, setReviews] = useState<Review[]>([]);
   const firestore = getFirestore();
   const router = useRouter();
 
+  const CACHE_KEY = `reviews_${bookId}`;
+  const CACHE_EXPIRY = 24 * 60 * 60 * 1000;
+
   const fetchReviews = async () => {
     try {
+      const cachedReviews = await AsyncStorage.getItem(CACHE_KEY);
+      const cachedTime = await AsyncStorage.getItem(`${CACHE_KEY}_time`);
+      const now = new Date().getTime();
+
+      if (cachedReviews && cachedTime && now - parseInt(cachedTime) < CACHE_EXPIRY) {
+        setReviews(JSON.parse(cachedReviews));
+        return;
+      }
+
       const response = await axios.get(`${apiLink}${bookId}/reviews`);
       const reviewsWithUserDetails = await Promise.all(
         response.data
@@ -44,7 +58,10 @@ const Review: React.FC<ReviewProps> = ({ bookId }) => {
             };
           })
       );
+
       setReviews(reviewsWithUserDetails);
+      await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(reviewsWithUserDetails));
+      await AsyncStorage.setItem(`${CACHE_KEY}_time`, now.toString());
     } catch (error) {
       console.error("Error fetching reviews:", error);
     }
@@ -61,12 +78,12 @@ const Review: React.FC<ReviewProps> = ({ bookId }) => {
           style={{ alignItems: "center", alignContent: "center" }}
           onPress={() => router.push(`/inside/writeReview?bookId=${bookId}`)}
         >
-          <Text style={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}>
+          <Text style={{ fontSize: isIpad?20:16, textAlign: "center", fontWeight: "bold" }}>
             {i18n.t("leaveReview")}
           </Text>
           <View style={styles.ratingContainer}>
             {[...Array(5)].map((_, starIndex) => (
-              <FontAwesome key={starIndex} name="star-o" size={24} color="gold" />
+              <FontAwesome key={starIndex} name="star-o" size={isIpad?32:26} color="gold" />
             ))}
           </View>
         </TouchableOpacity>
@@ -100,7 +117,7 @@ const Review: React.FC<ReviewProps> = ({ bookId }) => {
       ))}
       <View style={styles.writeReview}>
         <TouchableOpacity onPress={() => router.push(`../../../inside/allReviews?bookId=${bookId}`)}>
-          <Text style={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}>
+          <Text style={{ fontSize: isIpad?20:16, textAlign: "center", fontWeight: "bold" }}>
             {i18n.t("allReviews")}
           </Text>
         </TouchableOpacity>
@@ -128,6 +145,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderWidth: 1,
     borderColor: "#ddd",
+    marginBottom: 10,
   },
   userContainer: {
     flexDirection: "row",

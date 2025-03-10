@@ -28,16 +28,14 @@ const BookList = ({ title, description, genre }) => {
         if (cachedData) {
           setData(JSON.parse(cachedData));
           setLoading(false);
+          return; 
         }
 
         const response = await fetch(apiLink);
         const data = await response.json();
 
-        if (JSON.stringify(data) !== cachedData) {
-          setData(data);
-          await AsyncStorage.setItem(apiLink, JSON.stringify(data));
-        }
-
+        setData(data);
+        await AsyncStorage.setItem(apiLink, JSON.stringify(data));
         setLoading(false);
       } catch (error) {
         console.error(error);

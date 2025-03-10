@@ -7,17 +7,17 @@ import {
   TextInput,
   Platform,
   ScrollView,
-  ActivityIndicator,
   StyleSheet,
   Image,
   Dimensions,
-  SafeAreaView
+  SafeAreaView,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import axios from "axios";
-import Animated from "react-native-reanimated";
 import i18n from "@/assets/languages/i18n";
+import NetInfo from "@react-native-community/netinfo";
 
 const PickCards = lazy(() => import("../components/topBooks"));
 const BookList = lazy(() => import("../components/bookLists"));
@@ -31,36 +31,21 @@ const Index = () => {
   );
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [lastInteraction, setLastInteraction] = useState(Date.now());
   const [networkError, setNetworkError] = useState(false);
   const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}books`;
-
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-    fetch(apiLink)
-      .then((response) => response.json())
-      .then(() => {
-        setLoading(false);
-        setNetworkError(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-        setLoading(false);
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      if (!state?.isConnected) {
         setNetworkError(true);
-      });
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (Date.now() - lastInteraction >= 5000 && showSearch) {
-        setShowSearch(false);
+      } else {
+        setNetworkError(false);
       }
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, [lastInteraction, showSearch]);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleScroll = (event: {
     nativeEvent: { contentOffset: { y: number } };
@@ -75,6 +60,7 @@ const Index = () => {
   };
 
   const fetchBooks = async (search: string): Promise<void> => {
+    if (networkError) return;
     try {
       const response = await axios.get<{ id: string; title: string }[]>(
         apiLink,
@@ -90,7 +76,6 @@ const Index = () => {
 
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
-    setLastInteraction(Date.now());
     if (text.length > 2) {
       fetchBooks(text);
     } else {
@@ -114,6 +99,14 @@ const Index = () => {
     });
   };
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar
@@ -122,14 +115,24 @@ const Index = () => {
         translucent
       />
       <SafeAreaView
-        style={[styles.safeArea,{backgroundColor: isScrolled
-          ? "rgba(255, 255, 255, 0.95)"
-          : "transparent"}]}>
-        <View style={[styles.header,{}]}>
+        style={[
+          styles.safeArea,
+          {
+            backgroundColor: isScrolled
+              ? "rgba(255, 255, 255, 0.95)"
+              : "transparent",
+          },
+        ]}
+      >
+        <View style={[styles.header, {}]}>
           <View
             style={[
               styles.searchContainer,
-              { backgroundColor: showSearch ? "#E5E4E2" : "transparent" },
+              {
+                backgroundColor: showSearch ? "#E5E4E2" : "transparent",
+                borderColor: showSearch ? "gray" : "transparent",
+                borderWidth: showSearch ? 1 : 0,
+              },
             ]}
           >
             {!showSearch && (
@@ -145,14 +148,13 @@ const Index = () => {
                 style={styles.searchInput}
                 value={searchQuery}
                 onChangeText={handleSearchChange}
-                onFocus={() => setLastInteraction(Date.now())}
               />
             )}
             <TouchableOpacity
               onPress={toggleSearch}
               style={styles.searchButton}
             >
-              <Ionicons name="search" size={isIpad?36:28} color="#F94929" />
+              <Ionicons name="search" size={isIpad ? 36 : 28} color="#F94929" />
             </TouchableOpacity>
           </View>
           {locations.length > 0 && showSearch && (
@@ -167,18 +169,16 @@ const Index = () => {
                   ]}
                   onPress={() => handleBookPress(locs)}
                 >
-                  <Text style={{fontSize:isIpad?22:18}}>{locs.title}</Text>
+                  <Text style={{ fontSize: isIpad ? 22 : 18 }}>
+                    {locs.title}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>
           )}
         </View>
       </SafeAreaView>
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="red" />
-        </View>
-      ) : networkError ? (
+      {networkError ? (
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={50} color="red" />
           <Text style={styles.errorMessage}>
@@ -193,20 +193,13 @@ const Index = () => {
           showsVerticalScrollIndicator={false}
         >
           <View>
-            <Animated.View
-            sharedTransitionTag="topbooks"
-            >
-              <Suspense
-                fallback={<View/>}
-              >
+            <View>
+              <Suspense fallback={<View />}>
                 <PickCards />
               </Suspense>
-            </Animated.View>
-            <View
-            >
-              <Suspense
-                fallback={<View/>}
-              >
+            </View>
+            <View>
+              <Suspense fallback={<View />}>
                 <BookList
                   title={i18n.t("new")}
                   description={i18n.t("newDescription")}
@@ -214,7 +207,7 @@ const Index = () => {
                 />
               </Suspense>
             </View>
-            <Suspense fallback={<View/>}>
+            <Suspense fallback={<View />}>
               <BookList
                 title={i18n.t("novels")}
                 description={i18n.t("novelsDescription")}
@@ -251,7 +244,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 50,
-    
   },
   header: {
     padding: 5,
@@ -262,24 +254,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    height: isIpad?56:46,
+    height: isIpad ? 56 : 50,
     borderRadius: 10,
   },
   appIcon: {
-    width: isIpad?80:70,
-    height: isIpad?80:70,
+    width: isIpad ? 80 : 70,
+    height: isIpad ? 80 : 70,
   },
   searchInput: {
     paddingLeft: 24,
     flex: 1,
     color: "black",
-    fontSize: isIpad?24:18,
-    height: 40,
+    fontSize: isIpad ? 24 : 18,
+    height: isIpad ? 50 : 40,
     backgroundColor: "transparent",
   },
   searchButton: {
     borderRadius: 50,
-    padding: isIpad?6:5,
+    padding: isIpad ? 6 : 5,
     margin: 4,
     borderColor: "#F94929",
     borderWidth: 1,
@@ -289,7 +281,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     backgroundColor: "white",
-    top: 64,
+    top: 60,
     borderRadius: 24,
     alignSelf: "center",
   },

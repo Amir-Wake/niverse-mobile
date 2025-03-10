@@ -18,7 +18,6 @@ import {
   collection,
   addDoc,
   getDocs,
-  getDoc,
   query,
   where,
   deleteDoc,
@@ -29,9 +28,10 @@ import Review from "./review/review";
 import i18n from "@/assets/languages/i18n";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
-const isIpad = Platform.OS === "ios" && Platform.isPad;
+const isIpad = Platform.OS == "ios" && Platform.isPad;
 interface Book {
   id: string;
   coverImageUrl: string;
@@ -63,6 +63,7 @@ const BookDetails = ({ book }: { book: Book }) => {
   const router = useRouter();
   const firestore = getFirestore();
   const [userAge, setUserAge] = useState(12);
+
   useEffect(() => {
     const checkFileExistence = async () => {
       const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.title}/`;
@@ -74,37 +75,36 @@ const BookDetails = ({ book }: { book: Book }) => {
     const checkIfAddedToCollection = async () => {
       const user = auth.currentUser;
       if (!user) return;
-      const q = query(
-        collection(firestore, "users", user.uid, "WantToRead"),
-        where("bookId", "==", book.id)
+      const collectionKey = `WantToRead_${user.uid}`;
+      const storedCollection = await AsyncStorage.getItem(collectionKey);
+      const collection = storedCollection ? JSON.parse(storedCollection) : [];
+      const bookInCollection = collection.some(
+        (item: any) => item.bookId === book.id
       );
-      const querySnapshot = await getDocs(q);
-      setIsAddedToCollection(!querySnapshot.empty);
+      setIsAddedToCollection(bookInCollection);
     };
 
     const fetchUserAgeRestriction = async () => {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      const userDocRef = doc(firestore, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        setAgeRestrictionEnabled(userData?.ageRestrictionEnabled);
-        if(userData?.dob){
-        const dob = new Date(userData?.dob);
-        const ageDiffMs = Date.now() - dob.getTime();
-        const ageDate = new Date(ageDiffMs);
-        const age = Math.abs(ageDate.getUTCFullYear() - 1970);
-        setUserAge(age);
+      const ageRestrictionEnabledValue = await AsyncStorage.getItem(
+        "ageRestrictionEnabled" + auth.currentUser?.uid
+      );
+      if (ageRestrictionEnabledValue) {
+        setAgeRestrictionEnabled(JSON.parse(ageRestrictionEnabledValue));
+        const profileDob = await AsyncStorage.getItem(
+          "profileDob" + auth.currentUser?.uid
+        );
+        if (profileDob) {
+          const dob = new Date(profileDob);
+          const ageDiffMs = Date.now() - dob.getTime();
+          const ageDate = new Date(ageDiffMs);
+          const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+          setUserAge(age);
         }
       }
     };
-
     const setTextDirection = () => {
       setIsRTL(book.language === "کوردی" || book.language === "Arabic");
     };
-
     checkFileExistence();
     checkIfAddedToCollection();
     fetchUserAgeRestriction();
@@ -112,7 +112,7 @@ const BookDetails = ({ book }: { book: Book }) => {
   }, [book.title, book.id, book.language]);
 
   const handleDownload = async () => {
-    if (ageRestrictionEnabled && book.ageRate > 13) {
+    if (ageRestrictionEnabled && book.ageRate > userAge) {
       Alert.alert("Error", "You are not old enough to download this book.");
       return;
     }
@@ -158,7 +158,7 @@ const BookDetails = ({ book }: { book: Book }) => {
           `${directory}${book.title}.jpg`
         );
         setIsDownloaded(true);
-        await addToCollectionIfNotExists("Downloaded");
+        await addToFirestore("Downloaded");
       } else {
         console.error("Download failed");
       }
@@ -170,7 +170,7 @@ const BookDetails = ({ book }: { book: Book }) => {
     }
   };
 
-  const addToCollectionIfNotExists = async (collectionName: string) => {
+  const handleAddToCollection = async (collectionName: string) => {
     const user = auth.currentUser;
     if (!user) {
       Alert.alert(
@@ -180,6 +180,43 @@ const BookDetails = ({ book }: { book: Book }) => {
       return;
     }
 
+    setIsLoading(true);
+
+    try {
+      const collectionKey = `${collectionName}_${user.uid}`;
+      const storedCollection = await AsyncStorage.getItem(collectionKey);
+      let collection = storedCollection ? JSON.parse(storedCollection) : [];
+
+      const bookIndex = collection.findIndex(
+        (item: any) => item.bookId === book.id
+      );
+      if (bookIndex !== -1) {
+        collection.splice(bookIndex, 1);
+        setIsAddedToCollection(false);
+      } else {
+        collection.push({
+          bookId: book.id,
+          title: book.title,
+          coverImageUrl: book.coverImageUrl,
+          addedAt: new Date().toISOString(),
+        });
+        setIsAddedToCollection(true);
+      }
+      await AsyncStorage.setItem(collectionKey, JSON.stringify(collection));
+      addToFirestore(collectionName);
+    } catch (error) {
+      console.error("Error updating collection:", error);
+      Alert.alert("Error", "Failed to update collection.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addToFirestore = async (collectionName: string) => {
+    const user = auth.currentUser;
+    if (!user) {
+      return;
+    }
     try {
       const q = query(
         collection(firestore, "users", user.uid, collectionName),
@@ -193,60 +230,21 @@ const BookDetails = ({ book }: { book: Book }) => {
           coverImageUrl: book.coverImageUrl,
           addedAt: new Date().toISOString(),
         });
+      } else {
+        if (collectionName == "Downloaded") {
+          return;
+        }
+        const docId = querySnapshot.docs[0].id;
+        const docRef = doc(firestore, "users", user.uid, collectionName, docId);
+        await deleteDoc(docRef);
       }
     } catch (error) {
       console.error(
         `Error adding book to ${collectionName} collection:`,
         error
       );
-      Alert.alert(
-        "Error",
-        `Failed to add book to ${collectionName} collection.`
-      );
     }
   };
-
-  const handleAddToCollection = async () => {
-    const user = auth.currentUser;
-    if (!user) {
-      Alert.alert(
-        "Error",
-        "You need to be logged in to add books to your collection."
-      );
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const q = query(
-        collection(firestore, "users", user.uid, "WantToRead"),
-        where("bookId", "==", book.id)
-      );
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        const docId = querySnapshot.docs[0].id;
-        await deleteDoc(doc(firestore, "users", user.uid, "WantToRead", docId));
-        setIsAddedToCollection(false);
-        setIsLoading(false);
-        return;
-      }
-
-      await addDoc(collection(firestore, "users", user.uid, "WantToRead"), {
-        bookId: book.id,
-        title: book.title,
-        coverImageUrl: book.coverImageUrl,
-        addedAt: new Date().toISOString(),
-      });
-      setIsAddedToCollection(true);
-    } catch (error) {
-      console.error("Error updating collection:", error);
-      Alert.alert("Error", "Failed to update collection.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -258,10 +256,10 @@ const BookDetails = ({ book }: { book: Book }) => {
           source={{ uri: book.coverImageUrl }}
           cachePolicy={"memory-disk"}
           style={styles.bookImage}
-          placeholder={require("@/assets/images/booksPlaceHolder.png")}
-          placeholderContentFit="cover"
+          // placeholder={require("@/assets/images/booksPlaceHolder.png")}
+          // placeholderContentFit="cover"
           contentFit="cover"
-          transition={100}
+          // transition={100}
         />
       </View>
       <View style={styles.body}>
@@ -270,7 +268,9 @@ const BookDetails = ({ book }: { book: Book }) => {
           entering={FadeInDown.delay(200).duration(500).springify().damping(12)}
         >
           <Text style={styles.title}>
-           {book.title}
+            {book.title.length > 48
+              ? `${book.title.slice(0, 48)}...`
+              : book.title}
           </Text>
           <Text style={styles.author}>{book.author}</Text>
           <View style={styles.rating}>
@@ -278,7 +278,7 @@ const BookDetails = ({ book }: { book: Book }) => {
               <FontAwesome
                 key={index}
                 name="star"
-                size={24}
+                size={isIpad ? 30 : 24}
                 color={index < book.averageRating ? "gold" : "gray"}
               />
             ))}
@@ -321,7 +321,7 @@ const BookDetails = ({ book }: { book: Book }) => {
           <Button
             icon={isAddedToCollection ? "check-bold" : "plus"}
             mode="contained"
-            onPress={handleAddToCollection}
+            onPress={() => handleAddToCollection("WantToRead")}
             buttonColor={isAddedToCollection ? "lightgray" : "orange"}
             textColor="black"
             style={styles.button}
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   body: {
-    padding: width * 0.05,
+    padding: 10,
   },
   bookImage: {
     width: width / 2,
@@ -434,14 +434,14 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   title: {
-    fontSize: isIpad ? 32 : 22, 
+    fontSize: isIpad ? 28 : 22,
     fontWeight: "bold",
     marginVertical: 5,
     alignSelf: "center",
     textAlign: "center",
   },
   author: {
-    fontSize: isIpad ? 28 : 18, 
+    fontSize: isIpad ? 24 : 18,
     paddingTop: 10,
     textAlign: "center",
   },
@@ -453,24 +453,24 @@ const styles = StyleSheet.create({
   },
   reviewCount: {
     paddingTop: 5,
+    fontSize: isIpad ? 20 : 16,
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "space-evenly",
-    marginTop: 5,
-
+    justifyContent: isIpad ? "space-evenly" : "space-between",
   },
   button: {
     textAlign: "center",
+    marginTop: 5,
     borderRadius: 5,
   },
   buttonText: {
-    fontSize: isIpad? 22 : 18,
+    fontSize: isIpad ? 22 : 18,
     fontFamily: "Helvetica",
   },
   description: {
-    fontSize: isIpad? 24 : 18, 
-    lineHeight: isIpad? 30 : 24, 
+    fontSize: isIpad ? 24 : 18,
+    lineHeight: isIpad ? 30 : 24,
     fontWeight: "bold",
     marginVertical: 5,
     letterSpacing: 0.5,
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
   showMoreText: {
     marginVertical: 5,
     fontWeight: "bold",
-    fontSize:isIpad ? 24 : 18, 
+    fontSize: isIpad ? 24 : 18,
     color: "#0096FF",
     textAlign: "center",
   },
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     padding: 10,
-    fontSize: isIpad ? 20 : 14, 
+    fontSize: isIpad ? 20 : 14,
     fontWeight: "bold",
     textAlign: "center",
   },
