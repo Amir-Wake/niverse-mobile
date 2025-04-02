@@ -36,6 +36,7 @@ export default function UpdateProfile() {
   const [newName, setNewName] = useState("");
   const navigation = useNavigation();
   const [ageRestrictionEnabled, setAgeRestrictionEnabled] = useState(false);
+
   useEffect(() => {
     navigation.getParent().setOptions({
       headerTitle: i18n.t("accountDetails"),

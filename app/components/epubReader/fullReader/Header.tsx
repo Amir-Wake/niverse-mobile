@@ -1,11 +1,10 @@
 import { useRouter } from "expo-router";
 import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity, StyleSheet, Text, Dimensions } from "react-native";
-import { Themes, useReader } from "@epubjs-react-native/core";
+import { View, TouchableOpacity, StyleSheet, Dimensions,Text } from "react-native";
+import { Theme, Themes, useReader } from "@epubjs-react-native/core";
 import { IconButton, MD3Colors } from "react-native-paper";
 import { MAX_FONT_SIZE, MIN_FONT_SIZE } from "./utils";
-import { contrast } from "../fullReader/utils";
-import i18n from "@/assets/languages/i18n";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width, height } = Dimensions.get('window');
 
@@ -13,7 +12,6 @@ interface Props {
   currentFontSize: number;
   increaseFontSize: () => void;
   decreaseFontSize: () => void;
-  switchTheme: () => void;
   onPressSearch: () => void;
   switchFontFamily: () => void;
   onOpenBookmarksList: () => void;
@@ -24,7 +22,6 @@ export default function Header({
   currentFontSize,
   increaseFontSize,
   decreaseFontSize,
-  switchTheme,
   onPressSearch,
   switchFontFamily,
   onOpenBookmarksList,
@@ -38,6 +35,7 @@ export default function Header({
     removeBookmark,
     getCurrentLocation,
     isBookmarked,
+    changeTheme
   } = useReader();
 
   const [showSettings, setShowSettings] = useState(false);
@@ -50,6 +48,11 @@ export default function Header({
       setIconCol("white");
     }
   }, [theme]);
+
+  const changeThemes = (theme:Theme) => {
+    changeTheme(theme);
+    AsyncStorage.setItem("currentTheme",JSON.stringify(theme))
+  }
 
   const handleChangeBookmark = () => {
     const location = getCurrentLocation();
@@ -74,10 +77,10 @@ export default function Header({
   return (
     <View style={styles.container}>
       <IconButton
-        icon="arrow-left"
+        icon="close-thick"
         iconColor={iconCol}
         size={28}
-        onPress={() =>  navigation.back()}
+        onPress={() => navigation.back()}
       />
       <View style={styles.actions}>
         <IconButton
@@ -103,6 +106,7 @@ export default function Header({
           onPress={() => setShowSettings(false)}
         >
           <View style={styles.settingsContainer}>
+          <View style={{ flexDirection: "row" }}>
             <TouchableOpacity
               style={[
                 styles.circle,
@@ -116,15 +120,12 @@ export default function Header({
                 setShowSettings(false);
               }}
             >
-              <Text style={[styles.optionsText, { color: contrast[theme.body.background] }]}>
-                {i18n.t("search")}
-              </Text>
               <IconButton
                 icon="magnify"
                 animated
                 mode="outlined"
                 iconColor={theme === Themes.DARK ? "white" : iconCol}
-                size={24}
+                size={26}
               />
             </TouchableOpacity>
             <TouchableOpacity
@@ -140,15 +141,12 @@ export default function Header({
                 setShowSettings(false);
               }}
             >
-              <Text style={[styles.optionsText, { color: contrast[theme.body.background] }]}>
-                {i18n.t("bookmarks")}
-              </Text>
               <IconButton
                 icon="bookmark-multiple-outline"
                 animated
                 mode="outlined"
                 iconColor={theme === Themes.DARK ? "white" : iconCol}
-                size={22}
+                size={26}
               />
             </TouchableOpacity>
             <TouchableOpacity
@@ -164,17 +162,16 @@ export default function Header({
                 setShowSettings(false);
               }}
             >
-              <Text style={[styles.optionsText, { color: contrast[theme.body.background] }]}>
-                {i18n.t("content")}
-              </Text>
               <IconButton
                 icon="format-list-bulleted-square"
                 iconColor={theme === Themes.DARK ? "white" : iconCol}
-                size={22}
+                size={26}
                 mode="outlined"
               />
             </TouchableOpacity>
-            <TouchableOpacity
+            </View>
+            <View style={{ flexDirection: "row" }}>
+            {/* <TouchableOpacity
               style={[
                 styles.circle,
                 {
@@ -184,16 +181,87 @@ export default function Header({
               ]}
               onPress={switchTheme}
             >
-              <Text style={[styles.optionsText, { color: contrast[theme.body.background] }]}>
-                {i18n.t("theme")}
-              </Text>
               <IconButton
                 icon="theme-light-dark"
                 iconColor={theme === Themes.DARK ? "white" : iconCol}
-                size={22}
+                size={26}
                 mode="outlined"
               />
+            </TouchableOpacity> */}
+            <TouchableOpacity
+              style={[
+              styles.circle,
+              {
+                backgroundColor: "white",
+                borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
+                padding:5
+              },
+              ]}
+              onPress={() => changeThemes(Themes.LIGHT)}
+            >
+              <View
+              style={{
+                width: 45,
+                height: 45,
+                borderRadius: 22.5,
+                backgroundColor: "white",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              >
+              <Text style={{ fontSize: 22, color: "black" }}>A</Text>
+              </View>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+              styles.circle,
+              {
+                backgroundColor: "black",
+                borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
+                padding:5
+              },
+              ]}
+              onPress={() => changeThemes(Themes.DARK)}
+            >
+              <View
+              style={{
+                width: 45,
+                height: 45,
+                borderRadius: 22.5,
+                backgroundColor: "black",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              >
+              <Text style={{ fontSize: 22, color: "white" }}>A</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+              styles.circle,
+              {
+                backgroundColor: "#e8dcb8",
+                borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
+                padding:5
+              },
+              ]}
+              onPress={() => changeThemes(Themes.SEPIA)}
+            >
+              <View
+              style={{
+                width: 45,
+                height: 45,
+                borderRadius: 22.5,
+                backgroundColor: "#e8dcb8",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              >
+              <Text style={{ fontSize: 22, color: "black" }}>A</Text>
+              </View>
+            </TouchableOpacity>
+            </View>
+            <View style={{ flexDirection: "row" }}>
             <TouchableOpacity
               style={[
                 styles.circle,
@@ -204,13 +272,10 @@ export default function Header({
               ]}
               onPress={switchFontFamily}
             >
-              <Text style={[styles.optionsText, { color: contrast[theme.body.background] }]}>
-                {i18n.t("font")}
-              </Text>
               <IconButton
                 icon="format-font"
                 iconColor={theme === Themes.DARK ? "white" : iconCol}
-                size={22}
+                size={26}
                 mode="outlined"
               />
             </TouchableOpacity>
@@ -225,13 +290,10 @@ export default function Header({
               onPress={increaseFontSize}
               disabled={currentFontSize === MAX_FONT_SIZE}
             >
-              <Text style={[styles.optionsText, { color: contrast[theme.body.background] }]}>
-                {i18n.t("increase")}
-              </Text>
               <IconButton
                 icon="format-font-size-increase"
                 iconColor={theme === Themes.DARK ? "white" : iconCol}
-                size={22}
+                size={26}
                 animated
                 mode="outlined"
               />
@@ -241,22 +303,19 @@ export default function Header({
                 styles.circle,
                 {
                   backgroundColor: theme.body.background,
-                  borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
                 },
               ]}
               onPress={decreaseFontSize}
               disabled={currentFontSize === MIN_FONT_SIZE}
             >
-              <Text style={[styles.optionsText, { color: contrast[theme.body.background] }]}>
-                {i18n.t("decrease")}
-              </Text>
               <IconButton
                 icon="format-font-size-decrease"
                 iconColor={theme === Themes.DARK ? "white" : iconCol}
-                size={22}
+                size={26}
                 mode="outlined"
               />
             </TouchableOpacity>
+            </View>
           </View>
         </TouchableOpacity>
       )}
@@ -283,33 +342,25 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     zIndex: 5,
     top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
   },
   settingsContainer: {
     position: "absolute",
     top: 60,
     right: 15,
     zIndex: 10,
+    borderRadius: 10,
   },
   circle: {
-    borderWidth: 1,
     borderRadius: 15,
     margin: 5,
-    paddingStart: 5,
     alignItems: "center",
     alignSelf: "flex-end",
     flexDirection: "row",
-    shadowColor: "#000",
     shadowOffset: {
       width: 2,
       height: 2,
     },
     shadowOpacity: 0.25,
     elevation: 5,
-  },
-  optionsText: {
-    fontSize: 16,
   },
 });

@@ -21,6 +21,13 @@ const BookList = ({ title, description, genre }) => {
   const [loading, setLoading] = useState(true);
   const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}${genre}`;
 
+  const getTitleLength = (width) => {
+    if (width <= 100) return 10;
+    if (width <= 150) return 15;
+    if (width <= 200) return 20;
+    return 25;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -82,9 +89,9 @@ const BookList = ({ title, description, genre }) => {
                 transition={100}
               />
               <Text style={styles.bookTitle}>
-                {!isIpad&&item.title.length > 18
-                  ? `${item.title.substring(0, 15)}...`
-                  : isIpad&&item.title.length>23?`${item.title.substring(0, 20)}...`:item.title}
+                {item.title.length > getTitleLength(styles.bookImage.width)-4
+                  ? `${item.title.substring(0, getTitleLength(styles.bookImage.width)-4)}...`
+                  : item.title}
               </Text>
             </TouchableOpacity>
           </View>

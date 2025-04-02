@@ -233,7 +233,7 @@ export default function Index() {
             source={require("@/assets/images/iconTr.png")}
             style={styles.appIcon}
           />
-          <Text style={styles.appName}>Niverse</Text>
+          <Text style={styles.appName}>Nverse</Text>
         </View>
         <TouchableOpacity
           style={styles.languageButton}
@@ -405,7 +405,7 @@ export default function Index() {
           <TouchableOpacity
             onPress={() =>
               Linking.openURL(
-                "mailto:amir19225@outlook.com?subject=Contact and support"
+                "mailto:support@nverse.app?subject=Contact and support"
               )
             }
           >
@@ -424,7 +424,7 @@ export default function Index() {
             marginTop: 10,
           }}
         >
-          © {new Date().getFullYear()} Niverse, Inc.
+          © {new Date().getFullYear()} Nverse, Inc.
         </Text>
       </View>
     </ScrollView>

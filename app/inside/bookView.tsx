@@ -34,8 +34,10 @@ const BookView = () => {
           setBooks(JSON.parse(cachedData));
         }
         if (!cachedData) {
+          console.log("running")
           const response = await fetch(apiLink as string);
           const data = await response.json();
+          if(!data) return;
           const booksData = Array.isArray(data) ? data : [data];
           setBooks(booksData);
           await AsyncStorage.setItem(

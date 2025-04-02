@@ -7,6 +7,7 @@ import { Platform } from "react-native";
 const isIpad=Platform.OS=="ios" && Platform.isPad;
 export default function TabsLayout() {
   const iconSize = isIpad ? 30 : 24;
+  const fontSize = isIpad ? 16 : 12;
   return (
     <Tabs
       screenOptions={{
@@ -21,7 +22,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          tabBarLabelStyle: { fontSize: isIpad?18:14 },
+          tabBarLabelStyle: { fontSize: fontSize },
           title: i18n.t('home'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
@@ -35,7 +36,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="library"
         options={{
-          tabBarLabelStyle: { fontSize: isIpad?18:14 },
+          tabBarLabelStyle: { fontSize: fontSize },
           title: i18n.t('library'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
@@ -49,7 +50,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          tabBarLabelStyle: { fontSize: isIpad?18:14 },
+          tabBarLabelStyle: { fontSize: fontSize },
           title: i18n.t('profile'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons

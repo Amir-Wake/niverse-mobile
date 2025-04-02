@@ -29,6 +29,7 @@ import i18n from "@/assets/languages/i18n";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ScrollView } from "react-native-gesture-handler";
 
 const { width } = Dimensions.get("window");
 const isIpad = Platform.OS == "ios" && Platform.isPad;
@@ -351,10 +352,12 @@ const BookDetails = ({ book }: { book: Book }) => {
             </Text>
           </TouchableOpacity>
         </Animated.View>
-        <Animated.ScrollView
+        <Animated.View
+          entering={FadeInDown.delay(800).duration(500).springify().damping(12)}
+        >
+        <ScrollView
           horizontal={true}
           showsHorizontalScrollIndicator={false}
-          entering={FadeInDown.delay(800).duration(500).springify().damping(12)}
         >
           <View style={styles.bookInfo}>
             <Text style={styles.infoText}>{i18n.t("pages")}</Text>
@@ -388,7 +391,8 @@ const BookDetails = ({ book }: { book: Book }) => {
               {book.ageRate ? "+" + book.ageRate : "none"}
             </Text>
           </View>
-        </Animated.ScrollView>
+        </ScrollView>
+        </Animated.View>
         <Review bookId={book.id} />
       </View>
     </View>

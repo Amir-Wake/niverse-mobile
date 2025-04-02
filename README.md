@@ -9,10 +9,10 @@
 - `npx create-expo --help`
 
 # To-do
-- Smart search
+- update required screen
+- save book reading setting
 - Fix Reader scroll search
 - Help button for each screen
-- RTL and LTR based on user input
 - Fonts for the reader
 - Author profile and work
 - Suggest similar books
@@ -21,4 +21,7 @@
 - User guide and tutorial
 - Reader sections scroll
 - Report and feedback
-- Log in with Gmail
+
+v 1.1.0
+smart search
+increase decrease save location

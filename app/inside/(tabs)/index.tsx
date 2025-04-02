@@ -18,6 +18,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import axios from "axios";
 import i18n from "@/assets/languages/i18n";
 import NetInfo from "@react-native-community/netinfo";
+import Fuse from "fuse.js";
 
 const PickCards = lazy(() => import("../components/topBooks"));
 const BookList = lazy(() => import("../components/bookLists"));
@@ -26,14 +27,38 @@ const { width } = Dimensions.get("window");
 const Index = () => {
   const router = useRouter();
   const [showSearch, setShowSearch] = useState(false);
-  const [locations, setLocations] = useState<{ id: string; title: string }[]>(
-    []
-  );
   const [isScrolled, setIsScrolled] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [networkError, setNetworkError] = useState(false);
   const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}books`;
+  const allBooksApi = `${process.env.EXPO_PUBLIC_ALLBOOKS_API}`;
   const [loading, setLoading] = useState(true);
+  const [allBooks, setAllBooks] = useState<{ bookId: string; title: string }[]>(
+    []
+  );
+
+  useEffect(() => {
+    if (networkError) return;
+    const fetchAllBooks = async () => {
+      try {
+        axios.get(allBooksApi).then((Response) => {
+          setAllBooks(Response.data);
+        });
+      } catch (error) {
+        console.error("Error fetching books:", error);
+      }
+    };
+    fetchAllBooks();
+  }, []);
+
+  const fuse = new Fuse(allBooks, {
+    keys: ["title"],
+    includeScore: true,
+    threshold: 0.4,
+  });
+  const results: { bookId: string; title: string }[] = searchTerm
+    ? fuse.search(searchTerm).map((result) => result.item)
+    : allBooks;
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
@@ -54,45 +79,19 @@ const Index = () => {
     setIsScrolled(offsetY > 0);
     if (showSearch) {
       setShowSearch(false);
-      setSearchQuery("");
-      setLocations([]);
-    }
-  };
-
-  const fetchBooks = async (search: string): Promise<void> => {
-    if (networkError) return;
-    try {
-      const response = await axios.get<{ id: string; title: string }[]>(
-        apiLink,
-        {
-          params: { search },
-        }
-      );
-      setLocations(response.data);
-    } catch (error) {
-      console.error("Error fetching books:", error);
-    }
-  };
-
-  const handleSearchChange = (text: string) => {
-    setSearchQuery(text);
-    if (text.length > 2) {
-      fetchBooks(text);
-    } else {
-      setLocations([]);
     }
   };
 
   const toggleSearch = () => {
     setShowSearch((prev) => !prev);
     if (!showSearch) {
-      setSearchQuery("");
-      setLocations([]);
     }
+    setSearchTerm("");
   };
 
-  const handleBookPress = (book: { id: string; title: string }) => {
-    const newApiLink = `${apiLink}/${book.id}`;
+  const handleBookPress = (book: { bookId: string; title: string }) => {
+    if (networkError) return;
+    const newApiLink = `${apiLink}/${book.bookId}`;
     router.push({
       pathname: "/inside/bookView",
       params: { apiLink: newApiLink },
@@ -109,11 +108,6 @@ const Index = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor="transparent"
-        translucent
-      />
       <SafeAreaView
         style={[
           styles.safeArea,
@@ -124,6 +118,11 @@ const Index = () => {
           },
         ]}
       >
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor="transparent"
+          translucent
+        />
         <View style={[styles.header, {}]}>
           <View
             style={[
@@ -143,11 +142,9 @@ const Index = () => {
             )}
             {showSearch && (
               <TextInput
-                // placeholder={i18n.t("searchForBooks")}
-                // placeholderTextColor="black"
                 style={styles.searchInput}
-                value={searchQuery}
-                onChangeText={handleSearchChange}
+                value={searchTerm}
+                onChangeText={setSearchTerm}
               />
             )}
             <TouchableOpacity
@@ -157,32 +154,44 @@ const Index = () => {
               <Ionicons name="search" size={isIpad ? 36 : 28} color="#F94929" />
             </TouchableOpacity>
           </View>
-          {locations.length > 0 && showSearch && (
+          {searchTerm && results.length > 0 && showSearch && (
             <View style={styles.searchResults}>
-              {locations.map((locs, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.searchResultItem,
-                    index + 1 !== locations.length &&
-                      styles.searchResultItemBorder,
-                  ]}
-                  onPress={() => handleBookPress(locs)}
-                >
-                  <Text style={{ fontSize: isIpad ? 22 : 18 }}>
-                    {locs.title}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {results
+                .filter((book) =>
+                  searchTerm
+                    .toLowerCase()
+                    .split(" ")
+                    .every((term) =>
+                      book.title
+                        .toLowerCase()
+                        .split(" ")
+                        .some((word) => word.startsWith(term))
+                    )
+                )
+                .slice(0, 5)
+                .map((book, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.searchResultItem}
+                    onPress={() => handleBookPress(book)}
+                  >
+                    <Text style={{ fontSize: isIpad ? 22 : 18 }}>
+                      {book.title}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
             </View>
           )}
         </View>
       </SafeAreaView>
       {networkError ? (
         <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle" size={50} color="red" />
-          <Text style={styles.errorMessage}>
-            Network failed. Please try again later.
+          <Ionicons name="alert-circle" size={60} color="red" />
+          <Text style={{ fontSize: 24, color: "black", textAlign: "center", fontWeight: "bold", paddingVertical:20 }}>
+            You're offline
+          </Text>
+          <Text style={{ fontSize: 18, color: "black", textAlign: "center" }}>
+            Read books you've downloaded in the library
           </Text>
         </View>
       ) : (
@@ -240,7 +249,8 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     position: "absolute",
-    top: Platform.OS === "ios" ? 0 : -10,
+    top: 0,
+    paddingTop: Platform.OS === "ios" ? 0 : 50,
     left: 0,
     right: 0,
     zIndex: 50,
@@ -290,11 +300,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 12,
     paddingHorizontal: 16,
-    marginBottom: 4,
-  },
-  searchResultItemBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: "gray",
+    backgroundColor: "#f5f5f5",
+    borderRadius: 24,
+    margin: 2,
   },
   loadingContainer: {
     flex: 1,
@@ -308,10 +316,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  errorMessage: {
-    marginTop: 10,
-    fontSize: 18,
-    color: "red",
+    backgroundColor: "white",
+    padding: 20,
   },
 });

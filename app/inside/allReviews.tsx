@@ -154,14 +154,15 @@ const AllReviews: React.FC<ReviewProps> = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: height * 0.1,
     backgroundColor: "#f0f0f0",
+    padding: 10,
+
     
   },
   reviewContainer: {
     flex: 1,
-    padding: 10,
-    marginTop: 20,
+    padding: 20,
+    marginTop: 10,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#ddd",

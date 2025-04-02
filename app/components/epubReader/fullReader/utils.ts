@@ -1,7 +1,7 @@
 import { Themes } from '@epubjs-react-native/core';
 
 export const MAX_FONT_SIZE = 32;
-export const MIN_FONT_SIZE = 12;
+export const MIN_FONT_SIZE = 16;
 
 export const availableFonts: Array<string> = [
   'Fira Mono',

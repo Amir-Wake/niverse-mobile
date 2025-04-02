@@ -151,7 +151,7 @@ const TableOfContents = forwardRef<Ref, Props>(
             indicatorStyle={"black"}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
-            style={{ width: "100%" }}
+            style={{ width: "100%",marginBottom: 40}}
             maxToRenderPerBatch={20}
           />
         </BottomSheetModal>

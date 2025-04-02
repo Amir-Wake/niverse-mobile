@@ -1,17 +1,27 @@
 import React, { useState, useEffect } from "react";
-import { View, Image, ActivityIndicator, StatusBar } from "react-native";
+import {
+  View,
+  Image,
+  ActivityIndicator,
+  StatusBar,
+  Text,
+  Linking,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/firebase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import NetInfo from "@react-native-community/netinfo";
+import * as Application from "expo-application";
 
 const db = getFirestore();
 
 export default function App() {
   const [isReady, setIsReady] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
+  const [updateRequired, setUpdateRequired] = useState(false);
+  let isUpdateRequired = false;
   const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}topBooks`;
   const apiLink1 = `${process.env.EXPO_PUBLIC_BOOKS_API}newest`;
   const apiLink2 = `${process.env.EXPO_PUBLIC_BOOKS_API}books/genre/novels`;
@@ -58,7 +68,6 @@ export default function App() {
       if (!user) {
         return;
       }
-
       const querySnapshot = await getDocs(
         collection(db, "users", user.uid, collectionName)
       );
@@ -77,6 +86,23 @@ export default function App() {
     }
   };
 
+  const check_update = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        return;
+      }
+      const val = await getDocs(collection(db, "remote_config"));
+      const data = val.docs.map((doc) => doc.data());
+      const minimum_required_version = data[0].minimum_required_version;
+      const currentVersion = Application.nativeApplicationVersion || "0.0.0";
+      isUpdateRequired = currentVersion < minimum_required_version;
+      setUpdateRequired(isUpdateRequired);
+    } catch (error) {
+      console.error(`Error checking update`, error);
+    }
+  };
+
   useEffect(() => {
     async function prepare() {
       try {
@@ -89,9 +115,11 @@ export default function App() {
       } catch (e) {
         console.warn(e);
       } finally {
-        if (!isOffline) {
+        if (!isOffline && !isUpdateRequired) {
           const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user && user.emailVerified) {
+              await check_update();
+              if (isUpdateRequired) return;
               await cacheCollection("WantToRead");
               router.replace("/inside/(tabs)");
             } else {
@@ -107,6 +135,36 @@ export default function App() {
 
     prepare();
   }, [isOffline, router]);
+
+  if (updateRequired) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 20,
+        }}
+      >
+          <Image
+            source={require("../assets/images/iconTr.png")}
+            style={{ width: 150, height: 150, alignSelf: "flex-start" }}
+          />
+        <Text style={{ fontSize: 36, textAlign: "left", marginBottom: 20, fontWeight: "bold", width: "90%", }}>
+          Update your application to the latest version
+        </Text>
+        <Text style={{ fontSize: 24, textAlign: "left", marginBottom: 40, width: "90%" }}>
+          A new version of the Nverse is available in the App Store. Please update your app to continue using Nverse.
+        </Text>
+        {/* <Text
+          style={{ fontSize: 24, color: "white", backgroundColor: "#F93929", padding: 10, paddingHorizontal:20, borderRadius: 20 }}
+          onPress={() => Linking.openURL("https://apps.apple.com/")}
+        >
+          Update Now
+        </Text> */}
+      </View>
+    );
+  }
 
   if (!isReady) {
     return (
