@@ -10,13 +10,12 @@ import {
     ActivityIndicator,
     Dimensions,
     ScrollView,
-    SafeAreaView
 } from "react-native";
 import { auth } from "@/firebase";
 import axios, { AxiosError } from "axios";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import i18n from "@/assets/languages/i18n";
-
+import { SafeAreaView } from "react-native-safe-area-context";
 interface ReviewData {
     rating: number;
     title: string;
@@ -192,6 +191,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.white,
+        paddingTop: 10,
     },
     content: {
         backgroundColor: COLORS.white,

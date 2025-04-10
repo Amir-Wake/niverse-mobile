@@ -40,6 +40,7 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
     addAnnotation,
     removeAnnotationByCfi,
     theme,
+    injectJavascript
   } = useReader();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -58,7 +59,7 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
           addAnnotation("highlight", searchResult.cfi);
           setTimeout(() => {
             removeAnnotationByCfi(searchResult.cfi);
-          }, 3000);
+          }, 5000);
           clearSearchResults();
           setPage(1);
           setData([]);
@@ -118,7 +119,73 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
                 clearSearchResults();
                 setData([]);
                 setPage(1);
-                search(event.nativeEvent.text, 1, 20);
+                injectJavascript(`
+                  (function() {
+                    try {
+                      console.log("Search initiated");
+                      const page = ${1};
+                      const limit = ${40};
+                      const term = ${JSON.stringify(event.nativeEvent.text)};                
+                      const reactNativeWebview = window.ReactNativeWebView !== undefined && window.ReactNativeWebView !== null
+                        ? window.ReactNativeWebView
+                        : window;
+                
+                      if (!term || term.trim() === "") {
+                        reactNativeWebview.postMessage(
+                          JSON.stringify({ type: 'onSearch', results: [], totalResults: 0 })
+                        );
+                        return;
+                      }
+                
+                      Promise.all(
+                        book.spine.spineItems.map((item) => {
+                          return item.load(book.load.bind(book)).then(() => {
+                            let results = item.find(term.trim());
+                            const locationHref = item.href;
+                
+                            let [match] = flatten(book.navigation.toc).filter((chapter) => {
+                              return book.canonical(chapter.href).includes(locationHref);
+                            });
+                
+                            if (results.length > 0) {
+                              results = results.map((result) => ({
+                                ...result,
+                                section: {
+                                  ...match,
+                                  index: book.navigation.toc.findIndex((elem) => elem.id === match?.id),
+                                },
+                              }));
+                            }
+                
+                            return Promise.resolve(results);
+                          });
+                        })
+                      )
+                        .then((results) => {
+                          const items = [].concat.apply([], results);
+                          reactNativeWebview.postMessage(
+                            JSON.stringify({
+                              type: 'onSearch',
+                              results: items.slice((page - 1) * limit, page * limit),
+                              totalResults: items.length,
+                            })
+                          );
+                        })
+                        .catch((err) => {
+                          console.error("Error during search:", err.message);
+                          reactNativeWebview.postMessage(
+                            JSON.stringify({ type: 'onSearch', results: [], totalResults: 0 })
+                          );
+                        });
+                    } catch (error) {
+                      console.error("Unexpected error in injected JavaScript:", error.message);
+                      window.ReactNativeWebView.postMessage(
+                        JSON.stringify({ type: 'onSearch', results: [], totalResults: 0 })
+                      );
+                    }
+                  })();
+                `);
+                
               }}
             />
             <Ionicons
@@ -259,9 +326,9 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
           ListFooterComponent={footer}
           ListEmptyComponent={empty}
           style={{ width: "100%" }}
-          maxToRenderPerBatch={20}
-          onEndReachedThreshold={0.2}
-          onEndReached={fetchMoreData}
+          // maxToRenderPerBatch={20}
+          // onEndReachedThreshold={0.2}
+          // onEndReached={fetchMoreData}
         />
         {/* </BottomSheetScrollView> */}
       </BottomSheetModal>

@@ -86,7 +86,7 @@ const BookList = ({ title, description, genre }) => {
                 placeholder={require("@/assets/images/listsPlaceHolder.png")}
                 placeholderContentFit="cover"
                 contentFit="cover"
-                transition={100}
+                transition={1000}
               />
               <Text style={styles.bookTitle}>
                 {item.title.length > getTitleLength(styles.bookImage.width)-4

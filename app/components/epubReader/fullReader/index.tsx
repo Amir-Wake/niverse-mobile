@@ -6,7 +6,6 @@ import {
   useReader,
   Themes,
   Bookmark,
-  Theme,
 } from "@epubjs-react-native/core";
 import { useFileSystem } from "@epubjs-react-native/expo-file-system";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -14,16 +13,18 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "./Header";
 import Footer from "./Footer";
-import { MAX_FONT_SIZE, MIN_FONT_SIZE, availableFonts, themes } from "./utils";
+import { MAX_FONT_SIZE, MIN_FONT_SIZE, availableFonts } from "./utils";
 import BookmarksList from "../Bookmarks/BookmarksList";
 import TableOfContents from "../TableOfContents/TableOfContents";
 import SearchList from "../Search/SearchList";
+import { createdAt } from "expo-updates";
 
 interface ComponentProps {
   src: string;
+  bookId: string;
 }
-
-function Component({ src }: ComponentProps) {
+const isIpad = Platform.OS === "ios" && Platform.isPad;
+function Component({ src, bookId }: ComponentProps) {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -31,7 +32,6 @@ function Component({ src }: ComponentProps) {
     theme,
     changeFontSize,
     changeFontFamily,
-    changeTheme,
     goToLocation,
     currentLocation,
     bookmarks,
@@ -47,6 +47,7 @@ function Component({ src }: ComponentProps) {
   const [bookmarkData, setBookmarkData] = useState<Bookmark[]>([]);
   const [isActive, setIsActive] = useState(false);
   const [locationActive, setLocationActive] = useState(false);
+  const [currentText, setCurrentText] = useState("");
 
   useEffect(() => {
     if (bookmarks && isActive) {
@@ -64,9 +65,9 @@ function Component({ src }: ComponentProps) {
   useEffect(() => {
     const getStoredTheme = async () => {
       try {
-        const storedBookmarks = await AsyncStorage.getItem(`bookmarks_${src}`);
+        const storedBookmarks = await AsyncStorage.getItem(`bookmarks_${bookId}`);
         const storedTheme = await AsyncStorage.getItem("currentTheme");
-        const storedFontSize = await AsyncStorage.getItem("currentFontSize");
+        const storedFontSize = await AsyncStorage.getItem("currentFontSize_"+bookId);
         if (storedTheme) {
           setDefTheme(JSON.parse(storedTheme));
         }
@@ -100,7 +101,7 @@ function Component({ src }: ComponentProps) {
       setCurrentFontSize(currentFontSize + 1);
       changeFontSize(`${currentFontSize + 1}px`);
       tempCurrentLocation && goToLocation(tempCurrentLocation);
-      storePreference("currentFontSize", JSON.stringify(currentFontSize+1));
+      storePreference("currentFontSize_"+bookId, JSON.stringify(currentFontSize + 1));
     }
   };
 
@@ -110,7 +111,7 @@ function Component({ src }: ComponentProps) {
       setCurrentFontSize(currentFontSize - 1);
       changeFontSize(`${currentFontSize - 1}px`);
       tempCurrentLocation && goToLocation(tempCurrentLocation);
-      storePreference("currentFontSize", JSON.stringify(currentFontSize-1));
+      storePreference("currentFontSize_"+bookId, JSON.stringify(currentFontSize - 1));
     }
   };
 
@@ -127,7 +128,7 @@ function Component({ src }: ComponentProps) {
         src,
         cfi: currentLocation?.start.cfi,
       });
-      await AsyncStorage.setItem(`${src}`, locationData);
+      await AsyncStorage.setItem(`location_${bookId}`, locationData);
     } catch (error) {
       console.error("Failed to save location", error);
     }
@@ -137,7 +138,7 @@ function Component({ src }: ComponentProps) {
     if (bookmarks) {
       try {
         const bookmarkData = JSON.stringify({ src, bookmarks });
-        await AsyncStorage.setItem(`bookmarks_${src}`, bookmarkData);
+        await AsyncStorage.setItem(`bookmarks_${bookId}`, bookmarkData);
       } catch (error) {
         console.error("Failed to save bookmarks", error);
       }
@@ -152,7 +153,7 @@ function Component({ src }: ComponentProps) {
       I18nManager.isRTL = false;
     }
     try {
-      const storedLocation = await AsyncStorage.getItem(`${src}`);
+      const storedLocation = await AsyncStorage.getItem(`location_${bookId}`);
       if (storedLocation) {
         const location = JSON.parse(storedLocation);
         goToLocation(location.cfi);
@@ -161,6 +162,29 @@ function Component({ src }: ComponentProps) {
       }
     } catch (error) {
       console.error("Failed to retrieve stored location", error);
+    }
+  };
+  const handleOnFinish = async () => {
+    try {
+      const storedUserId = await AsyncStorage.getItem("stored_userId");
+      const Books = await AsyncStorage.getItem("Books_"+storedUserId);
+      const parsedBooks = JSON.parse(Books || "[]");
+      const book = parsedBooks.find(
+        (book: { bookId: string }) => book.bookId === bookId
+      );
+      if (book) {
+        const updatedBook = { ...book, finished: true };
+        AsyncStorage.setItem(
+          "Books_" + storedUserId,
+          JSON.stringify(
+            parsedBooks.map((b: { bookId: string }) =>
+              b.bookId === bookId ? updatedBook : b
+            )
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Failed to update finished books list", error);
     }
   };
 
@@ -180,12 +204,19 @@ function Component({ src }: ComponentProps) {
         onPressSearch={() => searchListRef.current?.present()}
         onOpenBookmarksList={() => bookmarksListRef.current?.present()}
         onOpenTocList={() => bottomSheetRef.current?.present()}
+        currentText={currentText}
       />
       <View style={{ flex: 1 }}>
         <Reader
           src={src}
           width={width}
-          height={Platform.OS == "ios" ? height * 0.87 : height * 0.85}
+          height={
+            Platform.OS == "ios"
+              ? isIpad
+                ? height * 0.9
+                : height * 0.87
+              : height * 0.85
+          }
           flow={"paginated"}
           spread="none"
           enableSelection={true}
@@ -197,6 +228,10 @@ function Component({ src }: ComponentProps) {
           onLocationsReady={handleLocationReady}
           onChangeBookmarks={handleUpdateBookmark}
           initialBookmarks={bookmarkData}
+          onFinish={handleOnFinish}
+          onWebViewMessage={(message) => {
+            setCurrentText(message);
+          }}
           injectedJavascript={'document.body.style.overflow = "hidden";'}
         />
         <SearchList
@@ -225,12 +260,13 @@ function Component({ src }: ComponentProps) {
 
 interface FullReaderProps {
   src: string;
+  bookId: string;
 }
 
-export default function FullReader({ src }: FullReaderProps) {
+export default function FullReader({ src, bookId }: FullReaderProps) {
   return (
     <ReaderProvider>
-      <Component src={src} />
+      <Component src={src} bookId={bookId} />
     </ReaderProvider>
   );
 }

@@ -11,7 +11,7 @@ import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/firebase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { getFirestore, collection, getDocs} from "firebase/firestore";
 import NetInfo from "@react-native-community/netinfo";
 import * as Application from "expo-application";
 
@@ -27,6 +27,7 @@ export default function App() {
   const apiLink2 = `${process.env.EXPO_PUBLIC_BOOKS_API}books/genre/novels`;
   const apiLink3 = `${process.env.EXPO_PUBLIC_BOOKS_API}books/genre/biography`;
   const apiLink4 = `${process.env.EXPO_PUBLIC_BOOKS_API}books/genre/Non-fiction`;
+  const apiLink5 = `${process.env.EXPO_PUBLIC_BOOKS_API}books/genre/science`;
 
   const router = useRouter();
 
@@ -62,29 +63,7 @@ export default function App() {
     }
   };
 
-  const cacheCollection = async (collectionName: string) => {
-    try {
-      const user = auth.currentUser;
-      if (!user) {
-        return;
-      }
-      const querySnapshot = await getDocs(
-        collection(db, "users", user.uid, collectionName)
-      );
-      const data = querySnapshot.docs.map((doc) => doc.data());
-
-      await AsyncStorage.setItem(
-        `${collectionName}_${user.uid}`,
-        JSON.stringify(data)
-      );
-      await AsyncStorage.setItem(
-        `${collectionName}_${user.uid}_time`,
-        new Date().getTime().toString()
-      );
-    } catch (error) {
-      console.error(`Error caching collection ${collectionName}:`, error);
-    }
-  };
+  
 
   const check_update = async () => {
     try {
@@ -94,6 +73,7 @@ export default function App() {
       }
       const val = await getDocs(collection(db, "remote_config"));
       const data = val.docs.map((doc) => doc.data());
+      if(!data || data.length === 0) return;
       const minimum_required_version = data[0].minimum_required_version;
       const currentVersion = Application.nativeApplicationVersion || "0.0.0";
       isUpdateRequired = currentVersion < minimum_required_version;
@@ -112,6 +92,7 @@ export default function App() {
         await cacheApiData(apiLink2);
         await cacheApiData(apiLink3);
         await cacheApiData(apiLink4);
+        await cacheApiData(apiLink5);
       } catch (e) {
         console.warn(e);
       } finally {
@@ -120,7 +101,6 @@ export default function App() {
             if (user && user.emailVerified) {
               await check_update();
               if (isUpdateRequired) return;
-              await cacheCollection("WantToRead");
               router.replace("/inside/(tabs)");
             } else {
               router.replace("./(login)");

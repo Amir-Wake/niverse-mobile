@@ -113,7 +113,6 @@ const TopBooks = () => {
                 style={styles.bookCardContent}
               >
                 <Image
-                  sharedTransitionTag="bookImage"
                   source={{ uri: item.coverImageUrl }}
                   cachePolicy={"memory-disk"}
                   style={styles.bookImage}

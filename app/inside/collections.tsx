@@ -21,6 +21,11 @@ export default function Collections() {
       icon: "logout-variant",
     },
     {
+      name: i18n.t("finished"),
+      route: "./finished",
+      icon: "check-circle",
+    },
+    {
       name: i18n.t("downloaded"),
       route: "./downloaded",
       icon: "download",
@@ -32,7 +37,7 @@ export default function Collections() {
       <View
         style={[
           styles.container,
-          { direction: i18n.locale=="ku" ? "rtl" : "ltr" },
+          { direction: i18n.locale == "ku" ? "rtl" : "ltr" },
         ]}
       >
         {collections.map((collection, index) => (
@@ -41,7 +46,7 @@ export default function Collections() {
             style={styles.collectionItem}
             onPress={() => router.navigate(collection.route as any)}
           >
-            <IconButton icon={collection.icon} size={isIpad?38:30} />
+            <IconButton icon={collection.icon} size={isIpad ? 38 : 30} />
             <Text style={styles.collectionText}>{collection.name}</Text>
           </TouchableOpacity>
         ))}
@@ -66,10 +71,10 @@ const styles = StyleSheet.create({
     width: "100%",
     borderColor: "lightgrey",
     borderWidth: 1,
-    padding: 10,
+    padding: 5,
   },
   collectionText: {
-    fontSize: isIpad?28:20,
+    fontSize: isIpad ? 28 : 20,
     padding: 15,
   },
 });

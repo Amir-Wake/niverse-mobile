@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import {
   View,
   Text,
@@ -13,16 +13,6 @@ import { useRouter } from "expo-router";
 import * as FileSystem from "expo-file-system";
 import { Image } from "expo-image";
 import { Button } from "react-native-paper";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
 import { auth } from "@/firebase";
 import Review from "./review/review";
 import i18n from "@/assets/languages/i18n";
@@ -30,6 +20,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ScrollView } from "react-native-gesture-handler";
+import { EventRegister } from "react-native-event-listeners";
 
 const { width } = Dimensions.get("window");
 const isIpad = Platform.OS == "ios" && Platform.isPad;
@@ -62,55 +53,52 @@ const BookDetails = ({ book }: { book: Book }) => {
   const [ageRestrictionEnabled, setAgeRestrictionEnabled] = useState(false);
   const [isRTL, setIsRTL] = useState(false);
   const router = useRouter();
-  const firestore = getFirestore();
   const [userAge, setUserAge] = useState(12);
 
   useEffect(() => {
-    const checkFileExistence = async () => {
-      const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.title}/`;
-      const filePath = `${directory}${book.title}.epub`;
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
-      setIsDownloaded(fileInfo.exists);
-    };
-
-    const checkIfAddedToCollection = async () => {
-      const user = auth.currentUser;
-      if (!user) return;
-      const collectionKey = `WantToRead_${user.uid}`;
-      const storedCollection = await AsyncStorage.getItem(collectionKey);
-      const collection = storedCollection ? JSON.parse(storedCollection) : [];
-      const bookInCollection = collection.some(
-        (item: any) => item.bookId === book.id
-      );
-      setIsAddedToCollection(bookInCollection);
-    };
-
-    const fetchUserAgeRestriction = async () => {
-      const ageRestrictionEnabledValue = await AsyncStorage.getItem(
-        "ageRestrictionEnabled" + auth.currentUser?.uid
-      );
-      if (ageRestrictionEnabledValue) {
-        setAgeRestrictionEnabled(JSON.parse(ageRestrictionEnabledValue));
-        const profileDob = await AsyncStorage.getItem(
-          "profileDob" + auth.currentUser?.uid
-        );
-        if (profileDob) {
-          const dob = new Date(profileDob);
-          const ageDiffMs = Date.now() - dob.getTime();
-          const ageDate = new Date(ageDiffMs);
-          const age = Math.abs(ageDate.getUTCFullYear() - 1970);
-          setUserAge(age);
-        }
-      }
-    };
-    const setTextDirection = () => {
-      setIsRTL(book.language === "کوردی" || book.language === "Arabic");
-    };
     checkFileExistence();
     checkIfAddedToCollection();
     fetchUserAgeRestriction();
     setTextDirection();
   }, [book.title, book.id, book.language]);
+
+  const setTextDirection = () => {
+    setIsRTL(book.language === "کوردی" || book.language === "Arabic");
+  };
+
+  const checkIfAddedToCollection = async () => {
+    const storedUserId = await AsyncStorage.getItem("stored_userId");
+    const storedBooks = await AsyncStorage.getItem("Books_" + storedUserId);
+    const BooksList = JSON.parse(storedBooks || "[]");
+    const bookIndex = BooksList.findIndex(
+      (sbook: any) => sbook.bookId === book.id
+    );
+    if (bookIndex !== -1) {
+      const bookData = BooksList[bookIndex];
+      if (bookData.wantToRead) {
+        setIsAddedToCollection(bookData.wantToRead);
+      }
+    }
+  };
+
+  const fetchUserAgeRestriction = async () => {
+    const ageRestrictionEnabledValue = await AsyncStorage.getItem(
+      "ageRestrictionEnabled" + auth.currentUser?.uid
+    );
+    if (ageRestrictionEnabledValue) {
+      setAgeRestrictionEnabled(JSON.parse(ageRestrictionEnabledValue));
+      const profileDob = await AsyncStorage.getItem(
+        "profileDob" + auth.currentUser?.uid
+      );
+      if (profileDob) {
+        const dob = new Date(profileDob);
+        const ageDiffMs = Date.now() - dob.getTime();
+        const ageDate = new Date(ageDiffMs);
+        const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+        setUserAge(age);
+      }
+    }
+  };
 
   const handleDownload = async () => {
     if (ageRestrictionEnabled && book.ageRate > userAge) {
@@ -119,7 +107,7 @@ const BookDetails = ({ book }: { book: Book }) => {
     }
 
     setIsDownloading(true);
-    const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.title}/`;
+    const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.id}/`;
 
     try {
       await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
@@ -151,7 +139,6 @@ const BookDetails = ({ book }: { book: Book }) => {
           setDownloadProgress(progress);
         }
       );
-
       const result = await downloadResumable.downloadAsync();
       if (result) {
         await FileSystem.downloadAsync(
@@ -159,7 +146,7 @@ const BookDetails = ({ book }: { book: Book }) => {
           `${directory}${book.title}.jpg`
         );
         setIsDownloaded(true);
-        await addToFirestore("Downloaded");
+        EventRegister.emit("booksDownloaded");
       } else {
         console.error("Download failed");
       }
@@ -169,42 +156,81 @@ const BookDetails = ({ book }: { book: Book }) => {
     } finally {
       setIsDownloading(false);
     }
+    addToBooksList();
   };
 
-  const handleAddToCollection = async (collectionName: string) => {
+  const addToBooksList = async () => {
     const user = auth.currentUser;
     if (!user) {
-      Alert.alert(
-        "Error",
-        "You need to be logged in to add books to your collection."
-      );
       return;
     }
+    const storedBooksList = await AsyncStorage.getItem(`Books_${user.uid}`);
+    let BooksList = storedBooksList ? JSON.parse(storedBooksList) : [];
+    const bookIndex = BooksList.findIndex(
+      (item: any) => item.bookId === book.id
+    );
+    if (bookIndex === -1) {
+      BooksList.push({
+        userId: user.uid,
+        bookId: book.id,
+        title: book.title,
+        coverImageUrl: book.coverImageUrl,
+        addedAt: new Date().toISOString(),
+        downloaded: true,
+        inLibrary: true,
+        finished: false,
+        wantToRead: false,
+      });
+    } else {
+      BooksList[bookIndex] = {
+        ...BooksList[bookIndex],
+        downloaded: true,
+        inLibrary: true,
+        title: book.title,
+        coverImageUrl: book.coverImageUrl,
+      };
+    }
+    await AsyncStorage.setItem(`Books_${user.uid}`, JSON.stringify(BooksList));
+  };
 
+  const handleAddToCollection = async () => {
+    const user = auth.currentUser;
     setIsLoading(true);
-
     try {
-      const collectionKey = `${collectionName}_${user.uid}`;
-      const storedCollection = await AsyncStorage.getItem(collectionKey);
-      let collection = storedCollection ? JSON.parse(storedCollection) : [];
-
-      const bookIndex = collection.findIndex(
+      const storedBooks = await AsyncStorage.getItem(`Books_${user?.uid}`);
+      const BooksList = JSON.parse(storedBooks || "[]");
+      const bookIndex = BooksList.findIndex(
         (item: any) => item.bookId === book.id
       );
       if (bookIndex !== -1) {
-        collection.splice(bookIndex, 1);
-        setIsAddedToCollection(false);
+        const updatedBooksList = [...BooksList];
+        updatedBooksList[bookIndex] = {
+          ...updatedBooksList[bookIndex],
+          wantToRead: !isAddedToCollection,
+        };
+        setIsAddedToCollection(!isAddedToCollection);
+        await AsyncStorage.setItem(
+          `Books_${user?.uid}`,
+          JSON.stringify(updatedBooksList)
+        );
       } else {
-        collection.push({
+        const newBook = {
+          userId: user?.uid,
           bookId: book.id,
           title: book.title,
           coverImageUrl: book.coverImageUrl,
           addedAt: new Date().toISOString(),
-        });
+          downloaded: false,
+          inLibrary: false,
+          finished: false,
+          wantToRead: true,
+        };
+        await AsyncStorage.setItem(
+          `Books_${user?.uid}`,
+          JSON.stringify([...BooksList, newBook])
+        );
         setIsAddedToCollection(true);
       }
-      await AsyncStorage.setItem(collectionKey, JSON.stringify(collection));
-      addToFirestore(collectionName);
     } catch (error) {
       console.error("Error updating collection:", error);
       Alert.alert("Error", "Failed to update collection.");
@@ -212,40 +238,13 @@ const BookDetails = ({ book }: { book: Book }) => {
       setIsLoading(false);
     }
   };
-
-  const addToFirestore = async (collectionName: string) => {
-    const user = auth.currentUser;
-    if (!user) {
-      return;
-    }
-    try {
-      const q = query(
-        collection(firestore, "users", user.uid, collectionName),
-        where("bookId", "==", book.id)
-      );
-      const querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) {
-        await addDoc(collection(firestore, "users", user.uid, collectionName), {
-          bookId: book.id,
-          title: book.title,
-          coverImageUrl: book.coverImageUrl,
-          addedAt: new Date().toISOString(),
-        });
-      } else {
-        if (collectionName == "Downloaded") {
-          return;
-        }
-        const docId = querySnapshot.docs[0].id;
-        const docRef = doc(firestore, "users", user.uid, collectionName, docId);
-        await deleteDoc(docRef);
-      }
-    } catch (error) {
-      console.error(
-        `Error adding book to ${collectionName} collection:`,
-        error
-      );
-    }
+  const checkFileExistence = async () => {
+    const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.id}/`;
+    const filePath = `${directory}${book.title}.epub`;
+    const fileInfo = await FileSystem.getInfoAsync(filePath);
+    setIsDownloaded(fileInfo.exists);
   };
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -257,10 +256,10 @@ const BookDetails = ({ book }: { book: Book }) => {
           source={{ uri: book.coverImageUrl }}
           cachePolicy={"memory-disk"}
           style={styles.bookImage}
-          // placeholder={require("@/assets/images/booksPlaceHolder.png")}
-          // placeholderContentFit="cover"
+          placeholder={require("@/assets/images/booksPlaceHolder.png")}
+          placeholderContentFit="cover"
           contentFit="cover"
-          // transition={100}
+          transition={10}
         />
       </View>
       <View style={styles.body}>
@@ -299,7 +298,7 @@ const BookDetails = ({ book }: { book: Book }) => {
                     router.push({
                       pathname: "/inside/bookReader",
                       params: {
-                        fileUrl: `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.title}/${book.title}.epub`,
+                        fileUrl: `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.id}/${book.title}.epub`,
                       },
                     })
                 : handleDownload
@@ -322,7 +321,7 @@ const BookDetails = ({ book }: { book: Book }) => {
           <Button
             icon={isAddedToCollection ? "check-bold" : "plus"}
             mode="contained"
-            onPress={() => handleAddToCollection("WantToRead")}
+            onPress={() => handleAddToCollection()}
             buttonColor={isAddedToCollection ? "lightgray" : "orange"}
             textColor="black"
             style={styles.button}
@@ -355,43 +354,40 @@ const BookDetails = ({ book }: { book: Book }) => {
         <Animated.View
           entering={FadeInDown.delay(800).duration(500).springify().damping(12)}
         >
-        <ScrollView
-          horizontal={true}
-          showsHorizontalScrollIndicator={false}
-        >
-          <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>{i18n.t("pages")}</Text>
-            <FontAwesome name="files-o" size={50} color="black" />
-            <Text style={styles.infoText}>{book.printLength}</Text>
-          </View>
-          <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>{i18n.t("language")}</Text>
-            <FontAwesome name="language" size={50} color="black" />
-            <Text style={styles.infoText}>{book.language}</Text>
-          </View>
-          <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>{i18n.t("publicationDate")}</Text>
-            <MaterialIcons name="date-range" size={50} color="black" />
-            <Text style={styles.infoText}>{book.publicationDate}</Text>
-          </View>
-          <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>{i18n.t("publisher")}</Text>
-            <MaterialIcons name="business" size={50} color="black" />
-            <Text style={styles.infoText}>{book.publisher}</Text>
-          </View>
-          <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>{i18n.t("translator")}</Text>
-            <MaterialIcons name="translate" size={50} color="black" />
-            <Text style={styles.infoText}>{book.translator}</Text>
-          </View>
-          <View style={styles.bookInfo}>
-            <Text style={styles.infoText}>{i18n.t("ageRating")}</Text>
-            <FontAwesome name="ban" size={50} color="black" />
-            <Text style={styles.infoText}>
-              {book.ageRate ? "+" + book.ageRate : "none"}
-            </Text>
-          </View>
-        </ScrollView>
+          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+            <View style={styles.bookInfo}>
+              <Text style={styles.infoText}>{i18n.t("pages")}</Text>
+              <FontAwesome name="files-o" size={50} color="black" />
+              <Text style={styles.infoText}>{book.printLength}</Text>
+            </View>
+            <View style={styles.bookInfo}>
+              <Text style={styles.infoText}>{i18n.t("language")}</Text>
+              <FontAwesome name="language" size={50} color="black" />
+              <Text style={styles.infoText}>{book.language}</Text>
+            </View>
+            <View style={styles.bookInfo}>
+              <Text style={styles.infoText}>{i18n.t("publicationDate")}</Text>
+              <MaterialIcons name="date-range" size={50} color="black" />
+              <Text style={styles.infoText}>{book.publicationDate}</Text>
+            </View>
+            <View style={styles.bookInfo}>
+              <Text style={styles.infoText}>{i18n.t("publisher")}</Text>
+              <MaterialIcons name="business" size={50} color="black" />
+              <Text style={styles.infoText}>{book.publisher}</Text>
+            </View>
+            <View style={styles.bookInfo}>
+              <Text style={styles.infoText}>{i18n.t("translator")}</Text>
+              <MaterialIcons name="translate" size={50} color="black" />
+              <Text style={styles.infoText}>{book.translator}</Text>
+            </View>
+            <View style={styles.bookInfo}>
+              <Text style={styles.infoText}>{i18n.t("ageRating")}</Text>
+              <FontAwesome name="ban" size={50} color="black" />
+              <Text style={styles.infoText}>
+                {book.ageRate ? "+" + book.ageRate : "none"}
+              </Text>
+            </View>
+          </ScrollView>
         </Animated.View>
         <Review bookId={book.id} />
       </View>
@@ -515,4 +511,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BookDetails;
+export default memo(BookDetails);

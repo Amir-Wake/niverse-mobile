@@ -50,7 +50,7 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
       );
 
       if (!bookmark) return;
-
+      
       setCurrentBookmark(bookmark);
       setNote(bookmark.data?.note || "");
     }
@@ -221,7 +221,6 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
                 iconColor={MD3Colors.error50}
                 onPress={() => {
                   removeBookmark(bookmark);
-                  onClose();
                 }}
               />
             </View>

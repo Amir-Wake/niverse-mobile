@@ -156,8 +156,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f0f0f0",
     padding: 10,
-
-    
+    paddingTop: 10,
   },
   reviewContainer: {
     flex: 1,

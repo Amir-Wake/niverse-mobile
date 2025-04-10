@@ -1,12 +1,21 @@
 import { useRouter } from "expo-router";
 import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity, StyleSheet, Dimensions,Text } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  Text,
+  Platform,
+} from "react-native";
 import { Theme, Themes, useReader } from "@epubjs-react-native/core";
 import { IconButton, MD3Colors } from "react-native-paper";
 import { MAX_FONT_SIZE, MIN_FONT_SIZE } from "./utils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import stringSimilarity from "string-similarity";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
+const isIpad = Platform.OS === "ios" && Platform.isPad;
 
 interface Props {
   currentFontSize: number;
@@ -16,6 +25,7 @@ interface Props {
   switchFontFamily: () => void;
   onOpenBookmarksList: () => void;
   onOpenTocList: () => void;
+  currentText: string;
 }
 
 export default function Header({
@@ -26,6 +36,7 @@ export default function Header({
   switchFontFamily,
   onOpenBookmarksList,
   onOpenTocList,
+  currentText,
 }: Props) {
   const navigation = useRouter();
   const {
@@ -34,36 +45,92 @@ export default function Header({
     addBookmark,
     removeBookmark,
     getCurrentLocation,
-    isBookmarked,
-    changeTheme
+    changeTheme,
+    injectJavascript,
   } = useReader();
 
   const [showSettings, setShowSettings] = useState(false);
   const [iconCol, setIconCol] = useState(MD3Colors.neutral60);
-
+  const [isBookmark, setIsBookmark] = useState(false);
   useEffect(() => {
-    if (theme.body.background === "#fff" || theme.body.background === "#e8dcb8") {
+    if (
+      theme.body.background === "#fff" ||
+      theme.body.background === "#e8dcb8"
+    ) {
       setIconCol("black");
     } else if (theme.body.background === "#333") {
       setIconCol("white");
     }
-  }, [theme]);
+    const location = getCurrentLocation();
+    if (location && location.start && location.end) {
+      injectJavascript(`
+        (function() {
+          const location = ${JSON.stringify(location)};
+          const cfi = makeRangeCfi(location.start.cfi, location.end.cfi);
+          const reactNativeWebview = window.ReactNativeWebView !== undefined && window.ReactNativeWebView !== null ? window.ReactNativeWebView : window;
+      
+          book.getRange(cfi).then(range => {
+            reactNativeWebview.postMessage(JSON.stringify({
+              type: "onCurrentText",
+              text: range.toString(),
+            }));
+          }).catch(error => {
+            reactNativeWebview.postMessage(JSON.stringify({
+              type: "onError",
+              error: error.message,
+            }));
+          });
+        })();
+      `);
+    }
+  }, [theme, getCurrentLocation]);
 
-  const changeThemes = (theme:Theme) => {
+  useEffect(() => {
+    let parsedText = "";
+    try {
+      if (!currentText) return;
+      const parsed =
+        typeof currentText === "string" ? JSON.parse(currentText) : currentText;
+      if (parsed.type === "onCurrentText") {
+        parsedText = parsed.text.trim();
+      }
+    } catch (error) {
+      console.error("Failed to parse currentText:", error);
+      return;
+    }
+    const matches = bookmarks.map((item) => {
+      const bookmarkText = item.text;
+      const similarity = stringSimilarity.compareTwoStrings(
+        bookmarkText,
+        parsedText
+      );
+      return { ...item, similarity };
+    });
+
+    const bestMatch = matches.reduce(
+      (max, curr) => (curr.similarity > max.similarity ? curr : max),
+      { similarity: 0 }
+    );
+
+    if (bestMatch.similarity > 0.8) {
+      setIsBookmark(true);
+    } else {
+      setIsBookmark(false);
+    }
+  }, [bookmarks, currentText, getCurrentLocation]);
+
+  const changeThemes = (theme: Theme) => {
     changeTheme(theme);
-    AsyncStorage.setItem("currentTheme",JSON.stringify(theme))
-  }
+    AsyncStorage.setItem("currentTheme", JSON.stringify(theme));
+  };
 
   const handleChangeBookmark = () => {
     const location = getCurrentLocation();
+
     if (!location) return;
 
-    if (isBookmarked) {
-      const bookmark = bookmarks.find(
-        (item) =>
-          item.location.start.cfi === location.start.cfi &&
-          item.location.end.cfi === location.end.cfi
-      );
+    if (isBookmark) {
+      const bookmark = bookmarks.find((item) => item.location.start.href === location.start.href);
       if (bookmark) removeBookmark(bookmark);
     } else {
       addBookmark(location);
@@ -84,8 +151,8 @@ export default function Header({
       />
       <View style={styles.actions}>
         <IconButton
-          icon={isBookmarked ? "bookmark" : "bookmark-outline"}
-          iconColor={iconCol}
+          icon={isBookmark ? "bookmark" : "bookmark-outline"}
+          iconColor={isBookmark ? "red" : iconCol}
           size={28}
           animated
           onPress={handleChangeBookmark}
@@ -106,72 +173,81 @@ export default function Header({
           onPress={() => setShowSettings(false)}
         >
           <View style={styles.settingsContainer}>
-          <View style={{ flexDirection: "row" }}>
-            <TouchableOpacity
-              style={[
-                styles.circle,
-                {
-                  backgroundColor: theme.body.background,
-                  borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
-                },
-              ]}
-              onPress={() => {
-                onPressSearch();
-                setShowSettings(false);
-              }}
-            >
-              <IconButton
-                icon="magnify"
-                animated
-                mode="outlined"
-                iconColor={theme === Themes.DARK ? "white" : iconCol}
-                size={26}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.circle,
-                {
-                  backgroundColor: theme.body.background,
-                  borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
-                },
-              ]}
-              onPress={() => {
-                onOpenBookmarksList();
-                setShowSettings(false);
-              }}
-            >
-              <IconButton
-                icon="bookmark-multiple-outline"
-                animated
-                mode="outlined"
-                iconColor={theme === Themes.DARK ? "white" : iconCol}
-                size={26}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.circle,
-                {
-                  backgroundColor: theme.body.background,
-                  borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
-                },
-              ]}
-              onPress={() => {
-                onOpenTocList();
-                setShowSettings(false);
-              }}
-            >
-              <IconButton
-                icon="format-list-bulleted-square"
-                iconColor={theme === Themes.DARK ? "white" : iconCol}
-                size={26}
-                mode="outlined"
-              />
-            </TouchableOpacity>
+            <View style={{ flexDirection: "row" }}>
+              <TouchableOpacity
+                style={[
+                  styles.circle,
+                  {
+                    backgroundColor: theme.body.background,
+                    borderColor:
+                      theme.body.background === "#333"
+                        ? MD3Colors.neutral100
+                        : MD3Colors.neutral10,
+                  },
+                ]}
+                onPress={() => {
+                  onPressSearch();
+                  setShowSettings(false);
+                }}
+              >
+                <IconButton
+                  icon="magnify"
+                  animated
+                  mode="outlined"
+                  iconColor={theme === Themes.DARK ? "white" : iconCol}
+                  size={26}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.circle,
+                  {
+                    backgroundColor: theme.body.background,
+                    borderColor:
+                      theme.body.background === "#333"
+                        ? MD3Colors.neutral100
+                        : MD3Colors.neutral10,
+                  },
+                ]}
+                onPress={() => {
+                  onOpenBookmarksList();
+                  setShowSettings(false);
+                }}
+              >
+                <IconButton
+                  icon="bookmark-multiple-outline"
+                  animated
+                  mode="outlined"
+                  iconColor={theme === Themes.DARK ? "white" : iconCol}
+                  size={26}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.circle,
+                  {
+                    backgroundColor: theme.body.background,
+                    borderColor:
+                      theme.body.background === "#333"
+                        ? MD3Colors.neutral100
+                        : MD3Colors.neutral10,
+                  },
+                ]}
+                onPress={() => {
+                  onOpenTocList();
+                  setShowSettings(false);
+                }}
+              >
+                <IconButton
+                  icon="format-list-bulleted-square"
+                  iconColor={theme === Themes.DARK ? "white" : iconCol}
+                  size={26}
+                  mode="outlined"
+                />
+              </TouchableOpacity>
             </View>
             <View style={{ flexDirection: "row" }}>
-            {/* <TouchableOpacity
+              {/* <TouchableOpacity
               style={[
                 styles.circle,
                 {
@@ -188,133 +264,148 @@ export default function Header({
                 mode="outlined"
               />
             </TouchableOpacity> */}
-            <TouchableOpacity
-              style={[
-              styles.circle,
-              {
-                backgroundColor: "white",
-                borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
-                padding:5
-              },
-              ]}
-              onPress={() => changeThemes(Themes.LIGHT)}
-            >
-              <View
-              style={{
-                width: 45,
-                height: 45,
-                borderRadius: 22.5,
-                backgroundColor: "white",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              <TouchableOpacity
+                style={[
+                  styles.circle,
+                  {
+                    backgroundColor: "white",
+                    borderColor:
+                      theme.body.background === "#333"
+                        ? MD3Colors.neutral100
+                        : MD3Colors.neutral10,
+                    padding: 5,
+                  },
+                ]}
+                onPress={() => changeThemes(Themes.LIGHT)}
               >
-              <Text style={{ fontSize: 22, color: "black" }}>A</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-              styles.circle,
-              {
-                backgroundColor: "black",
-                borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
-                padding:5
-              },
-              ]}
-              onPress={() => changeThemes(Themes.DARK)}
-            >
-              <View
-              style={{
-                width: 45,
-                height: 45,
-                borderRadius: 22.5,
-                backgroundColor: "black",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+                <View
+                  style={{
+                    width: 45,
+                    height: 45,
+                    borderRadius: 22.5,
+                    backgroundColor: "white",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text style={{ fontSize: 24, color: "black" }}>A</Text>
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.circle,
+                  {
+                    backgroundColor: "black",
+                    borderColor:
+                      theme.body.background === "#333"
+                        ? MD3Colors.neutral100
+                        : MD3Colors.neutral10,
+                    padding: 5,
+                  },
+                ]}
+                onPress={() => changeThemes(Themes.DARK)}
               >
-              <Text style={{ fontSize: 22, color: "white" }}>A</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-              styles.circle,
-              {
-                backgroundColor: "#e8dcb8",
-                borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
-                padding:5
-              },
-              ]}
-              onPress={() => changeThemes(Themes.SEPIA)}
-            >
-              <View
-              style={{
-                width: 45,
-                height: 45,
-                borderRadius: 22.5,
-                backgroundColor: "#e8dcb8",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+                <View
+                  style={{
+                    width: 45,
+                    height: 45,
+                    borderRadius: 22.5,
+                    backgroundColor: "black",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text style={{ fontSize: 24, color: "white" }}>A</Text>
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.circle,
+                  {
+                    backgroundColor: "#e8dcb8",
+                    borderColor:
+                      theme.body.background === "#333"
+                        ? MD3Colors.neutral100
+                        : MD3Colors.neutral10,
+                    padding: 5,
+                  },
+                ]}
+                onPress={() => changeThemes(Themes.SEPIA)}
               >
-              <Text style={{ fontSize: 22, color: "black" }}>A</Text>
-              </View>
-            </TouchableOpacity>
+                <View
+                  style={{
+                    width: 45,
+                    height: 45,
+                    borderRadius: 22.5,
+                    backgroundColor: "#e8dcb8",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text style={{ fontSize: 24, color: "black" }}>A</Text>
+                </View>
+              </TouchableOpacity>
             </View>
             <View style={{ flexDirection: "row" }}>
-            <TouchableOpacity
-              style={[
-                styles.circle,
-                {
-                  backgroundColor: theme.body.background,
-                  borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
-                },
-              ]}
-              onPress={switchFontFamily}
-            >
-              <IconButton
-                icon="format-font"
-                iconColor={theme === Themes.DARK ? "white" : iconCol}
-                size={26}
-                mode="outlined"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.circle,
-                {
-                  backgroundColor: theme.body.background,
-                  borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
-                },
-              ]}
-              onPress={increaseFontSize}
-              disabled={currentFontSize === MAX_FONT_SIZE}
-            >
-              <IconButton
-                icon="format-font-size-increase"
-                iconColor={theme === Themes.DARK ? "white" : iconCol}
-                size={26}
-                animated
-                mode="outlined"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.circle,
-                {
-                  backgroundColor: theme.body.background,
-                },
-              ]}
-              onPress={decreaseFontSize}
-              disabled={currentFontSize === MIN_FONT_SIZE}
-            >
-              <IconButton
-                icon="format-font-size-decrease"
-                iconColor={theme === Themes.DARK ? "white" : iconCol}
-                size={26}
-                mode="outlined"
-              />
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.circle,
+                  {
+                    backgroundColor: theme.body.background,
+                    borderColor:
+                      theme.body.background === "#333"
+                        ? MD3Colors.neutral100
+                        : MD3Colors.neutral10,
+                  },
+                ]}
+                onPress={switchFontFamily}
+              >
+                <IconButton
+                  icon="format-font"
+                  iconColor={theme === Themes.DARK ? "white" : iconCol}
+                  size={26}
+                  mode="outlined"
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.circle,
+                  {
+                    backgroundColor: theme.body.background,
+                    borderColor:
+                      theme.body.background === "#333"
+                        ? MD3Colors.neutral100
+                        : MD3Colors.neutral10,
+                  },
+                ]}
+                onPress={increaseFontSize}
+                disabled={currentFontSize === MAX_FONT_SIZE}
+              >
+                <IconButton
+                  icon="format-font-size-increase"
+                  iconColor={theme === Themes.DARK ? "white" : iconCol}
+                  size={26}
+                  animated
+                  mode="outlined"
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.circle,
+                  {
+                    backgroundColor: theme.body.background,
+                  },
+                ]}
+                onPress={decreaseFontSize}
+                disabled={currentFontSize === MIN_FONT_SIZE}
+              >
+                <IconButton
+                  icon="format-font-size-decrease"
+                  iconColor={theme === Themes.DARK ? "white" : iconCol}
+                  size={26}
+                  mode="outlined"
+                />
+              </TouchableOpacity>
             </View>
           </View>
         </TouchableOpacity>

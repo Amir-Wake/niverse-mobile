@@ -11,7 +11,7 @@ const Languages = () => {
   const [currentLanguage, setCurrentLanguage] = useState<string>("en");
   const navigation = useNavigation();
 
-  useEffect(() => {
+  useEffect(() => {    
     navigation.getParent()!.setOptions({
       headerTitle: i18n.t('language'),
   });

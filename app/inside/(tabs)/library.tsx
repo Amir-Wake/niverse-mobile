@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   View,
@@ -19,6 +19,8 @@ import { IconButton } from "react-native-paper";
 import i18n from "@/assets/languages/i18n";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { auth } from "@/firebase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { EventRegister } from "react-native-event-listeners";
 
 const { width, height } = Dimensions.get("window");
 const isIpad = Platform.OS === "ios" && Platform.isPad;
@@ -27,61 +29,100 @@ export default function Library() {
     title: string;
     coverImagePath: string;
     filePath: string;
+    id: string;
+    addedAt: string | null;
   }
 
-  const [books, setBooks] = React.useState<Book[]>([]);
-  const [search, setSearch] = React.useState("");
-  const [isSearching, setIsSearching] = React.useState(false);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [search, setSearch] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const router = useRouter();
 
-  React.useEffect(() => {
-    if (!isSearching) {
+  useEffect(() => {
+    fetchBooks();
+    const listener = EventRegister.addEventListener("booksDownloaded", () => {
       fetchBooks();
-      const interval = setInterval(async () => {
-        const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/`;
-        const bookFolders = await FileSystem.readDirectoryAsync(directory);
-        if (bookFolders.length !== books.length) {
-          fetchBooks();
-        }
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [isSearching]);
+    });
+    return () => {
+      if (typeof listener === "string") {
+        EventRegister.removeEventListener(listener);
+      }
+    };
+  }, []);
 
   const fetchBooks = async () => {
     try {
       const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/`;
       const directoryInfo = await FileSystem.getInfoAsync(directory);
-
       if (!directoryInfo.exists) {
         setBooks([]);
         return;
       }
-
+      const storedBooks = await AsyncStorage.getItem(
+        `Books_${auth.currentUser?.uid}`
+      );
+      const parsedStoredBooks = storedBooks ? JSON.parse(storedBooks) : [];
       const bookFolders = await FileSystem.readDirectoryAsync(directory);
-
       const bookData = await Promise.all(
         bookFolders.map(async (folder) => {
-          const coverImagePath = `${directory}${folder}/${folder}.jpg`;
-          const filePath = `${directory}${folder}/${folder}.epub`;
-          const coverImageExists = await FileSystem.getInfoAsync(coverImagePath);
-          const fileExists = await FileSystem.getInfoAsync(filePath);
+          const folderPath = `${directory}${folder}/`;
+          const files = await FileSystem.readDirectoryAsync(folderPath);
+          const coverImageFile = files.find((file) => file.endsWith(".jpg"));
+          const epubFile = files.find((file) => file.endsWith(".epub"));
+          const bookTitle = coverImageFile
+            ? decodeURIComponent(coverImageFile.replace(".jpg", ""))
+            : null;
+          const coverImagePath = coverImageFile
+            ? `${folderPath}${coverImageFile}`
+            : null;
+          const filePath = epubFile ? `${folderPath}${epubFile}` : null;
+          const filteredBooks = parsedStoredBooks.filter(
+            (book: any) => book.bookId == folder
+          );
+          const addedAt =
+            filteredBooks.length > 0 ? filteredBooks[0].addedAt : null;
 
-          if (coverImageExists.exists && fileExists.exists) {
+          if (coverImagePath && filePath && bookTitle) {
             return {
-              title: folder,
+              id: folder,
+              title: bookTitle,
               coverImagePath,
               filePath,
+              addedAt,
             };
           }
+
           return null;
         })
       );
+      const sortedBooks = bookData
+        .filter((book) => book !== null)
+        .sort((a, b) => (b?.addedAt || "").localeCompare(a?.addedAt || ""));
 
-      setBooks(bookData.filter((book) => book !== null));
+      setBooks(sortedBooks.filter((book) => book !== null));
     } catch (error) {
       console.error("Error reading books directory:", error);
       Alert.alert("Error", "Failed to read books directory");
+      cleanStorage();
+    }
+  };
+
+  const cleanStorage = async () => {
+    try {
+      const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/`;
+      const directoryInfo = await FileSystem.getInfoAsync(directory);
+
+      if (directoryInfo.exists) {
+        await FileSystem.deleteAsync(directory, { idempotent: true });
+        console.log("Books directory cleaned successfully.");
+      } else {
+        console.log("Books directory does not exist. No need to clean.");
+      }
+
+      setBooks([]);
+    } catch (error) {
+      console.error("Error cleaning storage:", error);
+      Alert.alert("Error", "Failed to clean storage.");
     }
   };
 
@@ -99,10 +140,10 @@ export default function Library() {
     }
   };
 
-  const confirmDeleteBook = (folder: string) => {
+  const confirmDeleteBook = (folder: string, title: string) => {
     Alert.alert(
       i18n.t("deleteBook"),
-      i18n.t("deleteBookText") + ` ${folder}`,
+      i18n.t("deleteBookText") + ` ${title}`,
       [
         { text: i18n.t("cancel"), style: "cancel" },
         { text: i18n.t("ok"), onPress: () => deleteBook(folder) },
@@ -113,8 +154,18 @@ export default function Library() {
 
   const deleteBook = async (folder: string) => {
     try {
-      const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${folder}`;
+      const storedUserId = await AsyncStorage.getItem("stored_userId");
+      const directory = `${FileSystem.documentDirectory}${storedUserId}/books/${folder}`;
       await FileSystem.deleteAsync(directory, { idempotent: true });
+      const storedBooks = await AsyncStorage.getItem("Books_" + storedUserId);
+      const BooksList = JSON.parse(storedBooks || "[]");
+      const updatedBooksList = BooksList.map((book: any) =>
+        book.bookId === folder ? { ...book, inLibrary: false } : book
+      );
+      await AsyncStorage.setItem(
+        "Books_" + storedUserId,
+        JSON.stringify(updatedBooksList)
+      );
       fetchBooks();
     } catch (error) {
       console.error("Error deleting book folder:", error);
@@ -128,10 +179,13 @@ export default function Library() {
         onPress={() =>
           router.navigate({
             pathname: "/inside/bookReader",
-            params: { fileUrl: item.filePath },
+            params: {
+              fileUrl: item.filePath,
+              bookId: item.id,
+            },
           })
         }
-        onLongPress={() => confirmDeleteBook(item.title)}
+        onLongPress={() => confirmDeleteBook(item.id, item.title)}
       >
         <Image
           source={{ uri: item.coverImagePath }}
@@ -146,8 +200,6 @@ export default function Library() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.searchContainer}>
         <TextInput
-          // placeholder={i18n.t("searchForBooks")}
-          // placeholderTextColor="black"
           style={styles.searchInput}
           value={search}
           onChangeText={updateSearch}
@@ -162,10 +214,13 @@ export default function Library() {
       </View>
       <View style={styles.collectionContainer}>
         <TouchableOpacity
-          style={[styles.collection,{direction: i18n.locale=="ku" ? "rtl" : "ltr"}]}
+          style={[
+            styles.collection,
+            { direction: i18n.locale == "ku" ? "rtl" : "ltr" },
+          ]}
           onPress={() => router.navigate("../collections")}
         >
-          <IconButton icon={"reorder-horizontal"} size={isIpad?34:26} />
+          <IconButton icon={"reorder-horizontal"} size={isIpad ? 34 : 26} />
           <Text style={styles.collectionText}>{i18n.t("collections")}</Text>
         </TouchableOpacity>
       </View>
@@ -174,9 +229,12 @@ export default function Library() {
         data={books}
         renderItem={renderItem}
         keyExtractor={(item, index) => index.toString()}
-        numColumns={isIpad?3:2}
+        numColumns={isIpad ? 3 : 2}
         columnWrapperStyle={styles.row}
-        contentContainerStyle={[styles.container,{direction: i18n.locale=="ku" ? "rtl" : "ltr"}]}
+        contentContainerStyle={[
+          styles.container,
+          { direction: i18n.locale == "ku" ? "rtl" : "ltr" },
+        ]}
         onScrollBeginDrag={Keyboard.dismiss}
       />
     </SafeAreaView>
@@ -200,7 +258,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     color: "black",
-    fontSize: isIpad?24:18,
+    fontSize: isIpad ? 24 : 18,
   },
   searchButton: {
     padding: 10,
@@ -232,12 +290,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   collectionText: {
-    fontSize: isIpad?30:20,
+    fontSize: isIpad ? 30 : 20,
     paddingVertical: 15,
   },
   bookImage: {
-    width: isIpad?(width / 3)-60:(width / 2)-40,
-    height: isIpad?((width / 3)-60) * 1.5:((width / 2)-40) * 1.5,
+    width: isIpad ? width / 3 - 60 : width / 2 - 40,
+    height: isIpad ? (width / 3 - 60) * 1.5 : (width / 2 - 40) * 1.5,
     borderRadius: 10,
     elevation: 5,
   },

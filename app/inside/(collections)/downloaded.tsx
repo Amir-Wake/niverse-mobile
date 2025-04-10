@@ -9,91 +9,54 @@ import {
   Dimensions,
   Platform,
 } from "react-native";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  deleteDoc,
-  doc,
-  query,
-  where,
-} from "firebase/firestore";
-import { auth } from "@/firebase";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import NetInfo from "@react-native-community/netinfo";
 import i18n from "@/assets/languages/i18n";
 
 const { width } = Dimensions.get("window");
+
 const isIpad = Platform.OS === "ios" && Platform.isPad;
 const Downloaded = () => {
   interface Book {
     title: string;
     coverImageUrl: string;
     bookId: string;
+    downloaded: boolean;
   }
-
   const [books, setBooks] = useState<Book[]>([]);
-  const firestore = getFirestore();
   const router = useRouter();
   const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}books`;
+  const [networkError, setNetworkError] = useState(false);
 
   useEffect(() => {
-    const fetchBooks = async () => {
-      const user = auth.currentUser;
-      if (!user) {
-        Alert.alert(
-          "Error",
-          "You need to be logged in to view your collection."
-        );
-        return;
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      if (!state?.isConnected) {
+        setNetworkError(true);
+      } else {
+        setNetworkError(false);
       }
+    });
+    return () => unsubscribe();
+  }, []);
 
-      try {
-        const querySnapshot = await getDocs(
-          collection(firestore, "users", user.uid, "Downloaded")
-        );
-        const booksData = querySnapshot.docs.map((doc) => doc.data() as Book);
-        setBooks(booksData);
-      } catch (error) {
-        console.error("Error fetching books:", error);
-        Alert.alert("Error", "Failed to fetch books.");
-      }
-    };
-
+  useEffect(() => {
     fetchBooks();
   }, []);
 
-  const confirmDeleteBook = (bookId: string) => {
-    Alert.alert(
-      "",
-      i18n.t("confirmDeleteCollection"),
-      [
-        { text: i18n.t("cancel"), style: "cancel" },
-        { text: i18n.t("ok"), onPress: () => deleteBook(bookId) },
-      ],
-      { cancelable: false }
-    );
-  };
-
-  const deleteBook = async (bookId: string) => {
+  const fetchBooks = async () => {
     try {
-      const user = auth.currentUser;
-      if (!user) {
-        Alert.alert("Error", "You need to be logged in to delete a book.");
-        return;
-      }
-      const q = query(
-        collection(firestore, "users", user.uid, "Downloaded"),
-        where("bookId", "==", bookId)
+      const storedUserId = await AsyncStorage.getItem("stored_userId");
+      const storedBooks = await AsyncStorage.getItem("Books_" + storedUserId);
+      const parsedStoredBooks = storedBooks ? JSON.parse(storedBooks) : [];
+      const filteredBooks = parsedStoredBooks.filter(
+        (book: Book) => book.downloaded === true
       );
-      const querySnapshot = await getDocs(q);
-      const docId = querySnapshot.docs[0].id;
-      const docRef = doc(firestore, "users", user.uid, "Downloaded", docId);
-      await deleteDoc(docRef);
-      setBooks(books.filter((book) => book.bookId !== bookId));
+      setBooks(filteredBooks);
     } catch (error) {
-      console.error("Error deleting book:", error);
-      Alert.alert("Error", "Failed to delete book.");
+      console.error("Error fetching books:", error);
+      Alert.alert("Error", "Failed to fetch books.");
     }
   };
 
@@ -103,12 +66,50 @@ const Downloaded = () => {
       <View style={styles.bookContainer}>
         <TouchableOpacity
           onPress={() =>
+            !networkError &&
             router.push({
               pathname: "../bookView",
               params: { apiLink: newApiLink },
             })
           }
-          onLongPress={() => confirmDeleteBook(item.bookId)}
+          onLongPress={() =>
+            Alert.alert(
+              i18n.t("deleteBook"),
+              i18n.t("confirmCollectionDelete") + ` ${item.title}`,
+              [
+                {
+                  text: i18n.t("cancel"),
+                  style: "cancel",
+                },
+                {
+                  text: i18n.t("ok"),
+                  onPress: async () => {
+                    try {
+                      const storedUserId = await AsyncStorage.getItem(
+                        "stored_userId"
+                      );
+                      const storedBooks = await AsyncStorage.getItem(
+                        "Books_" + storedUserId
+                      );
+                      const parsedStoredBooks = storedBooks
+                        ? JSON.parse(storedBooks)
+                        : [];
+                      const updatedBooks = parsedStoredBooks.map((book: Book) =>
+                        book.bookId === item.bookId ? { ...book, downloaded: false } : book
+                      );
+                      await AsyncStorage.setItem(
+                        "Books_" + storedUserId,
+                        JSON.stringify(updatedBooks)
+                      );
+                      fetchBooks();
+                    } catch (error) {
+                      console.error("Error removing book:", error);
+                    }
+                  },
+                },
+              ]
+            )
+          }
         >
           <Image
             source={{ uri: item.coverImageUrl }}
@@ -144,10 +145,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#FAF9F6",
     borderRadius: 20,
   },
-  navigation: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   collectionsHeader: {
     fontSize: 30,
     padding: 10,
@@ -158,7 +155,8 @@ const styles = StyleSheet.create({
   },
   bookContainer: {
     flex: 1,
-    padding: width * 0.025,
+    alignItems: "flex-start",
+    padding: 10,
   },
   bookImage: {
     width: isIpad ? width / 3 - 60 : width / 2 - 40,
@@ -166,10 +164,10 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   bookTitle: {
-    fontSize: isIpad ? 24 : 16,
+    fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
-    maxWidth: isIpad ? width / 3 - 60 : width / 2 - 40,
+    width: isIpad ? width / 3 - 60 : width / 2 - 40,
   },
 });
 

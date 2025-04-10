@@ -4,9 +4,10 @@ export const MAX_FONT_SIZE = 32;
 export const MIN_FONT_SIZE = 16;
 
 export const availableFonts: Array<string> = [
-  'Fira Mono',
+  "Helvetica Neue",
   'AmericanTypewriter-Bold',
   'Courier New',
+  'Fira Mono',
 ];
 
 export const themes = Object.values(Themes);

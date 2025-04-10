@@ -23,6 +23,7 @@ import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import i18n from "@/assets/languages/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import kurdishDate from "kurdish-date";
 
 const { width } = Dimensions.get("window");
 const isIpad = Platform.OS === "ios" && Platform.isPad;
@@ -41,6 +42,7 @@ export default function Index() {
   const router = useRouter();
   const firestore = getFirestore();
   let unsubscribeSnapshot: (() => void) | null = null;
+  let now = new kurdishDate(new Date()).format("DD MMMM YYYY");
 
   useEffect(() => {
     const language = i18n.locale;
@@ -82,6 +84,7 @@ export default function Index() {
     }
     try {
       await signOut(auth);
+      await AsyncStorage.setItem("stored_userId", "");
       router.replace("/(login)");
     } catch (error) {
       console.error("Sign out error", error);
@@ -332,6 +335,11 @@ export default function Index() {
           </TouchableOpacity>
         </Modal>
       </View>
+    <Text style={{ textAlign: "center", fontSize: 18 }}>
+            {i18n.locale == "ku"
+              ? now
+              : ""}
+          </Text>
     </ScrollView>
   );
 }

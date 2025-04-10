@@ -33,8 +33,9 @@ import i18n from "@/assets/languages/i18n";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { AntDesign } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 const isIpad: boolean = Platform.OS == "ios" && Platform.isPad;
 
 export default function Index() {
@@ -49,13 +50,14 @@ export default function Index() {
 
   useEffect(() => {
     const onAuthStateChanged = auth.onAuthStateChanged((user) => {
-      if (user&&user.emailVerified) {
+      if (user && user.emailVerified) {
+        AsyncStorage.setItem("stored_userId", user.uid);
         navigation.replace("/inside/(tabs)");
       }
     });
     return onAuthStateChanged;
   }, []);
-  
+
   GoogleSignin.configure({
     webClientId:
       "696156084695-jtn3er5vaav5503nm3dd2id7ia5cfjfq.apps.googleusercontent.com",
@@ -71,7 +73,6 @@ export default function Index() {
       signInResult.type === "cancelled" && setLoading(false);
       const response = signInResult.data?.idToken;
       const googleCredential = GoogleAuthProvider.credential(response || null);
-      // Sign-in the user with the credential
       const userCredential = await signInWithCredential(auth, googleCredential);
 
       // Update user profile with email and name
@@ -188,6 +189,7 @@ export default function Index() {
         );
         const user = userCredential.user;
         if (user.emailVerified) {
+          AsyncStorage.setItem("stored_userId", user.uid);
           navigation.replace("/inside/(tabs)");
         } else {
           navigation.push("/(login)/verification");
@@ -202,7 +204,7 @@ export default function Index() {
         "auth/user-not-found": "Email or password is incorrect",
         "auth/invalid-credential": "Email or password is incorrect",
         "auth/user-disabled": "User is disabled",
-        "auth/network-request-failed": "Network error",
+        "auth/network-request-failed": "You're offline",
       };
       const errorCode = (error as { code: keyof typeof errorMessages }).code;
       setError(errorMessages[errorCode] || (error as Error).message);
@@ -275,19 +277,23 @@ export default function Index() {
           {isSignUp ? i18n.t("signUpText") : i18n.t("signInText")}
         </Text>
         <View style={styles.inputContainer}>
-          <AntDesign name="mail" size={isIpad?24:20} color="gray" />
+          <AntDesign name="mail" size={isIpad ? 24 : 20} color="gray" />
           <TextInput
             style={styles.input}
             placeholder="Email"
             placeholderTextColor="gray"
             value={email}
             onChangeText={setEmail}
-            keyboardType="email-address"
+            inputMode="email"
             autoCapitalize="none"
+            autoComplete="email"
+            autoCorrect={false}
+            keyboardType="email-address"
+            textContentType="emailAddress"
           />
         </View>
         <View style={styles.inputContainer}>
-          <AntDesign name="lock" size={isIpad?24:20} color="gray" />
+          <AntDesign name="lock" size={isIpad ? 24 : 20} color="gray" />
           <TextInput
             style={styles.input}
             placeholder="Password"
@@ -295,11 +301,12 @@ export default function Index() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            onSubmitEditing={handleAuth}
           />
         </View>
         {isSignUp && (
           <View style={styles.inputContainer}>
-            <AntDesign name="lock" size={isIpad?24:20} color="gray" />
+            <AntDesign name="lock" size={isIpad ? 24 : 20} color="gray" />
             <TextInput
               style={styles.input}
               placeholder="Confirm Password"
@@ -323,49 +330,60 @@ export default function Index() {
             </Text>
           )}
         </TouchableOpacity>
-        {/* <GoogleSigninButton
-          style={{
-            width: width*0.7,
-            height: 44,
-            alignSelf: "center",
-            borderRadius: 15,
-            marginBottom: 10,
-          }}
-          size={GoogleSigninButton.Size.Wide}
-          color={GoogleSigninButton.Color.Dark}
-          onPress={googleSignIn}
-        /> */}
         <TouchableOpacity
-          style={{ alignItems: "center", padding: 10, }}
+          style={{ alignItems: "center", padding: 10 }}
           onPress={() => navigation.push("/(login)/restPassword")}
         >
-          <Text style={{ fontSize: isIpad?24:18, color: "#0066CC" }}>
+          <Text style={{ fontSize: isIpad ? 24 : 18, color: "#0066CC" }}>
             {i18n.t("forgotPassword")}
           </Text>
         </TouchableOpacity>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
-          <View style={{ flex: 1, height: 1, backgroundColor: 'gray' }} />
-          <Text style={{ fontSize: isIpad? 24 : 18, textAlign: 'center', marginHorizontal: 10 }}>or use</Text>
-          <View style={{ flex: 1, height: 1, backgroundColor: 'gray' }} />
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginVertical: 5,
+          }}
+        >
+          <View style={{ flex: 1, height: 1, backgroundColor: "gray" }} />
+          <Text
+            style={{
+              fontSize: isIpad ? 24 : 18,
+              textAlign: "center",
+              marginHorizontal: 10,
+            }}
+          >
+            or use
+          </Text>
+          <View style={{ flex: 1, height: 1, backgroundColor: "gray" }} />
         </View>
-        <TouchableOpacity style={{backgroundColor: "transparent", alignSelf: "center", marginVertical: 5}} onPress={googleSignIn}>
+        <TouchableOpacity
+          style={{
+            backgroundColor: "transparent",
+            alignSelf: "center",
+            marginVertical: 5,
+          }}
+          onPress={googleSignIn}
+        >
           <Image
             source={require("@/assets/images/googleContinue.png")}
             style={{
-              width: isIpad?300:200,
-              height: isIpad?74:54,
+              width: isIpad ? 300 : 200,
+              height: isIpad ? 74 : 54,
               alignSelf: "center",
             }}
             resizeMode="contain"
           />
         </TouchableOpacity>
         <AppleAuthentication.AppleAuthenticationButton
-          buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+          buttonType={
+            AppleAuthentication.AppleAuthenticationButtonType.CONTINUE
+          }
           buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
           cornerRadius={5}
           style={{
-            width: isIpad?300:200,
-            height: isIpad?64:44,
+            width: isIpad ? 300 : 200,
+            height: isIpad ? 64 : 44,
             alignSelf: "center",
           }}
           onPress={appleSignIn}
@@ -383,21 +401,13 @@ export default function Index() {
           }}
         >
           <TouchableOpacity onPress={() => navigation.push("./terms")}>
-            <Text
-              style={styles.footerLinks}
-            >
-              {i18n.t("terms")}
-            </Text>
+            <Text style={styles.footerLinks}>{i18n.t("terms")}</Text>
           </TouchableOpacity>
           <Text style={{ fontSize: 16, color: "#404040", marginHorizontal: 5 }}>
             |
           </Text>
           <TouchableOpacity onPress={() => navigation.push("./privacyPolicy")}>
-            <Text
-              style={styles.footerLinks}
-            >
-              {i18n.t("privacyPolicy")}
-            </Text>
+            <Text style={styles.footerLinks}>{i18n.t("privacyPolicy")}</Text>
           </TouchableOpacity>
           <Text style={{ fontSize: 16, color: "#404040", marginHorizontal: 5 }}>
             |
@@ -409,17 +419,13 @@ export default function Index() {
               )
             }
           >
-            <Text
-              style={styles.footerLinks}
-            >
-              {i18n.t("contact")}
-            </Text>
+            <Text style={styles.footerLinks}>{i18n.t("contact")}</Text>
           </TouchableOpacity>
         </View>
         <Text
           style={{
             textAlign: "center",
-            fontSize: isIpad?20:14,
+            fontSize: isIpad ? 20 : 14,
             color: "#404040",
             marginTop: 10,
           }}
@@ -459,11 +465,11 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   languageButtonText: {
-    fontSize: isIpad?24:18,
+    fontSize: isIpad ? 24 : 18,
     color: "#0066CC",
   },
   header: {
-    fontSize: isIpad?24:18,
+    fontSize: isIpad ? 24 : 18,
     textAlign: "center",
     marginBottom: 10,
   },
@@ -473,19 +479,19 @@ const styles = StyleSheet.create({
     borderColor: "gray",
     borderWidth: 1,
     marginBottom: 12,
-    paddingHorizontal: 8 
+    paddingHorizontal: 8,
   },
   input: {
     flex: 1,
-    height: isIpad?50:40,
+    height: isIpad ? 50 : 40,
     marginLeft: 10,
-    fontSize: isIpad?24:18,
+    fontSize: isIpad ? 24 : 18,
   },
   error: {
     color: "red",
     marginBottom: 12,
     textAlign: "center",
-    fontSize: isIpad?22:16,
+    fontSize: isIpad ? 22 : 16,
   },
   radioContainer: {
     flexDirection: "row",
@@ -503,11 +509,11 @@ const styles = StyleSheet.create({
     borderColor: "grey",
   },
   radioText: {
-    fontSize: isIpad?24:18,
+    fontSize: isIpad ? 24 : 18,
     color: "gray",
   },
   radioTextSelected: {
-    fontSize: isIpad?26:20,
+    fontSize: isIpad ? 26 : 20,
     fontWeight: "bold",
   },
   radioCircle: {
@@ -529,12 +535,11 @@ const styles = StyleSheet.create({
     padding: 4,
     width: "95%",
     alignSelf: "center",
-
   },
   authButton: {
     backgroundColor: "#24a0ed",
     padding: 10,
-    width: width*0.5,
+    width: width * 0.5,
     alignSelf: "center",
     borderRadius: 5,
     alignItems: "center",
@@ -546,7 +551,7 @@ const styles = StyleSheet.create({
   authButtonText: {
     color: "white",
     fontFamily: "arial",
-    fontSize: isIpad?24:18,
+    fontSize: isIpad ? 24 : 18,
     fontWeight: "bold",
   },
   loadingContainer: {
@@ -556,7 +561,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    fontSize: isIpad?24:18,
+    fontSize: isIpad ? 24 : 18,
     color: "gray",
   },
   footer: {
@@ -565,11 +570,11 @@ const styles = StyleSheet.create({
   },
   footerText: {
     textAlign: "center",
-    fontSize: isIpad?20:14,
+    fontSize: isIpad ? 20 : 14,
     color: "#404040",
   },
   footerLinks: {
-    fontSize: isIpad?20:14,
+    fontSize: isIpad ? 20 : 14,
     color: "#0066CC",
     marginHorizontal: 5,
     textDecorationLine: "underline",

@@ -19,12 +19,16 @@ import axios from "axios";
 import i18n from "@/assets/languages/i18n";
 import NetInfo from "@react-native-community/netinfo";
 import Fuse from "fuse.js";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { auth } from "@/firebase";
+import { getFirestore, collection, getDocs, updateDoc, addDoc } from "firebase/firestore";
 
 const PickCards = lazy(() => import("../components/topBooks"));
 const BookList = lazy(() => import("../components/bookLists"));
 const isIpad: boolean = Platform.OS == "ios" && Platform.isPad;
 const { width } = Dimensions.get("window");
 const Index = () => {
+  const db = getFirestore();
   const router = useRouter();
   const [showSearch, setShowSearch] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -49,7 +53,69 @@ const Index = () => {
       }
     };
     fetchAllBooks();
+    synceUserBooks();
   }, []);
+
+  const synceUserBooks = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user||networkError) {
+
+        return;
+      }
+      const booksFetchTime = await AsyncStorage.getItem("Books_lastFetchTime_" + user.uid);
+      const currentTime = new Date().getTime();
+      if (!booksFetchTime || currentTime - parseInt(booksFetchTime) >= 24 * 60 * 60 * 1000) {
+      await AsyncStorage.setItem("stored_userId", user.uid);
+      const Books = await AsyncStorage.getItem("Books_" + user.uid);
+      if (Books) {
+        const userBooksCollection = collection(
+          db,
+          "users",
+          user.uid,
+          "user_books"
+        );
+        const booksArray = JSON.parse(Books);
+        if (Array.isArray(booksArray)) {
+          for (const book of booksArray) {
+            const querySnapshot = await getDocs(userBooksCollection);
+            const existingDoc = querySnapshot.docs.find(
+              (doc) => doc.data().bookId === book.bookId
+            );
+
+            if (existingDoc) {
+              await updateDoc(existingDoc.ref, book);
+            } else {
+              await addDoc(userBooksCollection, book);
+            }
+          }
+        } else {
+          console.error("Books data is not an array.");
+        }
+      }
+      if (!Books) {
+        const userBooksCollection = collection(
+          db,
+          "users",
+          user.uid,
+          "user_books"
+        );
+        const querySnapshot = await getDocs(userBooksCollection);
+        const booksArray = querySnapshot.docs.map((doc) => ({
+          ...doc.data(),
+          inLibrary: false,
+        }));
+        await AsyncStorage.setItem(
+          "Books_" + user.uid,
+          JSON.stringify(booksArray)
+        );
+      }
+      await AsyncStorage.setItem("Books_lastFetchTime_" + user.uid, currentTime.toString());
+    }
+    } catch (error) {
+      console.error("Error caching log:", error);
+    }
+  };
 
   const fuse = new Fuse(allBooks, {
     keys: ["title"],
@@ -59,6 +125,11 @@ const Index = () => {
   const results: { bookId: string; title: string }[] = searchTerm
     ? fuse.search(searchTerm).map((result) => result.item)
     : allBooks;
+  const scrollViewRef = React.useRef<ScrollView>(null);
+
+  const handleTopScroll = () => {
+    scrollViewRef?.current?.scrollTo({ y: 0, animated: true });
+  };
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
@@ -124,25 +195,30 @@ const Index = () => {
           translucent
         />
         <View style={[styles.header, {}]}>
-          <View
-            style={[
-              styles.searchContainer,
-              {
-                backgroundColor: showSearch ? "#E5E4E2" : "transparent",
-                borderColor: showSearch ? "gray" : "transparent",
-                borderWidth: showSearch ? 1 : 0,
-              },
-            ]}
-          >
-            {!showSearch && (
+          <View style={[styles.searchContainer, {}]}>
+            <TouchableOpacity
+              onPress={handleTopScroll}
+              style={{ marginLeft: -10 }}
+            >
               <Image
                 source={require("@/assets/images/iconTr.png")}
                 style={styles.appIcon}
               />
-            )}
+            </TouchableOpacity>
             {showSearch && (
               <TextInput
-                style={styles.searchInput}
+                style={[
+                  styles.searchInput,
+                  {
+                    backgroundColor: showSearch ? "white" : "transparent",
+                    borderColor: showSearch ? "#F94929" : "transparent",
+                    borderRadius: 50,
+                    position: "absolute",
+                    width: "80%",
+                    right: 0,
+                    borderWidth: showSearch ? 1 : 0,
+                  },
+                ]}
                 value={searchTerm}
                 onChangeText={setSearchTerm}
               />
@@ -187,7 +263,15 @@ const Index = () => {
       {networkError ? (
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={60} color="red" />
-          <Text style={{ fontSize: 24, color: "black", textAlign: "center", fontWeight: "bold", paddingVertical:20 }}>
+          <Text
+            style={{
+              fontSize: 24,
+              color: "black",
+              textAlign: "center",
+              fontWeight: "bold",
+              paddingVertical: 20,
+            }}
+          >
             You're offline
           </Text>
           <Text style={{ fontSize: 18, color: "black", textAlign: "center" }}>
@@ -196,6 +280,7 @@ const Index = () => {
         </View>
       ) : (
         <ScrollView
+          ref={scrollViewRef}
           style={styles.scrollView}
           onScroll={handleScroll}
           scrollEventThrottle={16}
@@ -223,14 +308,19 @@ const Index = () => {
                 genre="books/genre/novels"
               />
               <BookList
+                title={i18n.t("nonFiction")}
+                description={i18n.t("nonFictionDescription")}
+                genre="books/genre/Non-fiction"
+              />
+                <BookList
                 title={i18n.t("biography")}
                 description={i18n.t("biographyDescription")}
                 genre="books/genre/biography"
               />
-              <BookList
-                title={i18n.t("nonFiction")}
-                description={i18n.t("nonFictionDescription")}
-                genre="books/genre/Non-fiction"
+                <BookList
+                title={i18n.t("science")}
+                description={i18n.t("scienceDescription")}
+                genre="books/genre/science"
               />
             </Suspense>
           </View>
@@ -268,11 +358,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   appIcon: {
-    width: isIpad ? 80 : 70,
-    height: isIpad ? 80 : 70,
+    width: isIpad ? 80 : 65,
+    height: isIpad ? 80 : 65,
   },
   searchInput: {
-    paddingLeft: 24,
+    paddingRight: isIpad?60:50,
+    paddingLeft: isIpad?30:20,
     flex: 1,
     color: "black",
     fontSize: isIpad ? 24 : 18,
@@ -283,8 +374,6 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     padding: isIpad ? 6 : 5,
     margin: 4,
-    borderColor: "#F94929",
-    borderWidth: 1,
     backgroundColor: "#fff",
   },
   searchResults: {

@@ -10,18 +10,11 @@
 
 # To-do
 - update required screen
-- save book reading setting
-- Fix Reader scroll search
 - Help button for each screen
 - Fonts for the reader
 - Author profile and work
 - Suggest similar books
-- Finished books collection
 - User progress
 - User guide and tutorial
 - Reader sections scroll
 - Report and feedback
-
-v 1.1.0
-smart search
-increase decrease save location

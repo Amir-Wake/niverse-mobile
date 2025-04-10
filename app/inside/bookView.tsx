@@ -13,7 +13,7 @@ import Carousel from "react-native-reanimated-carousel";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ScrollView } from "react-native-gesture-handler";
-
+import {BlurView} from "expo-blur";
 const isIpad = Platform.OS == "ios" && Platform.isPad;
 const { width, height } = Dimensions.get("window");
 const BookDetails = lazy(() => import("@/app/components/bookView/bookDetails"));
@@ -21,7 +21,7 @@ const BookDetails = lazy(() => import("@/app/components/bookView/bookDetails"));
 const BookView = () => {
   const router = useRouter();
   const [books, setBooks] = useState<any[]>([]);
-  const { index, apiLink } = useLocalSearchParams<{
+  const { index, apiLink} = useLocalSearchParams<{
     index: string;
     apiLink: string;
   }>();
@@ -29,12 +29,15 @@ const BookView = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
+        const lastFetchTime = await AsyncStorage.getItem(`${apiLink}_time`);
+        const currentTime = new Date().getTime();
+        const isFetchTime = currentTime - parseInt(lastFetchTime || "0") > 24 * 60 * 60 * 1000;
         const cachedData = await AsyncStorage.getItem(apiLink as string);
-        if (cachedData) {
+        if (cachedData && !isFetchTime) {
           setBooks(JSON.parse(cachedData));
+          return;
         }
-        if (!cachedData) {
-          console.log("running")
+        if (!cachedData || isFetchTime) {
           const response = await fetch(apiLink as string);
           const data = await response.json();
           if(!data) return;
@@ -44,6 +47,9 @@ const BookView = () => {
             apiLink as string,
             JSON.stringify(booksData)
           );
+          const currentTime = new Date().getTime();
+          await AsyncStorage.setItem(`${apiLink}_time`, currentTime.toString());
+
         }
       } catch (error) {
         console.error("Error fetching books:", error);
@@ -55,7 +61,7 @@ const BookView = () => {
   const defaultIndex = parseInt(index)||0;
 
   return (
-    <View style={styles.bookSheetContainer}>
+    <BlurView intensity={40} style={styles.bookSheetContainer}>
       {books.length > 0 && (
         <Carousel
           key={defaultIndex}
@@ -110,7 +116,7 @@ const BookView = () => {
           )}
         />
       )}
-    </View>
+    </BlurView>
   );
 };
 
@@ -127,7 +133,7 @@ const styles = StyleSheet.create({
   },
   bookSheetContainer: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    // backgroundColor: "rgba(0, 0, 0, 0.8)",
   },
   closeButton: {
     right: 20,
@@ -136,7 +142,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   closeButtonText: {
-    color: "white",
+    color: "black",
     fontWeight: "bold",
     fontSize: 35,
   },

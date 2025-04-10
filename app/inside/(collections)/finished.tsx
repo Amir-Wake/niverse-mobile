@@ -12,21 +12,22 @@ import {
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}books`;
 import NetInfo from "@react-native-community/netinfo";
+import i18n from "@/assets/languages/i18n";
 
 const { width } = Dimensions.get("window");
 
 const isIpad = Platform.OS === "ios" && Platform.isPad;
-const WantToRead = () => {
+const Finished = () => {
   interface Book {
     title: string;
     coverImageUrl: string;
     bookId: string;
-    wantToRead: boolean;
+    finished: boolean;
   }
   const [books, setBooks] = useState<Book[]>([]);
   const router = useRouter();
-  const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}books`;
   const [networkError, setNetworkError] = useState(false);
 
   useEffect(() => {
@@ -41,23 +42,23 @@ const WantToRead = () => {
   }, []);
 
   useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const storedUserId = await AsyncStorage.getItem("stored_userId");
-        const storedBooks = await AsyncStorage.getItem("Books_" + storedUserId);
-        const parsedStoredBooks = storedBooks ? JSON.parse(storedBooks) : [];
-        const filteredBooks = parsedStoredBooks.filter(
-          (book: Book) =>
-            book.wantToRead === true
-        );
-        setBooks(filteredBooks);
-      } catch (error) {
-        console.error("Error fetching books:", error);
-        Alert.alert("Error", "Failed to fetch books.");
-      }
-    };
     fetchBooks();
   }, []);
+
+  const fetchBooks = async () => {
+    try {
+      const storedUserId = await AsyncStorage.getItem("stored_userId");
+      const storedBooks = await AsyncStorage.getItem("Books_" + storedUserId);
+      const parsedStoredBooks = storedBooks ? JSON.parse(storedBooks) : [];
+      const filteredBooks = parsedStoredBooks.filter(
+        (book: Book) => book.finished === true
+      );
+      setBooks(filteredBooks);
+    } catch (error) {
+      console.error("Error fetching books:", error);
+      Alert.alert("Error", "Failed to fetch books.");
+    }
+  };
 
   const renderItem = ({ item }: { item: Book }) => {
     const newApiLink = `${apiLink}/${item.bookId}`;
@@ -70,6 +71,44 @@ const WantToRead = () => {
               pathname: "../bookView",
               params: { apiLink: newApiLink },
             })
+          }
+          onLongPress={() =>
+            Alert.alert(
+              i18n.t("deleteBook"),
+              i18n.t("confirmCollectionDelete") + ` ${item.title}`,
+              [
+                {
+                  text: i18n.t("cancel"),
+                  style: "cancel",
+                },
+                {
+                  text: i18n.t("ok"),
+                  onPress: async () => {
+                    try {
+                      const storedUserId = await AsyncStorage.getItem(
+                        "stored_userId"
+                      );
+                      const storedBooks = await AsyncStorage.getItem(
+                        "Books_" + storedUserId
+                      );
+                      const parsedStoredBooks = storedBooks
+                        ? JSON.parse(storedBooks)
+                        : [];
+                      const updatedBooks = parsedStoredBooks.map((book: Book) =>
+                        book.bookId === item.bookId ? { ...book, finished: false } : book
+                      );
+                      await AsyncStorage.setItem(
+                        "Books_" + storedUserId,
+                        JSON.stringify(updatedBooks)
+                      );
+                      fetchBooks();
+                    } catch (error) {
+                      console.error("Error removing book:", error);
+                    }
+                  },
+                },
+              ]
+            )
           }
         >
           <Image
@@ -132,4 +171,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default WantToRead;
+export default Finished;
