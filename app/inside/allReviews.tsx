@@ -5,9 +5,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
-  Dimensions,
-  Platform,
+  ScrollView
 } from "react-native";
 import axios from "axios";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
@@ -16,6 +14,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import i18n from "@/assets/languages/i18n";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Device from "expo-device";
 
 interface ReviewProps {
   bookId: string;
@@ -31,8 +30,8 @@ interface Review {
   userImage: string;
 }
 
-const isIpad = Platform.OS == "ios" && Platform.isPad;
-const {width,height} = Dimensions.get('window');
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
+
 const AllReviews: React.FC<ReviewProps> = () => {
   const apiLink = `${process.env.EXPO_PUBLIC_REVIEWS_API}`;
   const [reviews, setReviews] = useState<Review[]>([]);

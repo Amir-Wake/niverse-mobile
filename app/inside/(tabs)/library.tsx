@@ -21,9 +21,11 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { auth } from "@/firebase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { EventRegister } from "react-native-event-listeners";
+import * as Device from "expo-device";
 
 const { width, height } = Dimensions.get("window");
-const isIpad = Platform.OS === "ios" && Platform.isPad;
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
+
 export default function Library() {
   interface Book {
     title: string;

@@ -23,9 +23,11 @@ import i18n from "@/assets/languages/i18n";
 import { useNavigation } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Device from "expo-device";
 
 const { width } = Dimensions.get("window");
-const isIpad = Platform.OS === "ios" && Platform.isPad;
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
+
 export default function UpdateProfile() {
   const [profileImage, setProfileImage] = useState(null);
   const [dob, setDob] = useState("");

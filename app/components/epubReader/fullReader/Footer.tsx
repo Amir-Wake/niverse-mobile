@@ -12,7 +12,7 @@ export default function Footer() {
       style={[
         styles.container,
         {
-          backgroundColor: theme.body.background,
+          backgroundColor: "transparent",
         },
       ]}
     >

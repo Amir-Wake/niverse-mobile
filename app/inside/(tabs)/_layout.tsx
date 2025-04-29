@@ -2,9 +2,9 @@ import { Tabs } from "expo-router";
 import React from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import i18n from "@/assets/languages/i18n";
-import { Platform } from "react-native";
+import * as Device from "expo-device";
 
-const isIpad=Platform.OS=="ios" && Platform.isPad;
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
 export default function TabsLayout() {
   const iconSize = isIpad ? 30 : 24;
   const fontSize = isIpad ? 16 : 12;

@@ -106,7 +106,7 @@ export default function UpdatePassword() {
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center",padding: 10 }}>
         <View style={styles.section}>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>{i18n.t("currentPassword")}</Text>
+            <Text style={[styles.label,{textAlign:i18n.locale=="ku"?'right':'left'}]}>{i18n.t("currentPassword")}</Text>
             <TextInput
               style={styles.input}
               value={currentPassword}
@@ -115,7 +115,7 @@ export default function UpdatePassword() {
             />
           </View>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>{i18n.t("newPass")}</Text>
+            <Text style={[styles.label,{textAlign:i18n.locale=="ku"?'right':'left'}]}>{i18n.t("newPass")}</Text>
             <TextInput
               style={styles.input}
               value={newPassword}
@@ -124,7 +124,7 @@ export default function UpdatePassword() {
             />
           </View>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>{i18n.t("confirmPassword")}</Text>
+            <Text style={[styles.label,{textAlign:i18n.locale=="ku"?'right':'left'}]}>{i18n.t("confirmPassword")}</Text>
             <TextInput
               style={styles.input}
               value={confirmPassword}
@@ -183,7 +183,6 @@ const styles = StyleSheet.create({
     width: width*0.9,
   },
   label: {
-    textAlign: i18n.locale=="ku" ? "right" : "left",
     fontSize: width>720?22:18,
     marginBottom: 5,
   },

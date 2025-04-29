@@ -1,12 +1,13 @@
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import axios from "axios";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import i18n from "@/assets/languages/i18n";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Device from "expo-device";
 
 interface ReviewProps {
   bookId: string;
@@ -22,7 +23,8 @@ interface Review {
   userImage: string;
 }
 
-const isIpad = Platform.OS == "ios" && Platform.isPad;
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
+
 const Review: React.FC<ReviewProps> = ({ bookId }) => {
   const apiLink = `${process.env.EXPO_PUBLIC_REVIEWS_API}`;
   const [reviews, setReviews] = useState<Review[]>([]);

@@ -6,7 +6,6 @@ import {
   Alert,
   Dimensions,
   TouchableOpacity,
-  Platform,
 } from "react-native";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -21,9 +20,11 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ScrollView } from "react-native-gesture-handler";
 import { EventRegister } from "react-native-event-listeners";
+import * as Device from "expo-device";
 
 const { width } = Dimensions.get("window");
-const isIpad = Platform.OS == "ios" && Platform.isPad;
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
+
 interface Book {
   id: string;
   coverImageUrl: string;

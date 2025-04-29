@@ -6,16 +6,17 @@ import {
   Dimensions,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
-  Platform
+  ActivityIndicator
 } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Device from "expo-device";
 
 const { width, height } = Dimensions.get("window");
-const isIpad = Platform.OS == "ios" && Platform.isPad;
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
+
 const TopBooks = () => {
   const scrollViewRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -44,7 +45,6 @@ const TopBooks = () => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [apiLink]);
 

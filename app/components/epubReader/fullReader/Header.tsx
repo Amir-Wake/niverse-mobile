@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Dimensions,
   Text,
-  Platform,
+  I18nManager,
 } from "react-native";
 import { Theme, Themes, useReader } from "@epubjs-react-native/core";
 import { IconButton, MD3Colors } from "react-native-paper";
@@ -15,7 +15,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import stringSimilarity from "string-similarity";
 
 const { width, height } = Dimensions.get("window");
-const isIpad = Platform.OS === "ios" && Platform.isPad;
 
 interface Props {
   currentFontSize: number;
@@ -33,10 +32,10 @@ export default function Header({
   increaseFontSize,
   decreaseFontSize,
   onPressSearch,
-  switchFontFamily,
   onOpenBookmarksList,
   onOpenTocList,
   currentText,
+  switchFontFamily,
 }: Props) {
   const navigation = useRouter();
   const {
@@ -73,6 +72,7 @@ export default function Header({
             reactNativeWebview.postMessage(JSON.stringify({
               type: "onCurrentText",
               text: range.toString(),
+              cfi: cfi
             }));
           }).catch(error => {
             reactNativeWebview.postMessage(JSON.stringify({
@@ -130,7 +130,9 @@ export default function Header({
     if (!location) return;
 
     if (isBookmark) {
-      const bookmark = bookmarks.find((item) => item.location.start.href === location.start.href);
+      const bookmark = bookmarks.find(
+        (item) => item.location.start.href === location.start.href
+      );
       if (bookmark) removeBookmark(bookmark);
     } else {
       addBookmark(location);
@@ -159,7 +161,7 @@ export default function Header({
           onLongPress={onOpenBookmarksList}
         />
         <IconButton
-          icon={showSettings ? "cog" : "cog-outline"}
+          icon={showSettings ? "message-cog" : "message-cog-outline"}
           iconColor={iconCol}
           size={28}
           animated
@@ -247,23 +249,6 @@ export default function Header({
               </TouchableOpacity>
             </View>
             <View style={{ flexDirection: "row" }}>
-              {/* <TouchableOpacity
-              style={[
-                styles.circle,
-                {
-                  backgroundColor: theme.body.background,
-                  borderColor: theme.body.background === "#333" ? MD3Colors.neutral100 : MD3Colors.neutral10,
-                },
-              ]}
-              onPress={switchTheme}
-            >
-              <IconButton
-                icon="theme-light-dark"
-                iconColor={theme === Themes.DARK ? "white" : iconCol}
-                size={26}
-                mode="outlined"
-              />
-            </TouchableOpacity> */}
               <TouchableOpacity
                 style={[
                   styles.circle,

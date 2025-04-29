@@ -14,7 +14,10 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ScrollView } from "react-native-gesture-handler";
 import {BlurView} from "expo-blur";
-const isIpad = Platform.OS == "ios" && Platform.isPad;
+import * as Device from "expo-device";
+
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
+
 const { width, height } = Dimensions.get("window");
 const BookDetails = lazy(() => import("@/app/components/bookView/bookDetails"));
 
@@ -133,7 +136,7 @@ const styles = StyleSheet.create({
   },
   bookSheetContainer: {
     flex: 1,
-    // backgroundColor: "rgba(0, 0, 0, 0.8)",
+    backgroundColor: Platform.OS=='android'? "rgba(0, 0, 0, 0.8)":"transparent",
   },
   closeButton: {
     right: 20,
@@ -142,7 +145,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   closeButtonText: {
-    color: "black",
+    color: Platform.OS=='android'?"white":"black",
     fontWeight: "bold",
     fontSize: 35,
   },

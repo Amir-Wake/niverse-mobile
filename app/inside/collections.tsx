@@ -9,8 +9,10 @@ import React from "react";
 import { useRouter } from "expo-router";
 import { IconButton } from "react-native-paper";
 import i18n from "@/assets/languages/i18n";
+import * as Device from "expo-device";
 
-const isIpad = Platform.OS == "ios" && Platform.isPad;
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
+
 export default function Collections() {
   const router = useRouter();
 

@@ -1,11 +1,12 @@
-import { View, Text, TouchableOpacity, Alert, Dimensions, Platform } from "react-native";
+import { View, Text, TouchableOpacity, Alert, Dimensions } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useNavigation } from "expo-router";
 import { setLanguage, getLanguage } from "@/assets/languages/i18n";
 import i18n from "@/assets/languages/i18n";
 import * as Updates from "expo-updates";
+import * as Device from "expo-device";
 
-const isIpad = Platform.OS === "ios" && Platform.isPad;
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
 const {width} = Dimensions.get("window");
 const Languages = () => {
   const [currentLanguage, setCurrentLanguage] = useState<string>("en");

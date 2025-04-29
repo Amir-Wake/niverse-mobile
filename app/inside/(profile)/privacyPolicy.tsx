@@ -19,9 +19,11 @@ import {
   EmailAuthProvider,
 } from "firebase/auth";
 import i18n from "@/assets/languages/i18n";
+import * as Device from "expo-device";
 
-const isIpad = Platform.OS === "ios" && Platform.isPad;
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
 const { width } = Dimensions.get("window");
+
 const PrivacyPolicy = () => {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);

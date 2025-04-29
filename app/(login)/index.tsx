@@ -34,9 +34,11 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { AntDesign } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Device from "expo-device";
 
 const { width } = Dimensions.get("window");
-const isIpad: boolean = Platform.OS == "ios" && Platform.isPad;
+const isIpad: boolean = Device.deviceType === Device.DeviceType.TABLET;
+
 
 export default function Index() {
   const [email, setEmail] = useState("");

@@ -12,7 +12,6 @@ import {
   Linking,
   ScrollView,
   Dimensions,
-  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { auth } from "@/firebase";
@@ -24,9 +23,10 @@ import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import i18n from "@/assets/languages/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import kurdishDate from "kurdish-date";
+import * as Device from "expo-device";
 
 const { width } = Dimensions.get("window");
-const isIpad = Platform.OS === "ios" && Platform.isPad;
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
 
 export default function Index() {
   const [profileImage, setProfileImage] = useState<{ uri: string } | null>(

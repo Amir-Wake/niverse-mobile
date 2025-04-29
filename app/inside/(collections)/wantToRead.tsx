@@ -7,16 +7,16 @@ import {
   TouchableOpacity,
   Alert,
   Dimensions,
-  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
+import * as Device from "expo-device";
 
 const { width } = Dimensions.get("window");
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
 
-const isIpad = Platform.OS === "ios" && Platform.isPad;
 const WantToRead = () => {
   interface Book {
     title: string;

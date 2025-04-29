@@ -22,10 +22,12 @@ import Fuse from "fuse.js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from "@/firebase";
 import { getFirestore, collection, getDocs, updateDoc, addDoc } from "firebase/firestore";
+import * as Device from "expo-device";
 
 const PickCards = lazy(() => import("../components/topBooks"));
 const BookList = lazy(() => import("../components/bookLists"));
-const isIpad: boolean = Platform.OS == "ios" && Platform.isPad;
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
+
 const { width } = Dimensions.get("window");
 const Index = () => {
   const db = getFirestore();

@@ -13,17 +13,16 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "./Header";
 import Footer from "./Footer";
-import { MAX_FONT_SIZE, MIN_FONT_SIZE, availableFonts } from "./utils";
+import { MAX_FONT_SIZE, MIN_FONT_SIZE } from "./utils";
 import BookmarksList from "../Bookmarks/BookmarksList";
 import TableOfContents from "../TableOfContents/TableOfContents";
 import SearchList from "../Search/SearchList";
-import { createdAt } from "expo-updates";
 
 interface ComponentProps {
   src: string;
   bookId: string;
 }
-const isIpad = Platform.OS === "ios" && Platform.isPad;
+
 function Component({ src, bookId }: ComponentProps) {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -31,23 +30,24 @@ function Component({ src, bookId }: ComponentProps) {
   const {
     theme,
     changeFontSize,
-    changeFontFamily,
     goToLocation,
     currentLocation,
     bookmarks,
     getMeta,
+    injectJavascript,
+    goNext,
   } = useReader();
 
   const bookmarksListRef = useRef<BottomSheetModal>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const searchListRef = useRef<BottomSheetModal>(null);
   const [currentFontSize, setCurrentFontSize] = useState(18);
-  const [currentFontFamily, setCurrentFontFamily] = useState(availableFonts[0]);
   const [defTheme, setDefTheme] = useState(Themes.LIGHT);
   const [bookmarkData, setBookmarkData] = useState<Bookmark[]>([]);
   const [isActive, setIsActive] = useState(false);
   const [locationActive, setLocationActive] = useState(false);
   const [currentText, setCurrentText] = useState("");
+  const [styleIndex, setStyleIndex] = useState(0);
 
   useEffect(() => {
     if (bookmarks && isActive) {
@@ -65,9 +65,13 @@ function Component({ src, bookId }: ComponentProps) {
   useEffect(() => {
     const getStoredTheme = async () => {
       try {
-        const storedBookmarks = await AsyncStorage.getItem(`bookmarks_${bookId}`);
+        const storedBookmarks = await AsyncStorage.getItem(
+          `bookmarks_${bookId}`
+        );
         const storedTheme = await AsyncStorage.getItem("currentTheme");
-        const storedFontSize = await AsyncStorage.getItem("currentFontSize_"+bookId);
+        const storedFontSize = await AsyncStorage.getItem(
+          "currentFontSize_" + bookId
+        );
         if (storedTheme) {
           setDefTheme(JSON.parse(storedTheme));
         }
@@ -101,7 +105,10 @@ function Component({ src, bookId }: ComponentProps) {
       setCurrentFontSize(currentFontSize + 1);
       changeFontSize(`${currentFontSize + 1}px`);
       tempCurrentLocation && goToLocation(tempCurrentLocation);
-      storePreference("currentFontSize_"+bookId, JSON.stringify(currentFontSize + 1));
+      storePreference(
+        "currentFontSize_" + bookId,
+        JSON.stringify(currentFontSize + 1)
+      );
     }
   };
 
@@ -111,22 +118,44 @@ function Component({ src, bookId }: ComponentProps) {
       setCurrentFontSize(currentFontSize - 1);
       changeFontSize(`${currentFontSize - 1}px`);
       tempCurrentLocation && goToLocation(tempCurrentLocation);
-      storePreference("currentFontSize_"+bookId, JSON.stringify(currentFontSize - 1));
+      storePreference(
+        "currentFontSize_" + bookId,
+        JSON.stringify(currentFontSize - 1)
+      );
     }
   };
 
   const switchFontFamily = () => {
-    const index = availableFonts.indexOf(currentFontFamily);
-    const nextFontFamily = availableFonts[(index + 1) % availableFonts.length];
-    setCurrentFontFamily(nextFontFamily);
-    changeFontFamily(nextFontFamily);
+    setStyleIndex((prev) => (prev + 1) % 3);
+    if (styleIndex === 0) {
+      boldStyle();
+      AsyncStorage.setItem("fontFamily_" + bookId, "boldStyle");
+    } else if (styleIndex === 1) {
+      justifyStyle();
+      AsyncStorage.setItem("fontFamily_" + bookId, "justifyStyle");
+    } else if (styleIndex === 2) {
+      spacedStyle();
+      AsyncStorage.setItem("fontFamily_" + bookId, "spacedStyle");
+    }
   };
 
   const handleLocationChange = async () => {
+    let locationcfi = "";
+    try {
+      if (!currentText) return;
+      const parsed =
+        typeof currentText === "string" ? JSON.parse(currentText) : currentText;
+      if (parsed.type === "onCurrentText") {
+        locationcfi = parsed.cfi;
+      }
+    } catch (error) {
+      console.error("Failed to parse currentText:", error);
+      return;
+    }
     try {
       const locationData = JSON.stringify({
         src,
-        cfi: currentLocation?.start.cfi,
+        cfi: locationcfi,
       });
       await AsyncStorage.setItem(`location_${bookId}`, locationData);
     } catch (error) {
@@ -144,30 +173,40 @@ function Component({ src, bookId }: ComponentProps) {
       }
     }
   };
-
-  const handleLocationReady = async () => {
-    if (getMeta().language == "ku" || "ar") {
-      I18nManager.isRTL = true;
-    }
-    if (getMeta().language == "en") {
-      I18nManager.isRTL = false;
-    }
-    try {
-      const storedLocation = await AsyncStorage.getItem(`location_${bookId}`);
-      if (storedLocation) {
-        const location = JSON.parse(storedLocation);
-        goToLocation(location.cfi);
-        setIsActive(true);
-        changeFontSize(`${currentFontSize}px`);
+  const changeFont = async () => {
+    const storedFontFamily = await AsyncStorage.getItem(`fontFamily_${bookId}`);
+    if (storedFontFamily) {
+      if (storedFontFamily === "boldStyle") {
+        boldStyle();
+      } else if (storedFontFamily === "justifyStyle") {
+        justifyStyle();
+      } else if (storedFontFamily === "spacedStyle") {
+        spacedStyle();
       }
-    } catch (error) {
-      console.error("Failed to retrieve stored location", error);
+      const storedLocation = await AsyncStorage.getItem(`location_${bookId}`);
+      let location;
+      if (storedLocation) {
+        location = JSON.parse(storedLocation);
+      }
+      goToLocation(location.cfi);
     }
   };
+
+  const handleLocationReady = async () => {
+    const storedLocation = await AsyncStorage.getItem(`location_${bookId}`);
+    let location;
+    if (storedLocation) {
+      location = JSON.parse(storedLocation);
+    }
+    goToLocation(location.cfi);
+    goNext();
+    changeFont();
+  };
+
   const handleOnFinish = async () => {
     try {
       const storedUserId = await AsyncStorage.getItem("stored_userId");
-      const Books = await AsyncStorage.getItem("Books_"+storedUserId);
+      const Books = await AsyncStorage.getItem("Books_" + storedUserId);
       const parsedBooks = JSON.parse(Books || "[]");
       const book = parsedBooks.find(
         (book: { bookId: string }) => book.bookId === bookId
@@ -187,7 +226,61 @@ function Component({ src, bookId }: ComponentProps) {
       console.error("Failed to update finished books list", error);
     }
   };
+  const boldStyle = () => {
+    injectJavascript(`
+      rendition.getContents().forEach(contents => {
+        contents.document.querySelectorAll('p').forEach(p => {
+          p.style.fontWeight = 'bold';
+          p.style.lineHeight = '1.4';
+      const currentAlign = window.getComputedStyle(p).textAlign;
+      if (currentAlign !== 'center') {
+        p.style.textAlign = 'inherit'; // Reset alignment if not center
+      }        });
+      });
+    `);
+    AsyncStorage.setItem("fontFamily_" + bookId, "boldStyle");
+  };
+  const justifyStyle = () => {
+    injectJavascript(`
+      rendition.getContents().forEach(contents => {
+        contents.document.querySelectorAll('p').forEach(p => {
+          p.style.fontWeight = 'normal';
+          p.style.lineHeight = '1.4';
+      const currentAlign = window.getComputedStyle(p).textAlign;
+      if (currentAlign !== 'center') {
+        p.style.textAlign = 'justify'; // Apply justify alignment if not center
+      }        });
+      });
+    `);
+    AsyncStorage.setItem("fontFamily_" + bookId, "justifyStyle");
+  };
 
+  const spacedStyle = () => {
+    injectJavascript(`
+      rendition.getContents().forEach(contents => {
+        contents.document.querySelectorAll('p').forEach(p => {
+          p.style.fontWeight = 'normal';
+          p.style.lineHeight = '1.6';
+      const currentAlign = window.getComputedStyle(p).textAlign;
+      if (currentAlign !== 'center') {
+        p.style.textAlign = 'inherit'; // Reset alignment if not center
+      }        });
+      });
+    `);
+    AsyncStorage.setItem("fontFamily_" + bookId, "spacedStyle");
+  };
+
+  const handleOnReady = () => {
+    if (getMeta().language == "ku" || "ar") {
+      I18nManager.isRTL = true;
+    }
+    if (getMeta().language == "en") {
+      I18nManager.isRTL = false;
+    }
+    setIsActive(true);
+    changeFontSize(`${currentFontSize}px`);
+    changeFont();
+  };
   return (
     <View
       style={{
@@ -210,16 +303,9 @@ function Component({ src, bookId }: ComponentProps) {
         <Reader
           src={src}
           width={width}
-          height={
-            Platform.OS == "ios"
-              ? isIpad
-                ? height * 0.9
-                : height * 0.87
-              : height * 0.85
-          }
           flow={"paginated"}
           spread="none"
-          enableSelection={true}
+          enableSelection={false}
           fileSystem={useFileSystem}
           defaultTheme={defTheme}
           waitForLocationsReady
@@ -233,6 +319,7 @@ function Component({ src, bookId }: ComponentProps) {
             setCurrentText(message);
           }}
           injectedJavascript={'document.body.style.overflow = "hidden";'}
+          onReady={handleOnReady}
         />
         <SearchList
           ref={searchListRef}
@@ -251,7 +338,7 @@ function Component({ src, bookId }: ComponentProps) {
           onClose={() => bottomSheetRef.current?.dismiss()}
         />
       </View>
-      <View style={{ position: "absolute", bottom: 10, width: width }}>
+      <View style={{ bottom: 10, width: width }}>
         <Footer />
       </View>
     </View>

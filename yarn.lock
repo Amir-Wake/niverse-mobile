@@ -3998,6 +3998,13 @@ expo-dev-menu@6.0.19:
   dependencies:
     expo-dev-menu-interface "1.9.3"
 
+expo-device@^7.0.3:
+  version "7.0.3"
+  resolved "https://registry.npmjs.org/expo-device/-/expo-device-7.0.3.tgz"
+  integrity sha512-uNGhDYmpDj/3GySWZmRiYSt52Phdim11p0pXfgpCq/nMks0+UPZwl3D0vin5N8/gpVe5yzb13GYuFxiVoDyniw==
+  dependencies:
+    ua-parser-js "^0.7.33"
+
 expo-eas-client@~0.13.2:
   version "0.13.2"
   resolved "https://registry.npmjs.org/expo-eas-client/-/expo-eas-client-0.13.2.tgz"
@@ -4011,9 +4018,9 @@ expo-file-system@~18.0.4, expo-file-system@~18.0.6:
     web-streams-polyfill "^3.3.2"
 
 expo-font@~13.0.2:
-  version "13.0.2"
-  resolved "https://registry.npmjs.org/expo-font/-/expo-font-13.0.2.tgz"
-  integrity sha512-H9FaXM7ZW5+EfV38w80BgJG3H17kB7CuVXwHoiszIYyoPfWz9bWesFe4QwNZjTq3pzKes28sSd8irFuflIrSIA==
+  version "13.0.4"
+  resolved "https://registry.npmjs.org/expo-font/-/expo-font-13.0.4.tgz"
+  integrity sha512-eAP5hyBgC8gafFtprsz0HMaB795qZfgJWqTmU0NfbSin1wUuVySFMEPMOrTkTgmazU73v4Cb4x7p86jY1XXYUw==
   dependencies:
     fontfaceobserver "^2.1.0"
 
@@ -8035,6 +8042,11 @@ typescript@~5.3.3:
   version "5.3.3"
   resolved "https://registry.npmjs.org/typescript/-/typescript-5.3.3.tgz"
   integrity sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==
+
+ua-parser-js@^0.7.33:
+  version "0.7.40"
+  resolved "https://registry.npmjs.org/ua-parser-js/-/ua-parser-js-0.7.40.tgz"
+  integrity sha512-us1E3K+3jJppDBa3Tl0L3MOJiGhe1C6P0+nIvQAFYbxlMAx0h81eOwLmU57xgqToduDDPx3y5QsdjPfDu+FgOQ==
 
 ua-parser-js@^1.0.35:
   version "1.0.39"

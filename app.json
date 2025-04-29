@@ -73,7 +73,8 @@
           "photosPermission": "Niverse requests access to your Photo Library to allow you to upload a profile picture, which will be used to personalise your account."
         }
       ],
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
