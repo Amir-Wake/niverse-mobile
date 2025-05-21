@@ -117,7 +117,6 @@ const Downloaded = () => {
             style={styles.bookImage}
             cachePolicy={"memory-disk"}
           />
-          <Text style={styles.bookTitle}>{item.title}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -158,17 +157,22 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "flex-start",
     padding: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 2,
+      height: 2,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   bookImage: {
     width: isIpad ? width / 3 - 60 : width / 2 - 40,
     height: isIpad ? (width / 3 - 60) * 1.5 : (width / 2 - 40) * 1.5,
     resizeMode: "cover",
-  },
-  bookTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-    width: isIpad ? width / 3 - 60 : width / 2 - 40,
+    borderRadius:10,
+    borderColor:"grey",
+    borderWidth:1,
   },
 });
 

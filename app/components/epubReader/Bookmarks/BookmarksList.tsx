@@ -30,7 +30,7 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
     theme,
   } = useReader();
 
-  const snapPoints = React.useMemo(() => ["60%", "95%"], []);
+  const snapPoints = React.useMemo(() => [ "95%"], []);
   const [note, setNote] = useState("");
   const [currentBookmark, setCurrentBookmark] = useState<Bookmark | null>(null);
 
@@ -65,9 +65,12 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
     <BottomSheetModalProvider>
       <BottomSheetModal
         ref={ref}
-        index={2}
+        index={1}
         enablePanDownToClose
         android_keyboardInputMode="adjustResize"
+        onChange={(index) => {
+          if (index === 0) onClose();
+        }}
         handleIndicatorStyle={{
           backgroundColor: contrast[theme.body.background],
         }}

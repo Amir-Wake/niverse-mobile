@@ -42,6 +42,7 @@ interface Book {
   averageRating: number;
   ageRate: number;
   coverDominantColor: string;
+  version: number;
 }
 
 const BookDetails = ({ book }: { book: Book }) => {
@@ -64,21 +65,18 @@ const BookDetails = ({ book }: { book: Book }) => {
   }, [book.title, book.id, book.language]);
 
   const setTextDirection = () => {
-    setIsRTL(book.language === "کوردی" || book.language === "Arabic");
+    setIsRTL(book.language === "کوردی" || book.language === "عربى");
   };
 
   const checkIfAddedToCollection = async () => {
     const storedUserId = await AsyncStorage.getItem("stored_userId");
-    const storedBooks = await AsyncStorage.getItem("Books_" + storedUserId);
+    const storedBooks = await AsyncStorage.getItem("WantToReadBooks_" + storedUserId);
     const BooksList = JSON.parse(storedBooks || "[]");
     const bookIndex = BooksList.findIndex(
       (sbook: any) => sbook.bookId === book.id
     );
     if (bookIndex !== -1) {
-      const bookData = BooksList[bookIndex];
-      if (bookData.wantToRead) {
-        setIsAddedToCollection(bookData.wantToRead);
-      }
+      setIsAddedToCollection(true);
     }
   };
 
@@ -181,6 +179,7 @@ const BookDetails = ({ book }: { book: Book }) => {
         inLibrary: true,
         finished: false,
         wantToRead: false,
+        version: book.version||0,
       });
     } else {
       BooksList[bookIndex] = {
@@ -189,6 +188,7 @@ const BookDetails = ({ book }: { book: Book }) => {
         inLibrary: true,
         title: book.title,
         coverImageUrl: book.coverImageUrl,
+        version: book.version || 0,
       };
     }
     await AsyncStorage.setItem(`Books_${user.uid}`, JSON.stringify(BooksList));
@@ -198,20 +198,18 @@ const BookDetails = ({ book }: { book: Book }) => {
     const user = auth.currentUser;
     setIsLoading(true);
     try {
-      const storedBooks = await AsyncStorage.getItem(`Books_${user?.uid}`);
+      const storedBooks = await AsyncStorage.getItem(`WantToReadBooks_${user?.uid}`);
       const BooksList = JSON.parse(storedBooks || "[]");
       const bookIndex = BooksList.findIndex(
         (item: any) => item.bookId === book.id
       );
       if (bookIndex !== -1) {
-        const updatedBooksList = [...BooksList];
-        updatedBooksList[bookIndex] = {
-          ...updatedBooksList[bookIndex],
-          wantToRead: !isAddedToCollection,
-        };
-        setIsAddedToCollection(!isAddedToCollection);
+        const updatedBooksList = BooksList.filter(
+          (item: any) => item.bookId !== book.id
+        );
+        setIsAddedToCollection(false);
         await AsyncStorage.setItem(
-          `Books_${user?.uid}`,
+          `WantToReadBooks_${user?.uid}`,
           JSON.stringify(updatedBooksList)
         );
       } else {
@@ -221,13 +219,9 @@ const BookDetails = ({ book }: { book: Book }) => {
           title: book.title,
           coverImageUrl: book.coverImageUrl,
           addedAt: new Date().toISOString(),
-          downloaded: false,
-          inLibrary: false,
-          finished: false,
-          wantToRead: true,
         };
         await AsyncStorage.setItem(
-          `Books_${user?.uid}`,
+          `WantToReadBooks_${user?.uid}`,
           JSON.stringify([...BooksList, newBook])
         );
         setIsAddedToCollection(true);

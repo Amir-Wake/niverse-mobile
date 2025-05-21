@@ -21,8 +21,16 @@ import NetInfo from "@react-native-community/netinfo";
 import Fuse from "fuse.js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from "@/firebase";
-import { getFirestore, collection, getDocs, updateDoc, addDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  updateDoc,
+  addDoc,
+  deleteDoc,
+} from "firebase/firestore";
 import * as Device from "expo-device";
+import MiniPlayer from "../components/miniPlayer";
 
 const PickCards = lazy(() => import("../components/topBooks"));
 const BookList = lazy(() => import("../components/bookLists"));
@@ -61,61 +69,104 @@ const Index = () => {
   const synceUserBooks = async () => {
     try {
       const user = auth.currentUser;
-      if (!user||networkError) {
+      if (!user || networkError) return;
 
-        return;
-      }
-      const booksFetchTime = await AsyncStorage.getItem("Books_lastFetchTime_" + user.uid);
-      const currentTime = new Date().getTime();
+      const booksFetchTime = await AsyncStorage.getItem(
+        `Books_lastFetchTime_${user.uid}`
+      );
+      const currentTime = Date.now();
+
       if (!booksFetchTime || currentTime - parseInt(booksFetchTime) >= 24 * 60 * 60 * 1000) {
-      await AsyncStorage.setItem("stored_userId", user.uid);
-      const Books = await AsyncStorage.getItem("Books_" + user.uid);
-      if (Books) {
+        await AsyncStorage.setItem("stored_userId", user.uid);
+
+        const Books = await AsyncStorage.getItem(`Books_${user.uid}`);
+        const wantToReadBooks = await AsyncStorage.getItem(
+          `WantToReadBooks_${user.uid}`
+        );
+
         const userBooksCollection = collection(
           db,
           "users",
           user.uid,
           "user_books"
         );
-        const booksArray = JSON.parse(Books);
-        if (Array.isArray(booksArray)) {
-          for (const book of booksArray) {
-            const querySnapshot = await getDocs(userBooksCollection);
+        const wantToReadCollection = collection(
+          db,
+          "users",
+          user.uid,
+          "want_to_read_books"
+        );
+
+        if (Books) {
+          const booksArray = JSON.parse(Books);
+          if (Array.isArray(booksArray)) {
+            for (const book of booksArray) {
+              const querySnapshot = await getDocs(userBooksCollection);
+              const existingDoc = querySnapshot.docs.find(
+                (doc) => doc.data().bookId === book.bookId
+              );
+
+              if (!existingDoc) {
+                await addDoc(userBooksCollection, book);
+              }
+            }
+          } else {
+            console.error("Books data is not an array.");
+          }
+        } else {
+          const querySnapshot = await getDocs(userBooksCollection);
+          const booksArray = querySnapshot.docs.map((doc) => ({
+            ...doc.data(),
+            inLibrary: false,
+          }));
+          await AsyncStorage.setItem(
+            `Books_${user.uid}`,
+            JSON.stringify(booksArray)
+          );
+        }
+
+        if (wantToReadBooks) {
+          const wantToReadArray = JSON.parse(wantToReadBooks);
+          const querySnapshot = await getDocs(wantToReadCollection);
+
+          for (const book of wantToReadArray) {
             const existingDoc = querySnapshot.docs.find(
               (doc) => doc.data().bookId === book.bookId
             );
 
-            if (existingDoc) {
-              await updateDoc(existingDoc.ref, book);
-            } else {
-              await addDoc(userBooksCollection, book);
+            if (!existingDoc) {
+              await addDoc(wantToReadCollection, book);
+            }
+          }
+
+          for (const doc of querySnapshot.docs) {
+            const firestoreBook = doc.data();
+            const existsInLocal = wantToReadArray.some(
+              (book: { bookId: string }) => book.bookId === firestoreBook.bookId
+            );
+
+            if (!existsInLocal) {
+              await deleteDoc(doc.ref);
             }
           }
         } else {
-          console.error("Books data is not an array.");
+          const querySnapshot = await getDocs(wantToReadCollection);
+          const wantToReadArray = querySnapshot.docs.map((doc) => ({
+            ...doc.data(),
+          }));
+          await AsyncStorage.setItem(
+            `WantToReadBooks_${user.uid}`,
+            JSON.stringify(wantToReadArray)
+          );
         }
-      }
-      if (!Books) {
-        const userBooksCollection = collection(
-          db,
-          "users",
-          user.uid,
-          "user_books"
-        );
-        const querySnapshot = await getDocs(userBooksCollection);
-        const booksArray = querySnapshot.docs.map((doc) => ({
-          ...doc.data(),
-          inLibrary: false,
-        }));
+
         await AsyncStorage.setItem(
-          "Books_" + user.uid,
-          JSON.stringify(booksArray)
+          `Books_lastFetchTime_${user.uid}`,
+          currentTime.toString()
         );
       }
-      await AsyncStorage.setItem("Books_lastFetchTime_" + user.uid, currentTime.toString());
-    }
     } catch (error) {
-      console.error("Error caching log:", error);
+      console.error("Error syncing user books:", error);
     }
   };
 
@@ -294,6 +345,19 @@ const Index = () => {
                 <PickCards />
               </Suspense>
             </View>
+            <View
+              style={{
+                width: "100%",
+                backgroundColor: "#F8F8FF",
+                paddingHorizontal: 5,
+                justifyContent: "center",
+                alignItems: "flex-start",
+              }}
+            >
+              <Suspense fallback={<View />}>
+                <MiniPlayer />
+              </Suspense>
+            </View>
             <View>
               <Suspense fallback={<View />}>
                 <BookList
@@ -314,12 +378,12 @@ const Index = () => {
                 description={i18n.t("nonFictionDescription")}
                 genre="books/genre/Non-fiction"
               />
-                <BookList
+              <BookList
                 title={i18n.t("biography")}
                 description={i18n.t("biographyDescription")}
-                genre="books/genre/biography"
+                genre="books/genre/memoir"
               />
-                <BookList
+              <BookList
                 title={i18n.t("science")}
                 description={i18n.t("scienceDescription")}
                 genre="books/genre/science"
@@ -364,8 +428,8 @@ const styles = StyleSheet.create({
     height: isIpad ? 80 : 65,
   },
   searchInput: {
-    paddingRight: isIpad?60:50,
-    paddingLeft: isIpad?30:20,
+    paddingRight: isIpad ? 60 : 50,
+    paddingLeft: isIpad ? 30 : 20,
     flex: 1,
     color: "black",
     fontSize: isIpad ? 24 : 18,

@@ -15,6 +15,7 @@ export default function HomeLayout() {
       <Stack.Screen name="(collections)" options={{ title: i18n.t("collections"), headerShown:true }}/>
       <Stack.Screen name="collections" options={{ title: i18n.t("collections"), headerShown:true }}/>
       <Stack.Screen name="(profile)" options={{ title: "", headerShown:true }}/>
+      <Stack.Screen name="translate" options={{ title: "Translate beta", headerShown:true, presentation:"modal" }}/>
     </Stack>
   );
 }

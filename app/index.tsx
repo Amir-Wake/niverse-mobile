@@ -25,7 +25,7 @@ export default function App() {
   const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}topBooks`;
   const apiLink1 = `${process.env.EXPO_PUBLIC_BOOKS_API}newest`;
   const apiLink2 = `${process.env.EXPO_PUBLIC_BOOKS_API}books/genre/novels`;
-  const apiLink3 = `${process.env.EXPO_PUBLIC_BOOKS_API}books/genre/biography`;
+  const apiLink3 = `${process.env.EXPO_PUBLIC_BOOKS_API}books/genre/memoir`;
   const apiLink4 = `${process.env.EXPO_PUBLIC_BOOKS_API}books/genre/Non-fiction`;
   const apiLink5 = `${process.env.EXPO_PUBLIC_BOOKS_API}books/genre/science`;
 
@@ -134,14 +134,8 @@ export default function App() {
           Update your application to the latest version
         </Text>
         <Text style={{ fontSize: 24, textAlign: "left", marginBottom: 40, width: "90%" }}>
-          A new version of the Nverse is available in the App Store. Please update your app to continue using Nverse.
+          A new version of the Nverse is available. Please update your app to continue using Nverse.
         </Text>
-        {/* <Text
-          style={{ fontSize: 24, color: "white", backgroundColor: "#F93929", padding: 10, paddingHorizontal:20, borderRadius: 20 }}
-          onPress={() => Linking.openURL("https://apps.apple.com/")}
-        >
-          Update Now
-        </Text> */}
       </View>
     );
   }

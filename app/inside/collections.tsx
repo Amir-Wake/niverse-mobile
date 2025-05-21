@@ -32,6 +32,11 @@ export default function Collections() {
       route: "./downloaded",
       icon: "download",
     },
+    {
+      name: i18n.t("update"),
+      route: "./update",
+      icon: "update",
+    },
   ];
 
   return (

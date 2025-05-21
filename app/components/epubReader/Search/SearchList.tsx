@@ -47,7 +47,7 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
   const [data, setData] = useState<SearchResultType[]>(searchResults.results);
   const [page, setPage] = useState(1);
 
-  const snapPoints = React.useMemo(() => ["60%", "95%"], []);
+  const snapPoints = React.useMemo(() => ["95%"], []);
 
   const renderItem = React.useCallback(
     ({ item }: { item: SearchResultType }) => (
@@ -299,10 +299,13 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
     <BottomSheetModalProvider>
       <BottomSheetModal
         ref={ref}
-        index={2}
+        index={1}
         snapPoints={snapPoints}
         enablePanDownToClose
         style={styles.container}
+        onChange={(index) => {
+          if (index === 0) onClose(); 
+        }}
         handleIndicatorStyle={{
           backgroundColor: contrast[theme.body.background],
         }}

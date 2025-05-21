@@ -164,6 +164,16 @@ export default function Library() {
       const updatedBooksList = BooksList.map((book: any) =>
         book.bookId === folder ? { ...book, inLibrary: false } : book
       );
+      const lastOpenedBook = await AsyncStorage.getItem(
+        `lastOpenedBook_${storedUserId}`
+      );
+      if (lastOpenedBook) {
+        const parsedLastOpenedBook = JSON.parse(lastOpenedBook);
+        if (parsedLastOpenedBook.bookId === folder) {
+          await AsyncStorage.removeItem(`lastOpenedBook_${storedUserId}`);
+        }
+      }
+      EventRegister.emit("lastOpenedBookChanged");
       await AsyncStorage.setItem(
         "Books_" + storedUserId,
         JSON.stringify(updatedBooksList)
@@ -199,47 +209,50 @@ export default function Library() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          value={search}
-          onChangeText={updateSearch}
-          onFocus={() => setIsSearching(true)}
-        />
-        <TouchableOpacity
-          onPress={() => setIsSearching(!isSearching)}
-          style={styles.searchButton}
-        >
-          <Ionicons name="search" size={30} color="black" />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.collectionContainer}>
-        <TouchableOpacity
-          style={[
-            styles.collection,
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            value={search}
+            onChangeText={updateSearch}
+            onFocus={() => setIsSearching(true)}
+          />
+          <TouchableOpacity
+            onPress={() => setIsSearching(!isSearching)}
+            style={styles.searchButton}
+          >
+            <Ionicons name="search" size={30} color="black" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.collectionContainer}>
+          <TouchableOpacity
+            style={[
+              styles.collection,
+              { direction: i18n.locale == "ku" ? "rtl" : "ltr" },
+            ]}
+            onPress={() => router.navigate("../collections")}
+          >
+            <IconButton icon={"reorder-horizontal"} size={isIpad ? 34 : 26} />
+            <Text style={styles.collectionText}>{i18n.t("collections")}</Text>
+          </TouchableOpacity>
+        </View>
+
+        <FlatList
+          data={books}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => index.toString()}
+          numColumns={isIpad ? 3 : 2}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={[
+            styles.container,
             { direction: i18n.locale == "ku" ? "rtl" : "ltr" },
           ]}
-          onPress={() => router.navigate("../collections")}
-        >
-          <IconButton icon={"reorder-horizontal"} size={isIpad ? 34 : 26} />
-          <Text style={styles.collectionText}>{i18n.t("collections")}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <FlatList
-        data={books}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
-        numColumns={isIpad ? 3 : 2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={[
-          styles.container,
-          { direction: i18n.locale == "ku" ? "rtl" : "ltr" },
-        ]}
-        onScrollBeginDrag={Keyboard.dismiss}
-      />
-    </SafeAreaView>
+          onScrollBeginDrag={Keyboard.dismiss}
+        />
+      </SafeAreaView>
+      <TouchableOpacity></TouchableOpacity>
+    </View>
   );
 }
 

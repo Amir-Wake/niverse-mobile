@@ -32,7 +32,7 @@ const TableOfContents = forwardRef<Ref, Props>(
     const [searchTerm, setSearchTerm] = useState("");
     const [data, setData] = useState<Toc>(toc);
 
-    const snapPoints = React.useMemo(() => ["60%", "95%"], []);
+    const snapPoints = React.useMemo(() => ["95%"], []);
 
     const renderItem = React.useCallback(
       ({ item }: { item: SectionType }) => (
@@ -86,33 +86,6 @@ const TableOfContents = forwardRef<Ref, Props>(
             >
               {i18n.t("toc")}
             </Text>
-            {/* <View style={styles.searchSection}>
-            <BottomSheetTextInput
-              inputMode="search"
-              returnKeyType="search"
-              returnKeyLabel="Search"
-              autoCorrect={false}
-              autoCapitalize="none"
-              defaultValue={searchTerm}
-              style={styles.input}
-              onSubmitEditing={(event) => {
-                event.persist();
-
-                setSearchTerm(event.nativeEvent?.text);
-                setData(
-                  toc.filter((elem) =>
-                    new RegExp(event.nativeEvent?.text, "gi").test(elem?.label)
-                  )
-                );
-              }}
-            />
-                      <Ionicons
-              name="search"
-              size={20}
-              style={{padding: 10}}
-              color="black"
-            />
-          </View> */}
           </View>
         </View>
       ),
@@ -126,10 +99,13 @@ const TableOfContents = forwardRef<Ref, Props>(
       <BottomSheetModalProvider>
         <BottomSheetModal
           ref={ref}
-          index={2}
+          index={1}
           snapPoints={snapPoints}
           enablePanDownToClose
           android_keyboardInputMode="adjustResize"
+          onChange={(index) => {
+            if (index === 0) onClose();
+          }}
           handleIndicatorStyle={{
             backgroundColor: contrast[theme.body.background],
           }}

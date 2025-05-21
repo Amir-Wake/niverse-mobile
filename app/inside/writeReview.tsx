@@ -23,7 +23,6 @@ interface ReviewData {
     userId: string;
 }
 
-const {width,height} = Dimensions.get('window');
 const WriteReview: React.FC = () => {
     const apiLink = `${process.env.EXPO_PUBLIC_REVIEWS_API}`;
     const [rating, setRating] = useState(0);

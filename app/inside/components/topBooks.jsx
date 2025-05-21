@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   },
   containerCustomStyle: {
     width: width,
-    height: height * 0.55,
+    height: height * 0.50,
   },
   loadingCustomStyle: {
     width: width,
@@ -179,14 +179,14 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   bookCardContent: {
-    marginTop: isIpad? height * 0.05 : height * 0.1,
+    marginTop: isIpad? height * 0.04 : height * 0.08,
     width: width,
     alignItems: "center",
     justifyContent: "center",
   },
   bookImage: {
-    width: isIpad ? width * 0.4 : width * 0.57,
-    height: isIpad ? (width * 0.4)*1.5 : (width * 0.57)*1.5,
+    width: isIpad ? width * 0.35 : width * 0.50,
+    height: isIpad ? (width * 0.35)*1.5 : (width * 0.50)*1.5,
     borderRadius: 15,
     shadowColor: "black",
   },

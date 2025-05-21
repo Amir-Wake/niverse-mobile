@@ -4,6 +4,10 @@ import { I18nManager } from "react-native";
 
 const i18n = new I18n({
   en: {
+    continue: "Continue",
+    translate: "Translate",
+    annotations: "Annotations",
+    addNote: "Add Note",
     confirmCollectionDelete:"Are you sure you want to delete this book from the collection?",
     update: "Update",
     science: "Science",
@@ -144,6 +148,10 @@ const i18n = new I18n({
     termsText11: "By using our app, you agree to follow these terms and conditions. We’re committed to creating a positive experience for all users, and we appreciate your cooperation.",
   },
   ku: {
+    continue: "بەردەوامبوون",
+    translate: "وەرگێران",
+    addNote: "تێبینی زیادکردن",
+    annotations: "تێبینیەکان",
     confirmCollectionDelete:"دڵنیایت کە دەتەوێت ئەم کتێبە لە کۆکراوەکانت بسڕیتەوە؟",
     update: "نوێکردنەوە",
     science: "زانستی",
@@ -174,8 +182,8 @@ const i18n = new I18n({
     newDescription: "کتێبە نوێیەکان.",
     novels: "ڕۆمانەکان",
     novelsDescription: "پێشنیارەکان بەپێی ڕۆمان.",
-    biography: "یادنامە",
-    biographyDescription: "پێشنیارەکان بەپێی یادنامە.",
+    biography: "یاداشت",
+    biographyDescription: "پێشنیارەکان بەپێی یاداشت.",
     nonFiction: "نا خەیاڵی",
     nonFictionDescription: "پێشنیارەکان بەپێی نا خەیاڵی.",
     welcome: "بەخێربێیت",

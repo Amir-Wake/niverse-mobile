@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Dimensions,
   Text,
-  I18nManager,
 } from "react-native";
 import { Theme, Themes, useReader } from "@epubjs-react-native/core";
 import { IconButton, MD3Colors } from "react-native-paper";
@@ -25,6 +24,8 @@ interface Props {
   onOpenBookmarksList: () => void;
   onOpenTocList: () => void;
   currentText: string;
+  onOpenAnnotationsList: () => void;
+  formatClear: () => void;
 }
 
 export default function Header({
@@ -36,6 +37,8 @@ export default function Header({
   onOpenTocList,
   currentText,
   switchFontFamily,
+  onOpenAnnotationsList,
+  formatClear,
 }: Props) {
   const navigation = useRouter();
   const {
@@ -187,19 +190,46 @@ export default function Header({
                         : MD3Colors.neutral10,
                   },
                 ]}
-                onPress={() => {
-                  onPressSearch();
-                  setShowSettings(false);
-                }}
               >
+                <IconButton
+                  icon="marker"
+                  iconColor={theme === Themes.DARK ? "white" : iconCol}
+                  size={26}
+                  mode="outlined"
+                  style={{ borderRadius: 10 }}
+                  onPress={() => {
+                    onOpenAnnotationsList();
+                    setShowSettings(false);
+                  }}
+                />
+              </TouchableOpacity>
+                <TouchableOpacity
+                style={[
+                  styles.circle,
+                  {
+                  backgroundColor: theme.body.background,
+                  borderColor:
+                    theme.body.background === "#333"
+                    ? MD3Colors.neutral100
+                    : MD3Colors.neutral10,
+                  },
+                ]}
+                >
                 <IconButton
                   icon="magnify"
                   animated
                   mode="outlined"
                   iconColor={theme === Themes.DARK ? "white" : iconCol}
                   size={26}
+                  style={{ transform: [{ scale: 1.1 }], borderRadius: 10 }}
+                  onPress={() => {
+                  onPressSearch();
+                  setShowSettings(false);
+                  }}
                 />
-              </TouchableOpacity>
+                </TouchableOpacity>
+            </View>
+            <View style={{ flexDirection: "row" }}>
               <TouchableOpacity
                 style={[
                   styles.circle,
@@ -211,10 +241,6 @@ export default function Header({
                         : MD3Colors.neutral10,
                   },
                 ]}
-                onPress={() => {
-                  onOpenBookmarksList();
-                  setShowSettings(false);
-                }}
               >
                 <IconButton
                   icon="bookmark-multiple-outline"
@@ -222,6 +248,11 @@ export default function Header({
                   mode="outlined"
                   iconColor={theme === Themes.DARK ? "white" : iconCol}
                   size={26}
+                  style={{ borderRadius: 10 }}
+                  onPress={() => {
+                    onOpenBookmarksList();
+                    setShowSettings(false);
+                  }}
                 />
               </TouchableOpacity>
               <TouchableOpacity
@@ -235,16 +266,17 @@ export default function Header({
                         : MD3Colors.neutral10,
                   },
                 ]}
-                onPress={() => {
-                  onOpenTocList();
-                  setShowSettings(false);
-                }}
               >
                 <IconButton
                   icon="format-list-bulleted-square"
                   iconColor={theme === Themes.DARK ? "white" : iconCol}
                   size={26}
                   mode="outlined"
+                  style={{ borderRadius: 10 }}
+                  onPress={() => {
+                    onOpenTocList();
+                    setShowSettings(false);
+                  }}
                 />
               </TouchableOpacity>
             </View>
@@ -258,22 +290,26 @@ export default function Header({
                       theme.body.background === "#333"
                         ? MD3Colors.neutral100
                         : MD3Colors.neutral10,
-                    padding: 5,
+                    borderWidth: 1,
                   },
                 ]}
                 onPress={() => changeThemes(Themes.LIGHT)}
               >
                 <View
                   style={{
-                    width: 45,
-                    height: 45,
+                    width: 50,
+                    height: 50,
                     borderRadius: 22.5,
                     backgroundColor: "white",
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Text style={{ fontSize: 24, color: "black" }}>A</Text>
+                  <Text
+                    style={{ fontSize: 24, color: "black", fontWeight: "bold" }}
+                  >
+                    A
+                  </Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
@@ -285,22 +321,26 @@ export default function Header({
                       theme.body.background === "#333"
                         ? MD3Colors.neutral100
                         : MD3Colors.neutral10,
-                    padding: 5,
+                    borderWidth: 1,
                   },
                 ]}
                 onPress={() => changeThemes(Themes.DARK)}
               >
                 <View
                   style={{
-                    width: 45,
-                    height: 45,
+                    width: 50,
+                    height: 50,
                     borderRadius: 22.5,
                     backgroundColor: "black",
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Text style={{ fontSize: 24, color: "white" }}>A</Text>
+                  <Text
+                    style={{ fontSize: 24, color: "white", fontWeight: "bold" }}
+                  >
+                    A
+                  </Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
@@ -312,22 +352,27 @@ export default function Header({
                       theme.body.background === "#333"
                         ? MD3Colors.neutral100
                         : MD3Colors.neutral10,
-                    padding: 5,
+                    padding: 0,
+                    borderWidth: 1,
                   },
                 ]}
                 onPress={() => changeThemes(Themes.SEPIA)}
               >
                 <View
                   style={{
-                    width: 45,
-                    height: 45,
+                    width: 50,
+                    height: 50,
                     borderRadius: 22.5,
                     backgroundColor: "#e8dcb8",
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Text style={{ fontSize: 24, color: "black" }}>A</Text>
+                  <Text
+                    style={{ fontSize: 24, color: "black", fontWeight: "bold" }}
+                  >
+                    A
+                  </Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -343,27 +388,6 @@ export default function Header({
                         : MD3Colors.neutral10,
                   },
                 ]}
-                onPress={switchFontFamily}
-              >
-                <IconButton
-                  icon="format-font"
-                  iconColor={theme === Themes.DARK ? "white" : iconCol}
-                  size={26}
-                  mode="outlined"
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.circle,
-                  {
-                    backgroundColor: theme.body.background,
-                    borderColor:
-                      theme.body.background === "#333"
-                        ? MD3Colors.neutral100
-                        : MD3Colors.neutral10,
-                  },
-                ]}
-                onPress={increaseFontSize}
                 disabled={currentFontSize === MAX_FONT_SIZE}
               >
                 <IconButton
@@ -372,6 +396,8 @@ export default function Header({
                   size={26}
                   animated
                   mode="outlined"
+                  style={{ borderRadius: 10 }}
+                  onPress={increaseFontSize}
                 />
               </TouchableOpacity>
               <TouchableOpacity
@@ -381,7 +407,6 @@ export default function Header({
                     backgroundColor: theme.body.background,
                   },
                 ]}
-                onPress={decreaseFontSize}
                 disabled={currentFontSize === MIN_FONT_SIZE}
               >
                 <IconButton
@@ -389,6 +414,52 @@ export default function Header({
                   iconColor={theme === Themes.DARK ? "white" : iconCol}
                   size={26}
                   mode="outlined"
+                  style={{ borderRadius: 10 }}
+                  onPress={decreaseFontSize}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={{ flexDirection: "row" }}>
+            <TouchableOpacity
+                style={[
+                  styles.circle,
+                  {
+                    backgroundColor: theme.body.background,
+                    borderColor:
+                      theme.body.background === "#333"
+                        ? MD3Colors.neutral100
+                        : MD3Colors.neutral10,
+                  },
+                ]}
+              >
+                <IconButton
+                  icon="reload"
+                  iconColor={theme === Themes.DARK ? "white" : iconCol}
+                  size={26}
+                  mode="outlined"
+                  style={{ borderRadius: 10 }}
+                  onPress={formatClear}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.circle,
+                  {
+                    backgroundColor: theme.body.background,
+                    borderColor:
+                      theme.body.background === "#333"
+                        ? MD3Colors.neutral100
+                        : MD3Colors.neutral10,
+                  },
+                ]}
+              >
+                <IconButton
+                  icon="format-align-justify"
+                  iconColor={theme === Themes.DARK ? "white" : iconCol}
+                  size={26}
+                  mode="outlined"
+                  style={{ borderRadius: 10 }}
+                  onPress={switchFontFamily}
                 />
               </TouchableOpacity>
             </View>
@@ -425,18 +496,19 @@ const styles = StyleSheet.create({
     right: 15,
     zIndex: 10,
     borderRadius: 10,
+    alignItems: "flex-end",
   },
   circle: {
-    borderRadius: 15,
+    borderRadius: 10,
     margin: 5,
     alignItems: "center",
     alignSelf: "flex-end",
     flexDirection: "row",
     shadowOffset: {
-      width: 2,
-      height: 2,
+      width: -2,
+      height: -2,
     },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.5,
     elevation: 5,
   },
 });

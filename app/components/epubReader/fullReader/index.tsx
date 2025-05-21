@@ -1,11 +1,13 @@
+//AIzaSyAH4vg-__dtrzfgdVzFT5NH9suuVc-jOnM
 import React, { useState, useEffect, useRef } from "react";
-import { useWindowDimensions, View, Platform, I18nManager } from "react-native";
+import { useWindowDimensions, View, Platform, I18nManager, Clipboard, Share } from "react-native";
 import {
   ReaderProvider,
   Reader,
   useReader,
   Themes,
   Bookmark,
+  Annotation,
 } from "@epubjs-react-native/core";
 import { useFileSystem } from "@epubjs-react-native/expo-file-system";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -17,14 +19,23 @@ import { MAX_FONT_SIZE, MIN_FONT_SIZE } from "./utils";
 import BookmarksList from "../Bookmarks/BookmarksList";
 import TableOfContents from "../TableOfContents/TableOfContents";
 import SearchList from "../Search/SearchList";
+import { useRouter } from "expo-router";
+import AnnotationsList from "../Annotations/AnnotationsList";
+import { COLORS } from "../Annotations/AnnotationForm";
+import Translate from "../Translate/Translate";
+import { EventRegister } from "react-native-event-listeners";
 
 interface ComponentProps {
   src: string;
   bookId: string;
 }
 
+interface StoredLocation {
+  cfi: string;
+}
+
 function Component({ src, bookId }: ComponentProps) {
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
   const {
@@ -35,19 +46,91 @@ function Component({ src, bookId }: ComponentProps) {
     bookmarks,
     getMeta,
     injectJavascript,
+    annotations,
+    addAnnotation,
+    removeAnnotation,
     goNext,
+    goPrevious,
   } = useReader();
 
   const bookmarksListRef = useRef<BottomSheetModal>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const searchListRef = useRef<BottomSheetModal>(null);
-  const [currentFontSize, setCurrentFontSize] = useState(18);
+  const annotationsListRef = React.useRef<BottomSheetModal>(null);
+  const translateRef = useRef<BottomSheetModal>(null);
+  const [tempMark, setTempMark] = React.useState<Annotation | null>(null);
+  const [currentFontSize, setCurrentFontSize] = useState(19);
   const [defTheme, setDefTheme] = useState(Themes.LIGHT);
   const [bookmarkData, setBookmarkData] = useState<Bookmark[]>([]);
   const [isActive, setIsActive] = useState(false);
   const [locationActive, setLocationActive] = useState(false);
   const [currentText, setCurrentText] = useState("");
-  const [styleIndex, setStyleIndex] = useState(0);
+  const [currentFontFamily, setCurrentFontFamily] = useState(-1);
+  const [storedLocation, setStoredLocation] = useState<StoredLocation | null>(
+    null
+  );
+  const [storedAnnotations, setStoredAnnotations] = useState<Annotation[]>([]);
+  const router = useRouter();
+  const [selection, setSelection] = React.useState<{
+    cfiRange: string;
+    text: string;
+  } | null>(null);
+  const [selectedAnnotation, setSelectedAnnotation] = React.useState<
+    Annotation | undefined
+  >(undefined);
+  const [selectedLanguage, setSelectedLanguage] = React.useState<string>("");
+
+  useEffect(() => {
+    const saveAnnotations = async () => {
+      if (isActive)
+      try {
+        const annotationData = JSON.stringify({ annotations });
+        await AsyncStorage.setItem(`annotations_${bookId}`, annotationData);
+      } catch (error) {
+        console.error("Failed to save annotations", error);
+      }
+    };
+
+    saveAnnotations();
+  }, [annotations]);
+
+  useEffect(() => {
+    if(!isActive) return;
+    const lastBookState = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem("stored_userId");
+        const storedBooks = await AsyncStorage.getItem(
+          `Books_${storedUserId}`
+        );
+        const parsedStoredBooks = storedBooks
+          ? JSON.parse(storedBooks)
+          : [];
+        const book = parsedStoredBooks.find(
+          (book: { bookId: string }) => book.bookId === bookId
+        );
+        if (storedUserId && currentLocation) {
+          const lastOpenedBook = {
+            bookId,
+            src,
+            location: currentLocation,
+            title: book?.title,
+            
+          };
+          await AsyncStorage.setItem(
+            `lastOpenedBook_${storedUserId}`,
+            JSON.stringify(lastOpenedBook)
+          );
+        }
+      } catch (error) {
+        console.error("Failed to store last opened book information", error);
+      }
+    };
+    lastBookState();
+    EventRegister.emit("lastOpenedBookChanged", {
+      bookId,
+      location: currentLocation,
+    });
+  }, [currentLocation]);
 
   useEffect(() => {
     if (bookmarks && isActive) {
@@ -72,6 +155,28 @@ function Component({ src, bookId }: ComponentProps) {
         const storedFontSize = await AsyncStorage.getItem(
           "currentFontSize_" + bookId
         );
+        const getStoredLocation = await AsyncStorage.getItem(
+          `location_${bookId}`
+        );
+        const getStoredFontStyle = await AsyncStorage.getItem(
+          "currentFontStyle_" + bookId
+        );
+        const storedAnnotations = await AsyncStorage.getItem(
+          `annotations_${bookId}`
+        );
+
+        if (storedAnnotations) {
+          const annotationsStored = JSON.parse(storedAnnotations);
+          setStoredAnnotations(annotationsStored.annotations);
+        }
+
+        if (getStoredFontStyle) {
+          const parsedFontStyle = JSON.parse(getStoredFontStyle);
+          setCurrentFontFamily(parsedFontStyle);
+        }
+        if (getStoredLocation) {
+          setStoredLocation(JSON.parse(getStoredLocation) as StoredLocation);
+        }
         if (storedTheme) {
           setDefTheme(JSON.parse(storedTheme));
         }
@@ -124,38 +229,64 @@ function Component({ src, bookId }: ComponentProps) {
       );
     }
   };
+  const boldStyle = () => {
+    setCurrentFontFamily(1);
+    injectJavascript(`
+      rendition.getContents().forEach(contents => {
+        contents.document.querySelectorAll('p').forEach(p => {
+          p.style.fontWeight = 'bold';
+          p.style.lineHeight = '1.3';
+      const currentAlign = window.getComputedStyle(p).textAlign;
+      if (currentAlign !== 'center') {
+        p.style.textAlign = 'inherit'; // Reset alignment if not center
+      }        });
+      });
+    `);
+  };
+  const justifyStyle = () => {
+    setCurrentFontFamily(2);
+    injectJavascript(`
+      rendition.getContents().forEach(contents => {
+        contents.document.querySelectorAll('p').forEach(p => {
+          p.style.fontWeight = 'normal';
+          p.style.lineHeight = '1.3';
+      const currentAlign = window.getComputedStyle(p).textAlign;
+      if (currentAlign !== 'center') {
+        p.style.textAlign = 'justify'; // Apply justify alignment if not center
+      }        });
+      });
+    `);
+  };
+
+  const spacedStyle = () => {
+    setCurrentFontFamily(0);
+    injectJavascript(`
+      rendition.getContents().forEach(contents => {
+        contents.document.querySelectorAll('p').forEach(p => {
+          p.style.fontWeight = 'normal';
+          p.style.lineHeight = '1.5';
+      const currentAlign = window.getComputedStyle(p).textAlign;
+      if (currentAlign !== 'center') {
+        p.style.textAlign = 'inherit'; // Reset alignment if not center
+      }        });
+      });
+    `);
+  };
 
   const switchFontFamily = () => {
-    setStyleIndex((prev) => (prev + 1) % 3);
-    if (styleIndex === 0) {
-      boldStyle();
-      AsyncStorage.setItem("fontFamily_" + bookId, "boldStyle");
-    } else if (styleIndex === 1) {
-      justifyStyle();
-      AsyncStorage.setItem("fontFamily_" + bookId, "justifyStyle");
-    } else if (styleIndex === 2) {
-      spacedStyle();
-      AsyncStorage.setItem("fontFamily_" + bookId, "spacedStyle");
-    }
+    AsyncStorage.setItem(
+      "currentFontStyle_" + bookId,
+      JSON.stringify(currentFontFamily)
+    );
+    if (currentFontFamily == 0 || currentFontFamily == -1) boldStyle();
+    if (currentFontFamily == 1) justifyStyle();
+    if (currentFontFamily == 2) spacedStyle();
   };
 
   const handleLocationChange = async () => {
-    let locationcfi = "";
-    try {
-      if (!currentText) return;
-      const parsed =
-        typeof currentText === "string" ? JSON.parse(currentText) : currentText;
-      if (parsed.type === "onCurrentText") {
-        locationcfi = parsed.cfi;
-      }
-    } catch (error) {
-      console.error("Failed to parse currentText:", error);
-      return;
-    }
     try {
       const locationData = JSON.stringify({
-        src,
-        cfi: locationcfi,
+        cfi: currentLocation?.start.cfi,
       });
       await AsyncStorage.setItem(`location_${bookId}`, locationData);
     } catch (error) {
@@ -173,34 +304,21 @@ function Component({ src, bookId }: ComponentProps) {
       }
     }
   };
-  const changeFont = async () => {
-    const storedFontFamily = await AsyncStorage.getItem(`fontFamily_${bookId}`);
-    if (storedFontFamily) {
-      if (storedFontFamily === "boldStyle") {
-        boldStyle();
-      } else if (storedFontFamily === "justifyStyle") {
-        justifyStyle();
-      } else if (storedFontFamily === "spacedStyle") {
-        spacedStyle();
-      }
-      const storedLocation = await AsyncStorage.getItem(`location_${bookId}`);
-      let location;
-      if (storedLocation) {
-        location = JSON.parse(storedLocation);
-      }
-      goToLocation(location.cfi);
+
+  const handleOnReady = async () => {
+    if (getMeta().language == "ku" || "ar") {
+      I18nManager.isRTL = true;
     }
+    if (getMeta().language == "en") {
+      I18nManager.isRTL = false;
+    }
+    changeFontSize(`${currentFontSize}px`);
   };
 
   const handleLocationReady = async () => {
-    const storedLocation = await AsyncStorage.getItem(`location_${bookId}`);
-    let location;
-    if (storedLocation) {
-      location = JSON.parse(storedLocation);
-    }
-    goToLocation(location.cfi);
-    goNext();
-    changeFont();
+    setIsActive(true);
+    currentFontFamily != -1 && switchFontFamily();
+    goToLocation(storedLocation?.cfi || "");
   };
 
   const handleOnFinish = async () => {
@@ -226,61 +344,17 @@ function Component({ src, bookId }: ComponentProps) {
       console.error("Failed to update finished books list", error);
     }
   };
-  const boldStyle = () => {
-    injectJavascript(`
-      rendition.getContents().forEach(contents => {
-        contents.document.querySelectorAll('p').forEach(p => {
-          p.style.fontWeight = 'bold';
-          p.style.lineHeight = '1.4';
-      const currentAlign = window.getComputedStyle(p).textAlign;
-      if (currentAlign !== 'center') {
-        p.style.textAlign = 'inherit'; // Reset alignment if not center
-      }        });
-      });
-    `);
-    AsyncStorage.setItem("fontFamily_" + bookId, "boldStyle");
-  };
-  const justifyStyle = () => {
-    injectJavascript(`
-      rendition.getContents().forEach(contents => {
-        contents.document.querySelectorAll('p').forEach(p => {
-          p.style.fontWeight = 'normal';
-          p.style.lineHeight = '1.4';
-      const currentAlign = window.getComputedStyle(p).textAlign;
-      if (currentAlign !== 'center') {
-        p.style.textAlign = 'justify'; // Apply justify alignment if not center
-      }        });
-      });
-    `);
-    AsyncStorage.setItem("fontFamily_" + bookId, "justifyStyle");
-  };
 
-  const spacedStyle = () => {
-    injectJavascript(`
-      rendition.getContents().forEach(contents => {
-        contents.document.querySelectorAll('p').forEach(p => {
-          p.style.fontWeight = 'normal';
-          p.style.lineHeight = '1.6';
-      const currentAlign = window.getComputedStyle(p).textAlign;
-      if (currentAlign !== 'center') {
-        p.style.textAlign = 'inherit'; // Reset alignment if not center
-      }        });
-      });
-    `);
-    AsyncStorage.setItem("fontFamily_" + bookId, "spacedStyle");
-  };
-
-  const handleOnReady = () => {
-    if (getMeta().language == "ku" || "ar") {
-      I18nManager.isRTL = true;
-    }
-    if (getMeta().language == "en") {
-      I18nManager.isRTL = false;
-    }
-    setIsActive(true);
-    changeFontSize(`${currentFontSize}px`);
-    changeFont();
-  };
+  const handleFormatClear = async () => {
+    await AsyncStorage.removeItem("currentFontSize_" + bookId);
+    await AsyncStorage.removeItem("currentFontStyle_" + bookId);
+    router.replace({
+      pathname: "/inside/bookReader",
+      params: {
+        fileUrl: src,
+        bookId: bookId,
+      }});
+  }
   return (
     <View
       style={{
@@ -298,29 +372,125 @@ function Component({ src, bookId }: ComponentProps) {
         onOpenBookmarksList={() => bookmarksListRef.current?.present()}
         onOpenTocList={() => bottomSheetRef.current?.present()}
         currentText={currentText}
+        onOpenAnnotationsList={() => annotationsListRef.current?.present()}
+        formatClear={handleFormatClear}
       />
       <View style={{ flex: 1 }}>
+        <View 
+        style={{
+          flex: 1,
+        }}
+        onTouchStart={(e)=>{
+          const touchX = e.nativeEvent.locationX;
+          const touchWidth = width * 0.11; 
+
+          if (touchX < touchWidth) {
+            getMeta().language == "ku" || getMeta().language == "ar" ? goNext() : goPrevious();
+          } else if (touchX > width - touchWidth) {
+            getMeta().language == "ku" || getMeta().language == "ar" ? goPrevious() : goNext();
+          }
+        }}
+        >
         <Reader
           src={src}
           width={width}
           flow={"paginated"}
           spread="none"
-          enableSelection={false}
+          enableSelection={true}
           fileSystem={useFileSystem}
           defaultTheme={defTheme}
           waitForLocationsReady
+          onReady={handleOnReady}
           onSwipeLeft={() => setLocationActive(true)}
           onSwipeRight={() => setLocationActive(true)}
           onLocationsReady={handleLocationReady}
           onChangeBookmarks={handleUpdateBookmark}
           initialBookmarks={bookmarkData}
+          initialLocation={storedLocation?.cfi || ""}
+          onChangeSection={() => {currentFontFamily==1 && boldStyle(); currentFontFamily==2 && justifyStyle(); currentFontFamily==0 && spacedStyle();}}
           onFinish={handleOnFinish}
           onWebViewMessage={(message) => {
             setCurrentText(message);
           }}
           injectedJavascript={'document.body.style.overflow = "hidden";'}
-          onReady={handleOnReady}
+          initialAnnotations={storedAnnotations}
+          onAddAnnotation={(annotation) => {
+            if (annotation.type === "highlight" && annotation.data?.isTemp) {
+              setTempMark(annotation);
+            }
+          }}
+          onPressAnnotation={(annotation) => {
+            setSelectedAnnotation(annotation);
+            annotationsListRef.current?.present();
+          }}
+          menuItems={[
+            {
+              label: "🟡",
+              action: (cfiRange) => {
+                addAnnotation("highlight", cfiRange, undefined, {
+                  color: COLORS[2],
+                });
+                return true;
+              },
+            },
+            {
+              label: "🔴",
+              action: (cfiRange) => {
+                addAnnotation("highlight", cfiRange, undefined, {
+                  color: COLORS[0],
+                });
+                return true;
+              },
+            },
+            {
+              label: "🟢",
+              action: (cfiRange) => {
+                addAnnotation("highlight", cfiRange, undefined, {
+                  color: COLORS[3],
+                });
+                return true;
+              },
+            },
+            {
+              label: "Add Note",
+              action: (cfiRange, text) => {
+                setSelection({ cfiRange, text });
+                addAnnotation("highlight", cfiRange, { isTemp: true });
+                annotationsListRef.current?.present();
+                return true;
+              },
+            },
+            {
+              label: "Translate",
+              action: (cfiRange, text) => {
+                setSelection({ cfiRange, text });
+                setSelectedLanguage(getMeta().language);
+                translateRef.current?.present();
+                return true;
+              },
+            },
+            {
+              label: "Copy",
+              action: (cfiRange, text) => {
+                setSelection({ cfiRange, text });
+                Clipboard.setString(text);
+                return true;
+              },
+            },
+            {
+              label: "Share",
+              action: (cfiRange, text) => {
+                setSelection({ cfiRange, text });
+                Share.share({
+                  message: text,
+                });
+                return true;
+              },
+            },
+          ]}
         />
+        </View> 
+        
         <SearchList
           ref={searchListRef}
           onClose={() => searchListRef.current?.dismiss()}
@@ -336,6 +506,25 @@ function Component({ src, bookId }: ComponentProps) {
             bottomSheetRef.current?.dismiss();
           }}
           onClose={() => bottomSheetRef.current?.dismiss()}
+        />
+        <AnnotationsList
+          ref={annotationsListRef}
+          selection={selection}
+          selectedAnnotation={selectedAnnotation}
+          annotations={annotations}
+          onClose={() => {
+            setTempMark(null);
+            setSelection(null);
+            setSelectedAnnotation(undefined);
+            if (tempMark) removeAnnotation(tempMark);
+            annotationsListRef.current?.dismiss();
+          }}
+        />
+        <Translate
+          ref={translateRef}
+          onClose={() => translateRef.current?.dismiss()}
+          selectedText={selection?.text || ""}
+          selectedLanguage={selectedLanguage}
         />
       </View>
       <View style={{ bottom: 10, width: width }}>
