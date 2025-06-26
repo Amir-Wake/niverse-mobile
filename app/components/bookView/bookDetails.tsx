@@ -44,10 +44,7 @@ interface Book {
   ageRate: number;
   coverDominantColor: string;
   version: number;
-<<<<<<< HEAD
   downloadedNumber: number;
-=======
->>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
 }
 
 const BookDetails = ({ book }: { book: Book }) => {
@@ -77,31 +74,18 @@ const BookDetails = ({ book }: { book: Book }) => {
   }, [book.title, book.id, book.language]);
 
   const setTextDirection = () => {
-<<<<<<< HEAD
     setIsRTL(
       book.language === "کوردی" ||
       book.language === "عربى" ||
       book.language === "فارسی"
     );
-=======
-    setIsRTL(book.language === "کوردی" || book.language === "عربى");
->>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
   };
 
   const checkIfAddedToCollection = async () => {
     const storedUserId = await AsyncStorage.getItem("stored_userId");
     const storedBooks = await AsyncStorage.getItem("WantToReadBooks_" + storedUserId);
     const BooksList = JSON.parse(storedBooks || "[]");
-<<<<<<< HEAD
     setIsAddedToCollection(BooksList.some((sbook: any) => sbook.bookId === book.id));
-=======
-    const bookIndex = BooksList.findIndex(
-      (sbook: any) => sbook.bookId === book.id
-    );
-    if (bookIndex !== -1) {
-      setIsAddedToCollection(true);
-    }
->>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
   };
 
   const fetchUserAgeRestriction = async () => {
@@ -222,12 +206,7 @@ const BookDetails = ({ book }: { book: Book }) => {
         addedAt: new Date().toISOString(),
         inLibrary: true,
         finished: false,
-<<<<<<< HEAD
         version: book.version || 0,
-=======
-        wantToRead: false,
-        version: book.version||0,
->>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
       });
     } else {
       BooksList[bookIndex] = {
@@ -249,13 +228,7 @@ const BookDetails = ({ book }: { book: Book }) => {
       const BooksList = JSON.parse(storedBooks || "[]");
       const bookIndex = BooksList.findIndex((item: any) => item.bookId === book.id);
       if (bookIndex !== -1) {
-<<<<<<< HEAD
         const updatedBooksList = BooksList.filter((item: any) => item.bookId !== book.id);
-=======
-        const updatedBooksList = BooksList.filter(
-          (item: any) => item.bookId !== book.id
-        );
->>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
         setIsAddedToCollection(false);
         await AsyncStorage.setItem(
           `WantToReadBooks_${user?.uid}`,

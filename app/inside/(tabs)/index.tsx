@@ -19,19 +19,6 @@ import axios from "axios";
 import i18n from "@/assets/languages/i18n";
 import NetInfo from "@react-native-community/netinfo";
 import Fuse from "fuse.js";
-<<<<<<< HEAD
-=======
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth } from "@/firebase";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  updateDoc,
-  addDoc,
-  deleteDoc,
-} from "firebase/firestore";
->>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
 import * as Device from "expo-device";
 import MiniPlayer from "../components/miniPlayer";
 
@@ -68,113 +55,6 @@ const Index = () => {
     fetchAllBooks();
   }, []);
 
-<<<<<<< HEAD
-=======
-  const synceUserBooks = async () => {
-    try {
-      const user = auth.currentUser;
-      if (!user || networkError) return;
-
-      const booksFetchTime = await AsyncStorage.getItem(
-        `Books_lastFetchTime_${user.uid}`
-      );
-      const currentTime = Date.now();
-
-      if (!booksFetchTime || currentTime - parseInt(booksFetchTime) >= 24 * 60 * 60 * 1000) {
-        await AsyncStorage.setItem("stored_userId", user.uid);
-
-        const Books = await AsyncStorage.getItem(`Books_${user.uid}`);
-        const wantToReadBooks = await AsyncStorage.getItem(
-          `WantToReadBooks_${user.uid}`
-        );
-
-        const userBooksCollection = collection(
-          db,
-          "users",
-          user.uid,
-          "user_books"
-        );
-        const wantToReadCollection = collection(
-          db,
-          "users",
-          user.uid,
-          "want_to_read_books"
-        );
-
-        if (Books) {
-          const booksArray = JSON.parse(Books);
-          if (Array.isArray(booksArray)) {
-            for (const book of booksArray) {
-              const querySnapshot = await getDocs(userBooksCollection);
-              const existingDoc = querySnapshot.docs.find(
-                (doc) => doc.data().bookId === book.bookId
-              );
-
-              if (!existingDoc) {
-                await addDoc(userBooksCollection, book);
-              }
-            }
-          } else {
-            console.error("Books data is not an array.");
-          }
-        } else {
-          const querySnapshot = await getDocs(userBooksCollection);
-          const booksArray = querySnapshot.docs.map((doc) => ({
-            ...doc.data(),
-            inLibrary: false,
-          }));
-          await AsyncStorage.setItem(
-            `Books_${user.uid}`,
-            JSON.stringify(booksArray)
-          );
-        }
-
-        if (wantToReadBooks) {
-          const wantToReadArray = JSON.parse(wantToReadBooks);
-          const querySnapshot = await getDocs(wantToReadCollection);
-
-          for (const book of wantToReadArray) {
-            const existingDoc = querySnapshot.docs.find(
-              (doc) => doc.data().bookId === book.bookId
-            );
-
-            if (!existingDoc) {
-              await addDoc(wantToReadCollection, book);
-            }
-          }
-
-          for (const doc of querySnapshot.docs) {
-            const firestoreBook = doc.data();
-            const existsInLocal = wantToReadArray.some(
-              (book: { bookId: string }) => book.bookId === firestoreBook.bookId
-            );
-
-            if (!existsInLocal) {
-              await deleteDoc(doc.ref);
-            }
-          }
-        } else {
-          const querySnapshot = await getDocs(wantToReadCollection);
-          const wantToReadArray = querySnapshot.docs.map((doc) => ({
-            ...doc.data(),
-          }));
-          await AsyncStorage.setItem(
-            `WantToReadBooks_${user.uid}`,
-            JSON.stringify(wantToReadArray)
-          );
-        }
-
-        await AsyncStorage.setItem(
-          `Books_lastFetchTime_${user.uid}`,
-          currentTime.toString()
-        );
-      }
-    } catch (error) {
-      console.error("Error syncing user books:", error);
-    }
-  };
-
->>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
   const fuse = new Fuse(allBooks, {
     keys: ["title", "author", "translator"],
     includeScore: true,
@@ -349,7 +229,6 @@ const Index = () => {
           showsVerticalScrollIndicator={false}
         >
           <View>
-<<<<<<< HEAD
             <Suspense fallback={<View />}>
               <PickCards />
             </Suspense>
@@ -360,35 +239,6 @@ const Index = () => {
                 genre="newest"
               />
             </Suspense>
-=======
-            <View>
-              <Suspense fallback={<View />}>
-                <PickCards />
-              </Suspense>
-            </View>
-            <View
-              style={{
-                width: "100%",
-                backgroundColor: "#F8F8FF",
-                paddingHorizontal: 5,
-                justifyContent: "center",
-                alignItems: "flex-start",
-              }}
-            >
-              <Suspense fallback={<View />}>
-                <MiniPlayer />
-              </Suspense>
-            </View>
-            <View>
-              <Suspense fallback={<View />}>
-                <BookList
-                  title={i18n.t("new")}
-                  description={i18n.t("newDescription")}
-                  genre="newest"
-                />
-              </Suspense>
-            </View>
->>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
             <Suspense fallback={<View />}>
               <BookList
                 title={i18n.t("novels")}
@@ -400,7 +250,6 @@ const Index = () => {
                 description={i18n.t("nonFictionDescription")}
                 genre="books/genre/Non-fiction"
               />
-<<<<<<< HEAD
               <Suspense fallback={<View />}>
                 <Authors />
               </Suspense>
@@ -409,8 +258,6 @@ const Index = () => {
                 description={i18n.t("literatureDescription")}
                 genre="books/genre/literature"
               />
-=======
->>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
               <BookList
                 title={i18n.t("biography")}
                 description={i18n.t("biographyDescription")}

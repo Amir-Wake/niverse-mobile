@@ -4,15 +4,12 @@ import { I18nManager } from "react-native";
 
 const i18n = new I18n({
   en: {
-<<<<<<< HEAD
     literatureDescription:"The art of language and poetry.",
     themeSetting: "Themes & Settings",
     authors: "Authors",
     authorsDescription: "Browse by featured writers.",
     literature: "Literature",
     inLibrary: "In Library",
-=======
->>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
     continue: "Continue",
     translate: "Translate",
     annotations: "Annotations",
@@ -157,7 +154,6 @@ const i18n = new I18n({
     termsText11: "By using our app, you agree to follow these terms and conditions. We’re committed to creating a positive experience for all users, and we appreciate your cooperation.",
   },
   ku: {
-<<<<<<< HEAD
     literature: "وێژە",
     literatureDescription: "هونەری زمان و هۆنراوە.",
     themeSetting: "ڕووکار و ڕێکخستنەکان",
@@ -168,12 +164,6 @@ const i18n = new I18n({
     translate: "وەرگێران",
     addNote: "تێبینی زیادکردن",
     annotations: "هایلات و تێبینیەکان",
-=======
-    continue: "بەردەوامبوون",
-    translate: "وەرگێران",
-    addNote: "تێبینی زیادکردن",
-    annotations: "تێبینیەکان",
->>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
     confirmCollectionDelete:"دڵنیایت کە دەتەوێت ئەم کتێبە لە کۆکراوەکانت بسڕیتەوە؟",
     update: "نوێکردنەوە",
     science: "زانست و زانیاری",
@@ -202,17 +192,10 @@ const i18n = new I18n({
     submit: "ناردن",
     new: "نوێ",
     newDescription: "کتێبە نوێیەکان.",
-<<<<<<< HEAD
     novels: "خەیاڵی",
     novelsDescription: "چیرۆک و نووسینە بەچێژ و ئیلهامبەخشەکان.",
     biography: "بیرەوەی و ژیاننامە",
     biographyDescription: "گەشتی کەسی و ژیانی ڕاستەقینە.",
-=======
-    novels: "ڕۆمانەکان",
-    novelsDescription: "پێشنیارەکان بەپێی ڕۆمان.",
-    biography: "یاداشت",
-    biographyDescription: "پێشنیارەکان بەپێی یاداشت.",
->>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
     nonFiction: "نا خەیاڵی",
     nonFictionDescription: "بیرکردنەوە لە بیرۆکە و ئەزموونەکان.",
     welcome: "بەخێربێیت",
