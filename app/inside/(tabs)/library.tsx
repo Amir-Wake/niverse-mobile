@@ -251,6 +251,16 @@ export default function Library() {
       const updatedBooksList = BooksList.map((book: any) =>
         book.bookId === folder ? { ...book, inLibrary: false } : book
       );
+      const lastOpenedBook = await AsyncStorage.getItem(
+        `lastOpenedBook_${storedUserId}`
+      );
+      if (lastOpenedBook) {
+        const parsedLastOpenedBook = JSON.parse(lastOpenedBook);
+        if (parsedLastOpenedBook.bookId === folder) {
+          await AsyncStorage.removeItem(`lastOpenedBook_${storedUserId}`);
+        }
+      }
+      EventRegister.emit("lastOpenedBookChanged");
       await AsyncStorage.setItem(
         "Books_" + storedUserId,
         JSON.stringify(updatedBooksList)

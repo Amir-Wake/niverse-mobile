@@ -8,15 +8,22 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
 import { BottomSheetModalMethods } from '@gorhom/bottom-sheet/lib/typescript/types';
+<<<<<<< HEAD
 import {  IconButton, Text } from 'react-native-paper';
+=======
+import { Button, Text } from 'react-native-paper';
+>>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
 import { contrast } from '../fullReader/utils';
 import AnnotationForm from './AnnotationForm';
 import AnnotationItem from './AnnotationItem';
 import Selection from './utils';
 import i18n from "@/assets/languages/i18n";
+<<<<<<< HEAD
 import * as Device from 'expo-device';
 
 const isIpad = Device.deviceType === Device.DeviceType.TABLET;
+=======
+>>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
 
 interface Props {
   selection: Selection | null;
@@ -66,6 +73,7 @@ export type Ref = BottomSheetModalMethods;
       () => (
         <View style={{ backgroundColor: theme.body.background }}>
           <View style={[styles.title,{borderBottomColor: contrast[theme.body.background]}]}>
+<<<<<<< HEAD
             <IconButton
               icon="close"
               size={isIpad?28:18}
@@ -82,6 +90,18 @@ export type Ref = BottomSheetModalMethods;
             <Text
               variant="titleMedium"
               style={{ color: contrast[theme.body.background], fontSize: isIpad ? 24 : 18 }}
+=======
+          <Button
+              mode="text"
+              textColor={contrast[theme.body.background]}
+              onPress={onClose}
+            >
+              {i18n.t('close')}
+            </Button>
+            <Text
+              variant="titleMedium"
+              style={{ color: contrast[theme.body.background] }}
+>>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
             >
               {i18n.t('annotations')}
             </Text>
@@ -152,7 +172,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+<<<<<<< HEAD
     padding: 10,
+=======
+    marginTop: 10,
+>>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
     borderBottomWidth: 1,
   },
   input: {

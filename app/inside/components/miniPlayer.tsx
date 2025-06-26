@@ -1,6 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect } from "react";
+<<<<<<< HEAD
 import { Text, View, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
+=======
+import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
+>>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
 import { Image } from "expo-image";
 import { EventRegister } from "react-native-event-listeners";
 import { useRouter } from "expo-router";
@@ -51,6 +55,7 @@ const MiniPlayer = () => {
       setLastOpenedBook(null);
     }
   };
+<<<<<<< HEAD
 
   const calculateWidth = (title: string) => {
     const screenWidth = Dimensions.get("window").width;
@@ -60,6 +65,8 @@ const MiniPlayer = () => {
     return dynamicWidth;
   };
 
+=======
+>>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
   return (
     <>
       {lastOpenedBook !== null && (
@@ -73,6 +80,7 @@ const MiniPlayer = () => {
               },
             });
           }}
+<<<<<<< HEAD
           style={{ flex: 1, marginVertical: 10 }}
         >
           <View
@@ -81,6 +89,11 @@ const MiniPlayer = () => {
               { width: calculateWidth(lastOpenedBook?.title || "") },
             ]}
           >
+=======
+          style={{flex: 1, marginVertical: 10}}
+        >
+          <View style={styles.container}>
+>>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
           <View style={styles.imageContainer}>
             <Image
               source={{ uri: lastOpenedBook?.src.replace(/\.epub$/, ".jpg") }}
@@ -97,9 +110,13 @@ const MiniPlayer = () => {
             }}
           >
             <View style={{ alignItems: "center", flex: 1 }}>
+<<<<<<< HEAD
               <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
                 {lastOpenedBook?.title}
               </Text>
+=======
+              <Text style={styles.title}>{lastOpenedBook?.title}</Text>
+>>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
               <Text
                 style={{
                   fontSize: 18,
@@ -143,6 +160,13 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     justifyContent: "space-between",
+<<<<<<< HEAD
+=======
+    height: 70,
+    width: isIpad ? "50%" : "70%",
+    padding: 10,
+    margin: 15,
+>>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
     alignItems: "center",
     backgroundColor: "#E0E0E0",
     borderRadius: 10,
@@ -151,6 +175,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
+<<<<<<< HEAD
     paddingHorizontal: 5,
   },
   title: {
@@ -163,6 +188,21 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: isIpad ? 70 : 60,
     height: isIpad ? 70 * 1.5 : 60 * 1.5,
+=======
+  },
+  title: {
+    fontSize: isIpad ? 18 : 14,
+    fontWeight: "bold",
+    color: "#333",
+    textAlign: "center",
+    width: "80%",
+    padding: 5,
+  },
+  imageContainer: {
+    position: "relative",
+    width: isIpad ? 80 : 70,
+    height: isIpad ? 80 * 1.5 : 70 * 1.5,
+>>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
   },
   image: {
     width: "100%",
@@ -170,6 +210,14 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   percentageOverlay: {
+<<<<<<< HEAD
+=======
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+>>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.2)",

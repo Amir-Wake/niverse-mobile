@@ -13,9 +13,12 @@ import { contrast } from "../fullReader/utils";
 import i18n from "@/assets/languages/i18n";
 import { GoogleGenAI } from "@google/genai";
 import removeMarkdown from 'remove-markdown';
+<<<<<<< HEAD
 import * as Device from 'expo-device';
 
 const isIpad = Device.deviceType === Device.DeviceType.TABLET;
+=======
+>>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
 
 interface Props {
   onClose: () => void;
@@ -86,6 +89,7 @@ const Translate = forwardRef<Ref, Props>(({ onClose, selectedText, selectedLangu
           >
             {i18n.t("translate")}
           </Text>
+<<<<<<< HEAD
           <IconButton
             icon="close"
             size={isIpad?28:18}
@@ -99,6 +103,22 @@ const Translate = forwardRef<Ref, Props>(({ onClose, selectedText, selectedLangu
             }}
             onPress={()=>onClose()}
           />
+=======
+          <TouchableOpacity onPress={onClose}>
+            <IconButton
+              icon="close"
+              size={30}
+              iconColor={contrast[theme.body.background]}
+              style={{
+                backgroundColor: "transparent",
+                borderRadius: 10,
+                position: "absolute",
+                right: 0,
+                top: 0,
+              }}
+            />
+          </TouchableOpacity>
+>>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
         </View>
         <BottomSheetScrollView
           indicatorStyle={"black"}
@@ -106,7 +126,11 @@ const Translate = forwardRef<Ref, Props>(({ onClose, selectedText, selectedLangu
         >
           {selectedLanguage == "en" ? (
             <View style={{ padding: 20, backgroundColor: "#FAF9F6", borderRadius: 10 }}>
+<<<<<<< HEAD
               <Text style={{ fontSize: 20, lineHeight: 30, textAlign: 'center', fontFamily: "helvetica" }}>
+=======
+              <Text style={{ fontSize: 20, lineHeight: 30, textAlign: 'center' }}>
+>>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
                 {isLoading ? "Translating..." : aiResponse || "No translation available."}
               </Text>
             </View>
@@ -118,7 +142,11 @@ const Translate = forwardRef<Ref, Props>(({ onClose, selectedText, selectedLangu
             </View>
           )}
           <Text style={{ fontSize: 13, textAlign: 'center', lineHeight: 30, color: contrast[theme.body.background], padding: 20, marginTop: 20 }}>
+<<<<<<< HEAD
             This is a beta version of the translation tool using AI.
+=======
+            This is a beta version of the translation tool using AI. Please note that the translation may not be perfect.
+>>>>>>> 9f3204233907014723ae806bb7c153b0ecb15a73
           </Text>
         </BottomSheetScrollView>
       </BottomSheetModal>
