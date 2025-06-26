@@ -90,11 +90,6 @@ const BookList = ({ title, description, genre }) => {
                 contentFit="cover"
                 transition={1000}
               />
-              <Text style={styles.bookTitle}>
-                {item.title.length > getTitleLength(styles.bookImage.width)-4
-                  ? `${item.title.substring(0, getTitleLength(styles.bookImage.width)-4)}...`
-                  : item.title}
-              </Text>
             </TouchableOpacity>
           </View>
         ))}
@@ -120,7 +115,7 @@ const styles = {
   title: {
     color: "#101010",
     paddingTop: 6,
-    fontSize: isIpad?34:26,
+    fontSize: isIpad?30:22,
   },
   description: {
     color: "#101010",
@@ -128,23 +123,18 @@ const styles = {
     fontSize: isIpad?24:18,
   },
   scrollViewContent: {
-    paddingHorizontal: 15,
+    paddingHorizontal: isIpad?10:5,
   },
   bookItem: {
     marginHorizontal: 5,
     marginTop: 10,
   },
   bookImage: {
-    width: Platform.isPad ? width * 0.3 : width * 0.4,
-    height: Platform.isPad ? (width * 0.3) * 1.5 : (width * 0.4) * 1.5,
+    width: Platform.isPad ? width * 0.28 : width * 0.35,
+    height: Platform.isPad ? (width * 0.28) * 1.5 : (width * 0.35) * 1.5,
     borderRadius: 10,
     borderColor: "#A9A9A9",
     borderWidth: 1,
-  },
-  bookTitle: {
-    color: "#101010",
-    fontSize: isIpad?21:18,
-    textAlign: "center",
   },
 };
 

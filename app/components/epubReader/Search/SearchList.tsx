@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   View,
   StyleSheet,
-  TouchableOpacity,
 } from "react-native";
 import {
   SearchResult as SearchResultType,
@@ -19,11 +18,14 @@ import {
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import { BottomSheetModalMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
-import { Text } from "react-native-paper";
+import { IconButton, Text } from "react-native-paper";
 import SearchResult from "./SearchResult";
 import { contrast } from "../fullReader/utils";
 import i18n from "@/assets/languages/i18n";
 import { Ionicons } from "@expo/vector-icons";
+import * as Device from 'expo-device';
+
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
 
 interface Props {
   onClose: () => void;
@@ -47,7 +49,7 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
   const [data, setData] = useState<SearchResultType[]>(searchResults.results);
   const [page, setPage] = useState(1);
 
-  const snapPoints = React.useMemo(() => ["60%", "95%"], []);
+  const snapPoints = React.useMemo(() => ["95%"], []);
 
   const renderItem = React.useCallback(
     ({ item }: { item: SearchResultType }) => (
@@ -86,25 +88,19 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
         }}
       >
         <View style={styles.title}>
-          <View>
-            <TouchableOpacity
-              onPress={() => {
-                setSearchTerm("");
-                onClose();
+            <IconButton
+              icon="close"
+              size={isIpad?28:18}
+              mode="contained-tonal"
+              iconColor={contrast[theme.body.background]}
+              style={{
+                backgroundColor: "rgba(151, 151, 151, 0.25)",
+                borderRadius: 20,
+                padding: 0,
+                margin: 0,
               }}
-              style={{ padding: 10 }}
-            >
-              <Text
-                variant="titleMedium"
-                style={{
-                  color: contrast[theme.body.background],
-                  fontFamily: "helvetica",
-                }}
-              >
-                {i18n.t("close")}
-              </Text>
-            </TouchableOpacity>
-          </View>
+              onPress={()=>onClose()}
+            />
           <View style={styles.searchSection}>
             <BottomSheetTextInput
               inputMode="search"
@@ -204,6 +200,7 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
               style={{
                 fontStyle: "italic",
                 color: contrast[theme.body.background],
+                fontSize: isIpad ? 24 : 18,
               }}
             >
               {i18n.t("searching")}
@@ -227,6 +224,7 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
                 fontStyle: "italic",
                 marginLeft: 5,
                 color: contrast[theme.body.background],
+                fontSize: isIpad ? 24 : 18,
               }}
             >
               {i18n.t("moreResult")}
@@ -243,6 +241,7 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
                 fontStyle: "italic",
                 textAlign: "center",
                 color: contrast[theme.body.background],
+                fontSize: isIpad ? 24 : 18,
               }}
             >
               {i18n.t("noMoreResult")}
@@ -267,6 +266,8 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
             fontStyle: "italic",
             color: contrast[theme.body.background],
             textAlign: "center",
+            fontSize: isIpad ? 24 : 18,
+            paddingVertical: 20,
           }}
         >
           {i18n.t("noResult")}
@@ -299,10 +300,13 @@ const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
     <BottomSheetModalProvider>
       <BottomSheetModal
         ref={ref}
-        index={2}
+        index={1}
         snapPoints={snapPoints}
         enablePanDownToClose
         style={styles.container}
+        onChange={(index) => {
+          if (index === 0) onClose(); 
+        }}
         handleIndicatorStyle={{
           backgroundColor: contrast[theme.body.background],
         }}
@@ -345,29 +349,27 @@ const styles = StyleSheet.create({
   title: {
     width: "100%",
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-evenly",
     alignItems: "center",
     marginBottom: 5,
   },
   searchSection: {
     flex: 1,
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "space-evenly",
     alignItems: "center",
     borderRadius: 10,
     backgroundColor: "#DCDCDC",
     borderColor: "black",
     borderWidth: 1,
+    marginHorizontal: 10,
   },
   searchIcon: {
     padding: 10,
   },
   input: {
     flex: 1,
-    paddingTop: 10,
-    paddingRight: 10,
-    paddingBottom: 10,
-    paddingLeft: 10,
+    padding: 10,
   },
 });
 

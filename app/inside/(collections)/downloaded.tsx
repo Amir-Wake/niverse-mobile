@@ -49,12 +49,9 @@ const Downloaded = () => {
   const fetchBooks = async () => {
     try {
       const storedUserId = await AsyncStorage.getItem("stored_userId");
-      const storedBooks = await AsyncStorage.getItem("Books_" + storedUserId);
+      const storedBooks = await AsyncStorage.getItem("DownloadedBooks_" + storedUserId);
       const parsedStoredBooks = storedBooks ? JSON.parse(storedBooks) : [];
-      const filteredBooks = parsedStoredBooks.filter(
-        (book: Book) => book.downloaded === true
-      );
-      setBooks(filteredBooks);
+      setBooks(parsedStoredBooks);
     } catch (error) {
       console.error("Error fetching books:", error);
       Alert.alert("Error", "Failed to fetch books.");
@@ -90,16 +87,18 @@ const Downloaded = () => {
                         "stored_userId"
                       );
                       const storedBooks = await AsyncStorage.getItem(
-                        "Books_" + storedUserId
+                        "DownloadedBooks_" + storedUserId
                       );
                       const parsedStoredBooks = storedBooks
                         ? JSON.parse(storedBooks)
                         : [];
-                      const updatedBooks = parsedStoredBooks.map((book: Book) =>
-                        book.bookId === item.bookId ? { ...book, downloaded: false } : book
+                      const updatedBooks = parsedStoredBooks.filter(
+                        (book: Book) => book.bookId !== item.bookId
                       );
+                      setBooks(updatedBooks);
+
                       await AsyncStorage.setItem(
-                        "Books_" + storedUserId,
+                        "DownloadedBooks_" + storedUserId,
                         JSON.stringify(updatedBooks)
                       );
                       fetchBooks();
@@ -117,7 +116,6 @@ const Downloaded = () => {
             style={styles.bookImage}
             cachePolicy={"memory-disk"}
           />
-          <Text style={styles.bookTitle}>{item.title}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -158,17 +156,22 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "flex-start",
     padding: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 2,
+      height: 2,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   bookImage: {
     width: isIpad ? width / 3 - 60 : width / 2 - 40,
     height: isIpad ? (width / 3 - 60) * 1.5 : (width / 2 - 40) * 1.5,
     resizeMode: "cover",
-  },
-  bookTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-    width: isIpad ? width / 3 - 60 : width / 2 - 40,
+    borderRadius:10,
+    borderColor:"grey",
+    borderWidth:1,
   },
 });
 

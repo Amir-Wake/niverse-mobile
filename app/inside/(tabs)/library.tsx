@@ -13,6 +13,13 @@ import {
   TextInput,
 } from "react-native";
 import * as FileSystem from "expo-file-system";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+} from "firebase/firestore";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { IconButton } from "react-native-paper";
@@ -22,6 +29,7 @@ import { auth } from "@/firebase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { EventRegister } from "react-native-event-listeners";
 import * as Device from "expo-device";
+import NetInfo from "@react-native-community/netinfo";
 
 const { width, height } = Dimensions.get("window");
 const isIpad = Device.deviceType === Device.DeviceType.TABLET;
@@ -38,19 +46,104 @@ export default function Library() {
   const [books, setBooks] = useState<Book[]>([]);
   const [search, setSearch] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [networkError, setNetworkError] = useState(false);
   const router = useRouter();
+  const db = getFirestore();
 
   useEffect(() => {
     fetchBooks();
-    const listener = EventRegister.addEventListener("booksDownloaded", () => {
-      fetchBooks();
-    });
+    synceUserBooks("WantToReadBooks");
+    synceUserBooks("DownloadedBooks");
+    const listener = EventRegister.addEventListener("booksDownloaded", fetchBooks);
     return () => {
       if (typeof listener === "string") {
         EventRegister.removeEventListener(listener);
       }
     };
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setNetworkError(!state?.isConnected);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const synceUserBooks = async (collectionName: string) => {
+    try {
+      const user = auth.currentUser;
+      if (!user || networkError) return;
+      const booksFetchTime = await AsyncStorage.getItem(
+        `Books_lastFetchTime_${user.uid}`
+      );
+      const currentTime = Date.now();
+      if (!booksFetchTime || currentTime - parseInt(booksFetchTime) >= 24 * 60 * 60 * 1000) {
+        await AsyncStorage.setItem("stored_userId", user.uid);
+        const Books = await AsyncStorage.getItem(`Books_${user.uid}`);
+        const wantToReadBooks = await AsyncStorage.getItem(
+          `${collectionName}_${user.uid}`
+        );
+        const userBooksCollection = collection(db, "users", user.uid, "user_books");
+        const wantToReadCollection = collection(db, "users", user.uid, `${collectionName}`);
+        if (Books) {
+          const booksArray = JSON.parse(Books);
+          if (Array.isArray(booksArray)) {
+            for (const book of booksArray) {
+              const querySnapshot = await getDocs(userBooksCollection);
+              const existingDoc = querySnapshot.docs.find(
+                (doc) => doc.data().bookId === book.bookId
+              );
+              if (!existingDoc) await addDoc(userBooksCollection, book);
+            }
+          }
+        } else {
+          const querySnapshot = await getDocs(userBooksCollection);
+          const booksArray = querySnapshot.docs.map((doc) => ({
+            ...doc.data(),
+            inLibrary: false,
+          }));
+          await AsyncStorage.setItem(
+            `Books_${user.uid}`,
+            JSON.stringify(booksArray)
+          );
+        }
+        if (wantToReadBooks) {
+          const wantToReadArray = JSON.parse(wantToReadBooks);
+          const querySnapshot = await getDocs(wantToReadCollection);
+          for (const book of wantToReadArray) {
+            const existingDoc = querySnapshot.docs.find(
+              (doc) => doc.data().bookId === book.bookId
+            );
+            if (!existingDoc) await addDoc(wantToReadCollection, book);
+          }
+          for (const doc of querySnapshot.docs) {
+            const firestoreBook = doc.data();
+            const existsInLocal = wantToReadArray.some(
+              (book: { bookId: string }) => book.bookId === firestoreBook.bookId
+            );
+            if (!existsInLocal) await deleteDoc(doc.ref);
+          }
+        } else {
+          const querySnapshot = await getDocs(wantToReadCollection);
+          const wantToReadArray = querySnapshot.docs.map((doc) => ({
+            ...doc.data(),
+          }));
+          await AsyncStorage.setItem(
+            `${collectionName}_${user.uid}`,
+            JSON.stringify(wantToReadArray)
+          );
+        }
+      }
+      if (collectionName === "DownloadedBooks") {
+        await AsyncStorage.setItem(
+          `Books_lastFetchTime_${user.uid}`,
+          currentTime.toString()
+        );
+      }
+    } catch (error) {
+      console.error("Error syncing user books:", error);
+    }
+  };
 
   const fetchBooks = async () => {
     try {
@@ -83,7 +176,6 @@ export default function Library() {
           );
           const addedAt =
             filteredBooks.length > 0 ? filteredBooks[0].addedAt : null;
-
           if (coverImagePath && filePath && bookTitle) {
             return {
               id: folder,
@@ -93,14 +185,12 @@ export default function Library() {
               addedAt,
             };
           }
-
           return null;
         })
       );
       const sortedBooks = bookData
         .filter((book) => book !== null)
         .sort((a, b) => (b?.addedAt || "").localeCompare(a?.addedAt || ""));
-
       setBooks(sortedBooks.filter((book) => book !== null));
     } catch (error) {
       console.error("Error reading books directory:", error);
@@ -113,14 +203,10 @@ export default function Library() {
     try {
       const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/`;
       const directoryInfo = await FileSystem.getInfoAsync(directory);
-
       if (directoryInfo.exists) {
         await FileSystem.deleteAsync(directory, { idempotent: true });
         console.log("Books directory cleaned successfully.");
-      } else {
-        console.log("Books directory does not exist. No need to clean.");
       }
-
       setBooks([]);
     } catch (error) {
       console.error("Error cleaning storage:", error);
@@ -135,10 +221,11 @@ export default function Library() {
       fetchBooks();
     } else {
       setIsSearching(true);
-      const filteredBooks = books.filter((book) =>
-        book.title.toLowerCase().includes(search.toLowerCase())
+      setBooks(
+        books.filter((book) =>
+          book.title.toLowerCase().includes(search.toLowerCase())
+        )
       );
-      setBooks(filteredBooks);
     }
   };
 
@@ -178,6 +265,7 @@ export default function Library() {
   const renderItem = ({ item, index }: { item: Book; index: number }) => (
     <View style={styles.bookContainer} key={index}>
       <TouchableOpacity
+        style={styles.bookHolder}
         onPress={() =>
           router.navigate({
             pathname: "/inside/bookReader",
@@ -199,47 +287,49 @@ export default function Library() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          value={search}
-          onChangeText={updateSearch}
-          onFocus={() => setIsSearching(true)}
-        />
-        <TouchableOpacity
-          onPress={() => setIsSearching(!isSearching)}
-          style={styles.searchButton}
-        >
-          <Ionicons name="search" size={30} color="black" />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.collectionContainer}>
-        <TouchableOpacity
-          style={[
-            styles.collection,
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            value={search}
+            onChangeText={updateSearch}
+            onFocus={() => setIsSearching(true)}
+          />
+          <TouchableOpacity
+            onPress={() => setIsSearching(!isSearching)}
+            style={styles.searchButton}
+          >
+            <Ionicons name="search" size={isIpad?30:26} color="black" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.collectionContainer}>
+          <TouchableOpacity
+            style={[
+              styles.collection,
+              { direction: i18n.locale == "ku" ? "rtl" : "ltr" },
+            ]}
+            onPress={() => router.navigate("../collections")}
+          >
+            <IconButton icon={"reorder-horizontal"} size={isIpad ? 34 : 26} />
+            <Text style={styles.collectionText}>{i18n.t("collections")}</Text>
+          </TouchableOpacity>
+        </View>
+        <FlatList
+          data={books}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => index.toString()}
+          numColumns={isIpad ? 3 : 2}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={[
+            styles.container,
             { direction: i18n.locale == "ku" ? "rtl" : "ltr" },
           ]}
-          onPress={() => router.navigate("../collections")}
-        >
-          <IconButton icon={"reorder-horizontal"} size={isIpad ? 34 : 26} />
-          <Text style={styles.collectionText}>{i18n.t("collections")}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <FlatList
-        data={books}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
-        numColumns={isIpad ? 3 : 2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={[
-          styles.container,
-          { direction: i18n.locale == "ku" ? "rtl" : "ltr" },
-        ]}
-        onScrollBeginDrag={Keyboard.dismiss}
-      />
-    </SafeAreaView>
+          onScrollBeginDrag={Keyboard.dismiss}
+        />
+      </SafeAreaView>
+      <TouchableOpacity />
+    </View>
   );
 }
 
@@ -300,5 +390,14 @@ const styles = StyleSheet.create({
     height: isIpad ? (width / 3 - 60) * 1.5 : (width / 2 - 40) * 1.5,
     borderRadius: 10,
     elevation: 5,
+  },
+  bookHolder: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F5F5F5",
+    borderRadius: 10,
+    width: isIpad ? width / 3 - 60 : width / 2 - 40,
+    height: isIpad ? (width / 3 - 60) * 1.5 : (width / 2 - 40) * 1.5,
   },
 });

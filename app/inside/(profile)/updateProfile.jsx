@@ -150,7 +150,6 @@ export default function UpdateProfile() {
   return (
     <View style={{ flex: 1, backgroundColor: "white" }}>
       <ScrollView style={styles.container}>
-        <View style={styles.section}>
           <View style={styles.profileContainer}>
             <TouchableOpacity onPress={pickImage}>
               <Image
@@ -288,7 +287,6 @@ export default function UpdateProfile() {
           <TouchableOpacity style={styles.saveButton} onPress={handleSaveName}>
             <Text style={styles.saveButtonText}>{i18n.t("saveChanges")}</Text>
           </TouchableOpacity>
-        </View>
       </ScrollView>
     </View>
   );
@@ -297,7 +295,6 @@ export default function UpdateProfile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: width * 0.05,
     backgroundColor: "#FAF9F6",
     borderRadius: 20,
   },
@@ -318,15 +315,13 @@ const styles = StyleSheet.create({
     padding: 5,
     color: "white",
   },
-  section: {
-    marginBottom: 20,
-  },
   inputContainer: {
     marginBottom: 10,
+    paddingHorizontal: width * 0.05,
   },
   label: {
-    fontSize: isIpad ? 22 : 18,
-    marginBottom: 5,
+    fontSize: isIpad ? 24 : 18,
+    marginVertical: 5,
   },
   inputWrapper: {
     flexDirection: "row",
@@ -334,15 +329,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
-    paddingLeft: 10,
+    width: "100%",
   },
   icon: {
-    marginRight: 10,
+    padding: 10,
+    color: "gray",
+    fontSize: isIpad ? 24 : 18,
   },
   input: {
     flex: 1,
     padding: 10,
-    fontSize: isIpad ? 22 : 18,
+    fontSize: isIpad ? 24 : 18,
   },
   disabledInput: {
     backgroundColor: "#f0f0f0",

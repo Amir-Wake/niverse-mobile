@@ -19,7 +19,6 @@ const isIpad = Device.deviceType === Device.DeviceType.TABLET;
 
 const WantToRead = () => {
   interface Book {
-    title: string;
     coverImageUrl: string;
     bookId: string;
     wantToRead: boolean;
@@ -44,13 +43,9 @@ const WantToRead = () => {
     const fetchBooks = async () => {
       try {
         const storedUserId = await AsyncStorage.getItem("stored_userId");
-        const storedBooks = await AsyncStorage.getItem("Books_" + storedUserId);
+        const storedBooks = await AsyncStorage.getItem(`WantToReadBooks_${storedUserId}`);
         const parsedStoredBooks = storedBooks ? JSON.parse(storedBooks) : [];
-        const filteredBooks = parsedStoredBooks.filter(
-          (book: Book) =>
-            book.wantToRead === true
-        );
-        setBooks(filteredBooks);
+        setBooks(parsedStoredBooks);
       } catch (error) {
         console.error("Error fetching books:", error);
         Alert.alert("Error", "Failed to fetch books.");
@@ -77,7 +72,6 @@ const WantToRead = () => {
             style={styles.bookImage}
             cachePolicy={"memory-disk"}
           />
-          <Text style={styles.bookTitle}>{item.title}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -118,17 +112,22 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "flex-start",
     padding: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 2,
+      height: 2,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   bookImage: {
     width: isIpad ? width / 3 - 60 : width / 2 - 40,
     height: isIpad ? (width / 3 - 60) * 1.5 : (width / 2 - 40) * 1.5,
     resizeMode: "cover",
-  },
-  bookTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-    width: isIpad ? width / 3 - 60 : width / 2 - 40,
+    borderRadius:10,
+    borderColor:"grey",
+    borderWidth:1,
   },
 });
 

@@ -13,6 +13,7 @@ import * as FileSystem from "expo-file-system";
 import { Image } from "expo-image";
 import { Button } from "react-native-paper";
 import { auth } from "@/firebase";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import Review from "./review/review";
 import i18n from "@/assets/languages/i18n";
 import { LinearGradient } from "expo-linear-gradient";
@@ -42,6 +43,8 @@ interface Book {
   averageRating: number;
   ageRate: number;
   coverDominantColor: string;
+  version: number;
+  downloadedNumber: number;
 }
 
 const BookDetails = ({ book }: { book: Book }) => {
@@ -53,33 +56,36 @@ const BookDetails = ({ book }: { book: Book }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [ageRestrictionEnabled, setAgeRestrictionEnabled] = useState(false);
   const [isRTL, setIsRTL] = useState(false);
-  const router = useRouter();
   const [userAge, setUserAge] = useState(12);
+  const router = useRouter();
+  const db = getFirestore();
 
   useEffect(() => {
-    checkFileExistence();
-    checkIfAddedToCollection();
-    fetchUserAgeRestriction();
-    setTextDirection();
+    // Run all async checks in parallel for faster load
+    (async () => {
+      await Promise.all([
+        checkFileExistence(),
+        checkIfAddedToCollection(),
+        fetchUserAgeRestriction(),
+      ]);
+      setTextDirection();
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [book.title, book.id, book.language]);
 
   const setTextDirection = () => {
-    setIsRTL(book.language === "کوردی" || book.language === "Arabic");
+    setIsRTL(
+      book.language === "کوردی" ||
+      book.language === "عربى" ||
+      book.language === "فارسی"
+    );
   };
 
   const checkIfAddedToCollection = async () => {
     const storedUserId = await AsyncStorage.getItem("stored_userId");
-    const storedBooks = await AsyncStorage.getItem("Books_" + storedUserId);
+    const storedBooks = await AsyncStorage.getItem("WantToReadBooks_" + storedUserId);
     const BooksList = JSON.parse(storedBooks || "[]");
-    const bookIndex = BooksList.findIndex(
-      (sbook: any) => sbook.bookId === book.id
-    );
-    if (bookIndex !== -1) {
-      const bookData = BooksList[bookIndex];
-      if (bookData.wantToRead) {
-        setIsAddedToCollection(bookData.wantToRead);
-      }
-    }
+    setIsAddedToCollection(BooksList.some((sbook: any) => sbook.bookId === book.id));
   };
 
   const fetchUserAgeRestriction = async () => {
@@ -93,9 +99,7 @@ const BookDetails = ({ book }: { book: Book }) => {
       );
       if (profileDob) {
         const dob = new Date(profileDob);
-        const ageDiffMs = Date.now() - dob.getTime();
-        const ageDate = new Date(ageDiffMs);
-        const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+        const age = Math.abs(new Date(Date.now() - dob.getTime()).getUTCFullYear() - 1970);
         setUserAge(age);
       }
     }
@@ -106,10 +110,8 @@ const BookDetails = ({ book }: { book: Book }) => {
       Alert.alert("Error", "You are not old enough to download this book.");
       return;
     }
-
     setIsDownloading(true);
     const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.id}/`;
-
     try {
       await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
       const token = await auth.currentUser?.getIdToken();
@@ -117,27 +119,20 @@ const BookDetails = ({ book }: { book: Book }) => {
         `${process.env.EXPO_PUBLIC_BOOKS_API}books/${book.id}/file`,
         {
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch download file URL");
-      }
-
+      if (!response.ok) throw new Error("Failed to fetch download file URL");
       const data = await response.json();
-
       const downloadResumable = FileSystem.createDownloadResumable(
         data.fileUrl,
         `${directory}${book.title}.epub`,
         {},
         (downloadProgress) => {
-          const progress =
+          setDownloadProgress(
             downloadProgress.totalBytesWritten /
-            downloadProgress.totalBytesExpectedToWrite;
-          setDownloadProgress(progress);
+            downloadProgress.totalBytesExpectedToWrite
+          );
         }
       );
       const result = await downloadResumable.downloadAsync();
@@ -148,28 +143,60 @@ const BookDetails = ({ book }: { book: Book }) => {
         );
         setIsDownloaded(true);
         EventRegister.emit("booksDownloaded");
-      } else {
-        console.error("Download failed");
+        const bookRef = doc(db, "books", book.id);
+        const bookDoc = await getDoc(bookRef);
+        if (bookDoc.exists()) {
+          const currentDownloadedNumber = bookDoc.data()?.downloadedNumber || 0;
+          await setDoc(
+            bookRef,
+            { downloadedNumber: currentDownloadedNumber + 1 },
+            { merge: true }
+          );
+        }
       }
     } catch (e) {
       console.error(e);
-      Alert.alert("Error", "Failed to download file");
+      Alert.alert("Error", "Failed to download book. Please try again.");
+      setIsDownloaded(false);
     } finally {
       setIsDownloading(false);
     }
     addToBooksList();
+    addToDownloadedsList();
+  };
+
+  const addToDownloadedsList = async () => {
+    const user = auth.currentUser;
+    setIsLoading(true);
+    try {
+      const storedBooks = await AsyncStorage.getItem(`DownloadedBooks_${user?.uid}`);
+      const BooksList = JSON.parse(storedBooks || "[]");
+      if (BooksList.some((item: any) => item.bookId === book.id)) return;
+      const newBook = {
+        userId: user?.uid,
+        bookId: book.id,
+        title: book.title,
+        coverImageUrl: book.coverImageUrl,
+        addedAt: new Date().toISOString(),
+      };
+      await AsyncStorage.setItem(
+        `DownloadedBooks_${user?.uid}`,
+        JSON.stringify([...BooksList, newBook])
+      );
+    } catch (error) {
+      console.error("Error updating collection:", error);
+      Alert.alert("Error", "Failed to update collection.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const addToBooksList = async () => {
     const user = auth.currentUser;
-    if (!user) {
-      return;
-    }
+    if (!user) return;
     const storedBooksList = await AsyncStorage.getItem(`Books_${user.uid}`);
     let BooksList = storedBooksList ? JSON.parse(storedBooksList) : [];
-    const bookIndex = BooksList.findIndex(
-      (item: any) => item.bookId === book.id
-    );
+    const bookIndex = BooksList.findIndex((item: any) => item.bookId === book.id);
     if (bookIndex === -1) {
       BooksList.push({
         userId: user.uid,
@@ -177,18 +204,17 @@ const BookDetails = ({ book }: { book: Book }) => {
         title: book.title,
         coverImageUrl: book.coverImageUrl,
         addedAt: new Date().toISOString(),
-        downloaded: true,
         inLibrary: true,
         finished: false,
-        wantToRead: false,
+        version: book.version || 0,
       });
     } else {
       BooksList[bookIndex] = {
         ...BooksList[bookIndex],
-        downloaded: true,
         inLibrary: true,
         title: book.title,
         coverImageUrl: book.coverImageUrl,
+        version: book.version || 0,
       };
     }
     await AsyncStorage.setItem(`Books_${user.uid}`, JSON.stringify(BooksList));
@@ -198,20 +224,14 @@ const BookDetails = ({ book }: { book: Book }) => {
     const user = auth.currentUser;
     setIsLoading(true);
     try {
-      const storedBooks = await AsyncStorage.getItem(`Books_${user?.uid}`);
+      const storedBooks = await AsyncStorage.getItem(`WantToReadBooks_${user?.uid}`);
       const BooksList = JSON.parse(storedBooks || "[]");
-      const bookIndex = BooksList.findIndex(
-        (item: any) => item.bookId === book.id
-      );
+      const bookIndex = BooksList.findIndex((item: any) => item.bookId === book.id);
       if (bookIndex !== -1) {
-        const updatedBooksList = [...BooksList];
-        updatedBooksList[bookIndex] = {
-          ...updatedBooksList[bookIndex],
-          wantToRead: !isAddedToCollection,
-        };
-        setIsAddedToCollection(!isAddedToCollection);
+        const updatedBooksList = BooksList.filter((item: any) => item.bookId !== book.id);
+        setIsAddedToCollection(false);
         await AsyncStorage.setItem(
-          `Books_${user?.uid}`,
+          `WantToReadBooks_${user?.uid}`,
           JSON.stringify(updatedBooksList)
         );
       } else {
@@ -221,16 +241,23 @@ const BookDetails = ({ book }: { book: Book }) => {
           title: book.title,
           coverImageUrl: book.coverImageUrl,
           addedAt: new Date().toISOString(),
-          downloaded: false,
-          inLibrary: false,
-          finished: false,
-          wantToRead: true,
         };
         await AsyncStorage.setItem(
-          `Books_${user?.uid}`,
+          `WantToReadBooks_${user?.uid}`,
           JSON.stringify([...BooksList, newBook])
         );
         setIsAddedToCollection(true);
+
+        const bookRef = doc(db, "books", book.id);
+        const bookDoc = await getDoc(bookRef);
+        if (bookDoc.exists()) {
+          const currentWantToReadNumber = bookDoc.data()?.wantToReadNumber || 0;
+          await setDoc(
+            bookRef,
+            { wantToReadNumber: currentWantToReadNumber + 1 },
+            { merge: true }
+          );
+        }
       }
     } catch (error) {
       console.error("Error updating collection:", error);
@@ -239,6 +266,7 @@ const BookDetails = ({ book }: { book: Book }) => {
       setIsLoading(false);
     }
   };
+
   const checkFileExistence = async () => {
     const directory = `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.id}/`;
     const filePath = `${directory}${book.title}.epub`;
@@ -273,7 +301,12 @@ const BookDetails = ({ book }: { book: Book }) => {
               ? `${book.title.slice(0, 48)}...`
               : book.title}
           </Text>
-          <Text style={styles.author}>{book.author}</Text>
+          <TouchableOpacity onPress={() => router.navigate({
+            pathname: "/inside/author",
+            params: { authorName: book.author },
+          })}>
+            <Text style={styles.author}>{book.author}</Text>
+          </TouchableOpacity>
           <View style={styles.rating}>
             {[...Array(5)].map((_, index) => (
               <FontAwesome
@@ -293,17 +326,7 @@ const BookDetails = ({ book }: { book: Book }) => {
           <Button
             icon={isDownloaded ? "check-bold" : "download"}
             mode="contained"
-            onPress={
-              isDownloaded
-                ? () =>
-                    router.push({
-                      pathname: "/inside/bookReader",
-                      params: {
-                        fileUrl: `${FileSystem.documentDirectory}${auth.currentUser?.uid}/books/${book.id}/${book.title}.epub`,
-                      },
-                    })
-                : handleDownload
-            }
+            onPress={isDownloaded ? () => { } : handleDownload}
             buttonColor={isDownloaded ? "lightgray" : "orange"}
             textColor="black"
             style={styles.button}
@@ -314,15 +337,15 @@ const BookDetails = ({ book }: { book: Book }) => {
             }
           >
             {isDownloaded
-              ? i18n.t("read")
+              ? i18n.t("inLibrary")
               : isDownloading
-              ? ` ${Math.round(downloadProgress * 100)}%`
-              : i18n.t("download")}
+                ? ` ${Math.round(downloadProgress * 100)}%`
+                : i18n.t("download")}
           </Button>
           <Button
             icon={isAddedToCollection ? "check-bold" : "plus"}
             mode="contained"
-            onPress={() => handleAddToCollection()}
+            onPress={handleAddToCollection}
             buttonColor={isAddedToCollection ? "lightgray" : "orange"}
             textColor="black"
             style={styles.button}
@@ -355,7 +378,7 @@ const BookDetails = ({ book }: { book: Book }) => {
         <Animated.View
           entering={FadeInDown.delay(800).duration(500).springify().damping(12)}
         >
-          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.bookInfo}>
               <Text style={styles.infoText}>{i18n.t("pages")}</Text>
               <FontAwesome name="files-o" size={50} color="black" />
@@ -371,16 +394,25 @@ const BookDetails = ({ book }: { book: Book }) => {
               <MaterialIcons name="date-range" size={50} color="black" />
               <Text style={styles.infoText}>{book.publicationDate}</Text>
             </View>
-            <View style={styles.bookInfo}>
-              <Text style={styles.infoText}>{i18n.t("publisher")}</Text>
-              <MaterialIcons name="business" size={50} color="black" />
-              <Text style={styles.infoText}>{book.publisher}</Text>
-            </View>
-            <View style={styles.bookInfo}>
-              <Text style={styles.infoText}>{i18n.t("translator")}</Text>
-              <MaterialIcons name="translate" size={50} color="black" />
-              <Text style={styles.infoText}>{book.translator}</Text>
-            </View>
+            {book.publisher.trim() && (
+              <View style={styles.bookInfo}>
+                <Text style={styles.infoText}>{i18n.t("publisher")}</Text>
+                <MaterialIcons name="business" size={50} color="black" />
+                <Text style={styles.infoText}>{book.publisher}</Text>
+              </View>
+            )}
+            {book.translator.trim() && (
+              <View style={styles.bookInfo}>
+                <Text style={styles.infoText}>{i18n.t("translator")}</Text>
+                <MaterialIcons name="translate" size={50} color="black" />
+                <TouchableOpacity onPress={() => router.navigate({
+                  pathname: "/inside/author",
+                  params: { authorName: book.translator },
+                })}>
+                  <Text style={styles.infoText}>{book.translator}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
             <View style={styles.bookInfo}>
               <Text style={styles.infoText}>{i18n.t("ageRating")}</Text>
               <FontAwesome name="ban" size={50} color="black" />

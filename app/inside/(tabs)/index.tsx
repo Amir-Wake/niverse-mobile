@@ -19,18 +19,15 @@ import axios from "axios";
 import i18n from "@/assets/languages/i18n";
 import NetInfo from "@react-native-community/netinfo";
 import Fuse from "fuse.js";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth } from "@/firebase";
-import { getFirestore, collection, getDocs, updateDoc, addDoc } from "firebase/firestore";
 import * as Device from "expo-device";
 
+const Authors = lazy(() => import("../components/authors"));
 const PickCards = lazy(() => import("../components/topBooks"));
 const BookList = lazy(() => import("../components/bookLists"));
 const isIpad = Device.deviceType === Device.DeviceType.TABLET;
 
 const { width } = Dimensions.get("window");
 const Index = () => {
-  const db = getFirestore();
   const router = useRouter();
   const [showSearch, setShowSearch] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -39,7 +36,7 @@ const Index = () => {
   const apiLink = `${process.env.EXPO_PUBLIC_BOOKS_API}books`;
   const allBooksApi = `${process.env.EXPO_PUBLIC_ALLBOOKS_API}`;
   const [loading, setLoading] = useState(true);
-  const [allBooks, setAllBooks] = useState<{ bookId: string; title: string }[]>(
+  const [allBooks, setAllBooks] = useState<{ bookId: string; title: string; author:string; translator:string; }[]>(
     []
   );
 
@@ -55,76 +52,14 @@ const Index = () => {
       }
     };
     fetchAllBooks();
-    synceUserBooks();
   }, []);
 
-  const synceUserBooks = async () => {
-    try {
-      const user = auth.currentUser;
-      if (!user||networkError) {
-
-        return;
-      }
-      const booksFetchTime = await AsyncStorage.getItem("Books_lastFetchTime_" + user.uid);
-      const currentTime = new Date().getTime();
-      if (!booksFetchTime || currentTime - parseInt(booksFetchTime) >= 24 * 60 * 60 * 1000) {
-      await AsyncStorage.setItem("stored_userId", user.uid);
-      const Books = await AsyncStorage.getItem("Books_" + user.uid);
-      if (Books) {
-        const userBooksCollection = collection(
-          db,
-          "users",
-          user.uid,
-          "user_books"
-        );
-        const booksArray = JSON.parse(Books);
-        if (Array.isArray(booksArray)) {
-          for (const book of booksArray) {
-            const querySnapshot = await getDocs(userBooksCollection);
-            const existingDoc = querySnapshot.docs.find(
-              (doc) => doc.data().bookId === book.bookId
-            );
-
-            if (existingDoc) {
-              await updateDoc(existingDoc.ref, book);
-            } else {
-              await addDoc(userBooksCollection, book);
-            }
-          }
-        } else {
-          console.error("Books data is not an array.");
-        }
-      }
-      if (!Books) {
-        const userBooksCollection = collection(
-          db,
-          "users",
-          user.uid,
-          "user_books"
-        );
-        const querySnapshot = await getDocs(userBooksCollection);
-        const booksArray = querySnapshot.docs.map((doc) => ({
-          ...doc.data(),
-          inLibrary: false,
-        }));
-        await AsyncStorage.setItem(
-          "Books_" + user.uid,
-          JSON.stringify(booksArray)
-        );
-      }
-      await AsyncStorage.setItem("Books_lastFetchTime_" + user.uid, currentTime.toString());
-    }
-    } catch (error) {
-      console.error("Error caching log:", error);
-    }
-  };
-
   const fuse = new Fuse(allBooks, {
-    keys: ["title"],
+    keys: ["title", "author", "translator"],
     includeScore: true,
     threshold: 0.4,
   });
-  const results: { bookId: string; title: string }[] = searchTerm
+  const results: { bookId: string; title: string; author:string; translator:string; }[] = searchTerm
     ? fuse.search(searchTerm).map((result) => result.item)
     : allBooks;
   const scrollViewRef = React.useRef<ScrollView>(null);
@@ -240,21 +175,25 @@ const Index = () => {
                     .toLowerCase()
                     .split(" ")
                     .every((term) =>
-                      book.title
-                        .toLowerCase()
-                        .split(" ")
-                        .some((word) => word.startsWith(term))
+                      [book.title, book.author, book.translator]
+                        .filter(Boolean)
+                        .some((field) =>
+                          field.toLowerCase().split(" ").some((word) => word.startsWith(term))
+                        )
                     )
                 )
                 .slice(0, 5)
-                .map((book, index) => (
+                .map((book, idx) => (
                   <TouchableOpacity
-                    key={index}
+                    key={idx}
                     style={styles.searchResultItem}
                     onPress={() => handleBookPress(book)}
                   >
                     <Text style={{ fontSize: isIpad ? 22 : 18 }}>
-                      {book.title}
+                      {book.title}{" "}
+                      <Text style={{ fontWeight: "300", fontSize: isIpad ? 18 : 14 }}>
+                        {book.author}
+                      </Text>
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -289,20 +228,16 @@ const Index = () => {
           showsVerticalScrollIndicator={false}
         >
           <View>
-            <View>
-              <Suspense fallback={<View />}>
-                <PickCards />
-              </Suspense>
-            </View>
-            <View>
-              <Suspense fallback={<View />}>
-                <BookList
-                  title={i18n.t("new")}
-                  description={i18n.t("newDescription")}
-                  genre="newest"
-                />
-              </Suspense>
-            </View>
+            <Suspense fallback={<View />}>
+              <PickCards />
+            </Suspense>
+            <Suspense fallback={<View />}>
+              <BookList
+                title={i18n.t("new")}
+                description={i18n.t("newDescription")}
+                genre="newest"
+              />
+            </Suspense>
             <Suspense fallback={<View />}>
               <BookList
                 title={i18n.t("novels")}
@@ -314,12 +249,20 @@ const Index = () => {
                 description={i18n.t("nonFictionDescription")}
                 genre="books/genre/Non-fiction"
               />
-                <BookList
+              <Suspense fallback={<View />}>
+                <Authors />
+              </Suspense>
+              <BookList
+                title={i18n.t("literature")}
+                description={i18n.t("literatureDescription")}
+                genre="books/genre/literature"
+              />
+              <BookList
                 title={i18n.t("biography")}
                 description={i18n.t("biographyDescription")}
-                genre="books/genre/biography"
+                genre="books/genre/memoir"
               />
-                <BookList
+              <BookList
                 title={i18n.t("science")}
                 description={i18n.t("scienceDescription")}
                 genre="books/genre/science"
@@ -364,8 +307,8 @@ const styles = StyleSheet.create({
     height: isIpad ? 80 : 65,
   },
   searchInput: {
-    paddingRight: isIpad?60:50,
-    paddingLeft: isIpad?30:20,
+    paddingRight: isIpad ? 60 : 50,
+    paddingLeft: isIpad ? 30 : 20,
     flex: 1,
     color: "black",
     fontSize: isIpad ? 24 : 18,

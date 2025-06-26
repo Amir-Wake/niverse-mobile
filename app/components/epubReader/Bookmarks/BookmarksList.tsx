@@ -12,6 +12,9 @@ import { BottomSheetModalMethods } from "@gorhom/bottom-sheet/lib/typescript/typ
 import { Button, IconButton, MD3Colors, Text } from "react-native-paper";
 import { contrast } from "../fullReader/utils";
 import i18n from "@/assets/languages/i18n";
+import * as Device from 'expo-device';
+
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
 
 interface Props {
   onClose: () => void;
@@ -30,7 +33,7 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
     theme,
   } = useReader();
 
-  const snapPoints = React.useMemo(() => ["60%", "95%"], []);
+  const snapPoints = React.useMemo(() => [ "95%"], []);
   const [note, setNote] = useState("");
   const [currentBookmark, setCurrentBookmark] = useState<Bookmark | null>(null);
 
@@ -65,9 +68,12 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
     <BottomSheetModalProvider>
       <BottomSheetModal
         ref={ref}
-        index={2}
+        index={1}
         enablePanDownToClose
         android_keyboardInputMode="adjustResize"
+        onChange={(index) => {
+          if (index === 0) onClose();
+        }}
         handleIndicatorStyle={{
           backgroundColor: contrast[theme.body.background],
         }}
@@ -83,24 +89,26 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
         }}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose}>
-            <Text
-              variant="titleMedium"
+            <IconButton
+              icon="close"
+              size={isIpad?28:18}
+              mode="contained-tonal"
+              iconColor={contrast[theme.body.background]}
               style={{
-                color: contrast[theme.body.background],
-                padding: 10,
-                fontFamily: "helvetica",
+                backgroundColor: "rgba(151, 151, 151, 0.25)",
+                borderRadius: 20,
+                padding: 0,
+                margin: 0,
               }}
-            >
-              {i18n.t("close")}
-            </Text>
-          </TouchableOpacity>
+              onPress={()=>onClose()}
+            />
           <Text
             variant="titleMedium"
             style={{
               color: contrast[theme.body.background],
               padding: 10,
               fontFamily: "helvetica",
+              fontSize: isIpad ? 24 : 18,
             }}
           >
             {i18n.t("bookmarks")}
@@ -131,6 +139,8 @@ const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
                   fontStyle: "italic",
                   color: contrast[theme.body.background],
                   textAlign: "center",
+                  fontSize: isIpad ? 24 : 18,
+                  padding: 10,
                 }}
               >
                 {i18n.t("noBookmarks")}

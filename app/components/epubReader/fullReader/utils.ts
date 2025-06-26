@@ -16,6 +16,7 @@ export const contrast: { [key: string]: string } = {
   '#fff': '#333',
   '#333': '#fff',
   '#e8dcb8': '#333',
+  '#f2f2f2' : '#333',
 };
 
 export default { contrast };

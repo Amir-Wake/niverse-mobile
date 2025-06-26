@@ -14,10 +14,13 @@ import {
   BottomSheetFlatList,
 } from "@gorhom/bottom-sheet";
 import { BottomSheetModalMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
-import { Text } from "react-native-paper";
+import { IconButton, Text } from "react-native-paper";
 import Section from "./Section";
 import { contrast } from "../fullReader/utils";
 import i18n from "@/assets/languages/i18n";
+import * as Device from 'expo-device';
+
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
 
 interface Props {
   onPressSection: (section: SectionType) => void;
@@ -32,7 +35,7 @@ const TableOfContents = forwardRef<Ref, Props>(
     const [searchTerm, setSearchTerm] = useState("");
     const [data, setData] = useState<Toc>(toc);
 
-    const snapPoints = React.useMemo(() => ["60%", "95%"], []);
+    const snapPoints = React.useMemo(() => ["95%"], []);
 
     const renderItem = React.useCallback(
       ({ item }: { item: SectionType }) => (
@@ -59,60 +62,30 @@ const TableOfContents = forwardRef<Ref, Props>(
           }}
         >
           <View style={styles.title}>
-            <TouchableOpacity
-              onPress={() => {
-                setSearchTerm("");
-                onClose();
+            <IconButton
+              icon="close"
+              size={isIpad?26:16}
+              mode="contained-tonal"
+              iconColor={contrast[theme.body.background]}
+              style={{
+                backgroundColor: "rgba(151, 151, 151, 0.25)",
+                borderRadius: 20,
+                padding: 0,
+                margin: 0,
               }}
-            >
-              <Text
-                variant="titleMedium"
-                style={{
-                  color: contrast[theme.body.background],
-                  padding: 10,
-                  fontFamily: "helvetica",
-                }}
-              >
-                {i18n.t("close")}
-              </Text>
-            </TouchableOpacity>
+              onPress={()=>onClose()}
+            />
             <Text
               variant="titleMedium"
               style={{
                 color: contrast[theme.body.background],
                 fontFamily: "helvetica",
                 padding: 10,
+                fontSize: isIpad ? 24 : 18,
               }}
             >
               {i18n.t("toc")}
             </Text>
-            {/* <View style={styles.searchSection}>
-            <BottomSheetTextInput
-              inputMode="search"
-              returnKeyType="search"
-              returnKeyLabel="Search"
-              autoCorrect={false}
-              autoCapitalize="none"
-              defaultValue={searchTerm}
-              style={styles.input}
-              onSubmitEditing={(event) => {
-                event.persist();
-
-                setSearchTerm(event.nativeEvent?.text);
-                setData(
-                  toc.filter((elem) =>
-                    new RegExp(event.nativeEvent?.text, "gi").test(elem?.label)
-                  )
-                );
-              }}
-            />
-                      <Ionicons
-              name="search"
-              size={20}
-              style={{padding: 10}}
-              color="black"
-            />
-          </View> */}
           </View>
         </View>
       ),
@@ -126,10 +99,13 @@ const TableOfContents = forwardRef<Ref, Props>(
       <BottomSheetModalProvider>
         <BottomSheetModal
           ref={ref}
-          index={2}
+          index={1}
           snapPoints={snapPoints}
           enablePanDownToClose
           android_keyboardInputMode="adjustResize"
+          onChange={(index) => {
+            if (index === 0) onClose();
+          }}
           handleIndicatorStyle={{
             backgroundColor: contrast[theme.body.background],
           }}

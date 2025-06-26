@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     width: "85%",
   },
   chapter: { marginBottom: 2 },
-  name: { fontStyle: "italic" },
+  name: { fontStyle: "italic", fontSize: 18 },
   highlight: { backgroundColor: "yellow" },
 });
 

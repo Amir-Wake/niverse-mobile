@@ -1,9 +1,9 @@
 import { Stack } from "expo-router";
 import React from "react";
 import i18n from "@/assets/languages/i18n";
-import { Platform } from "react-native";
+import * as Device from "expo-device";
 
-const isIpad = Platform.OS == "ios" && Platform.isPad;
+const isIpad = Device.deviceType === Device.DeviceType.TABLET;
 export default function HomeLayout() {
   return (
     <Stack >
@@ -15,6 +15,8 @@ export default function HomeLayout() {
       <Stack.Screen name="(collections)" options={{ title: i18n.t("collections"), headerShown:true }}/>
       <Stack.Screen name="collections" options={{ title: i18n.t("collections"), headerShown:true }}/>
       <Stack.Screen name="(profile)" options={{ title: "", headerShown:true }}/>
+      <Stack.Screen name="translate" options={{ title: "Translate beta", headerShown:true, presentation:"modal" }}/>
+      <Stack.Screen name="author" options={{ title: "", headerShown:false, presentation:isIpad?"transparentModal":"modal" }}/>
     </Stack>
   );
 }

@@ -102,7 +102,7 @@ export default function UpdatePassword() {
   };
 
   return (
-      <ScrollView style={[styles.container,{direction:i18n.locale=="ku"?"rtl":"ltr"}]}>
+      <ScrollView style={styles.container}>
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center",padding: 10 }}>
         <View style={styles.section}>
           <View style={styles.inputContainer}>

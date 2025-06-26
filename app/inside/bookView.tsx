@@ -24,44 +24,50 @@ const BookDetails = lazy(() => import("@/app/components/bookView/bookDetails"));
 const BookView = () => {
   const router = useRouter();
   const [books, setBooks] = useState<any[]>([]);
-  const { index, apiLink} = useLocalSearchParams<{
-    index: string;
-    apiLink: string;
-  }>();
+  const [initialBook, setInitialBook] = useState<any>(null);
+  const { index, apiLink } = useLocalSearchParams<{ index: string; apiLink: string }>();
+
+  const defaultIndex = parseInt(index) || 0;
 
   useEffect(() => {
+    let isMounted = true;
     const fetchBooks = async () => {
       try {
         const lastFetchTime = await AsyncStorage.getItem(`${apiLink}_time`);
-        const currentTime = new Date().getTime();
+        const currentTime = Date.now();
         const isFetchTime = currentTime - parseInt(lastFetchTime || "0") > 24 * 60 * 60 * 1000;
         const cachedData = await AsyncStorage.getItem(apiLink as string);
-        if (cachedData && !isFetchTime) {
-          setBooks(JSON.parse(cachedData));
-          return;
+
+        // Try to show the current book immediately if cached
+        if (cachedData) {
+          const cachedBooks = JSON.parse(cachedData);
+          if (isMounted) {
+            setBooks(cachedBooks);
+            setInitialBook(cachedBooks[defaultIndex]);
+          }
         }
+
+        // Fetch from API if needed, but don't block UI
         if (!cachedData || isFetchTime) {
           const response = await fetch(apiLink as string);
           const data = await response.json();
-          if(!data) return;
+          if (!data) return;
           const booksData = Array.isArray(data) ? data : [data];
-          setBooks(booksData);
-          await AsyncStorage.setItem(
-            apiLink as string,
-            JSON.stringify(booksData)
-          );
-          const currentTime = new Date().getTime();
+          if (isMounted) {
+            setBooks(booksData);
+            setInitialBook(booksData[defaultIndex]);
+          }
+          await AsyncStorage.setItem(apiLink as string, JSON.stringify(booksData));
           await AsyncStorage.setItem(`${apiLink}_time`, currentTime.toString());
-
         }
       } catch (error) {
         console.error("Error fetching books:", error);
       }
     };
     fetchBooks();
-  }, [apiLink]);
-
-  const defaultIndex = parseInt(index)||0;
+    return () => { isMounted = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiLink, defaultIndex]);
 
   return (
     <BlurView intensity={40} style={styles.bookSheetContainer}>
@@ -101,17 +107,18 @@ const BookView = () => {
                   <Suspense
                     fallback={
                       <ActivityIndicator
-                        style={{
-                          flex: 1,
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
+                        style={styles.loadingContainer}
                         size="large"
                         color="red"
                       />
                     }
                   >
-                    <BookDetails book={books[index]} />
+                    {/* Show initialBook instantly for the default index, fallback to books[index] otherwise */}
+                    {index === defaultIndex && initialBook ? (
+                      <BookDetails book={initialBook} />
+                    ) : (
+                      <BookDetails book={books[index]} />
+                    )}
                   </Suspense>
                 </View>
               </ScrollView>
